@@ -1,0 +1,5 @@
+{
+  "name": "Nuvem Mestra - AWS Trainer",
+  "description": "An AI-powered training platform for the AWS Certified Solutions Architect - Associate (SAA-C03) exam. Features adaptive quizzes, scenario-based learning, flashcards, and progress tracking to accelerate your certification journey.",
+  "requestFramePermissions": []
+}

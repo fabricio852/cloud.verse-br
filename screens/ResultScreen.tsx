@@ -1,0 +1,83 @@
+
+import React, { useState, useEffect } from 'react';
+import { ResultSummary, Domain } from '../types';
+import { GhostButton } from '../components/ui/Button';
+import { DonutChart } from '../components/charts/DonutChart';
+import { DOMAIN_LABELS, DONUT_COLORS } from '../constants';
+import { cn } from '../utils';
+
+interface ResultScreenProps {
+    summary: ResultSummary | null;
+    onBack: () => void;
+}
+
+export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack }) => {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const t = setTimeout(() => setLoading(false), 1200);
+        return () => clearTimeout(t);
+    }, []);
+
+    const score = summary?.score ?? 100;
+    const total = summary?.total ?? 0;
+    const correct = summary?.correct ?? 0;
+    const pass = score >= 720;
+    const domains: Domain[] = [Domain.SECURE, Domain.RESILIENT, Domain.PERFORMANCE, Domain.COST];
+    
+    const chartData = domains.map(k => ({
+        key: k,
+        name: DOMAIN_LABELS[k],
+        value: summary?.byDomainCorrect?.[k] ?? 0,
+        total: summary?.byDomainTotal?.[k] ?? 0,
+    }));
+
+    return (
+        <div className="min-h-screen grid place-items-center p-6 relative overflow-hidden">
+            <style>{`
+                @keyframes confetti-explode { 0% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0) rotate(720deg); opacity: 0; } }
+                @keyframes screen-shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); } 20%, 40%, 60%, 80% { transform: translateX(2px); } }
+                .animate-screen-shake { animation: screen-shake 0.4s ease-in-out; }
+            `}</style>
+            {pass && !loading && (
+                <div className="absolute inset-0 pointer-events-none z-50">
+                    {Array.from({ length: 150 }).map((_, i) => {
+                        const angle = Math.random() * 360;
+                        const distance = Math.random() * 50 + 50;
+                        const x = `calc(-50% + ${Math.cos(angle * Math.PI / 180) * distance}vw)`;
+                        const y = `calc(-50% + ${Math.sin(angle * Math.PI / 180) * distance}vh)`;
+                        return (
+                            // FIX: Cast style object to React.CSSProperties to allow CSS custom properties.
+                            <div key={i} className="absolute w-2 h-4 top-1/2 left-1/2" style={{ '--x': x, '--y': y, backgroundColor: ['#22c55e', '#3b82f6', '#ef4444', '#f59e0b', '#a855f7'][i % 5], animation: `confetti-explode ${1 + Math.random()}s ease-out forwards` } as React.CSSProperties} />
+                        )
+                    })}
+                </div>
+            )}
+            <div className={cn("w-full max-w-2xl bg-white dark:bg-gray-800 border dark:border-gray-700 p-6 rounded-2xl shadow-2xl relative z-10", pass && !loading && "animate-screen-shake")}>
+                <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado — Simulação</h2><GhostButton onClick={onBack}>Voltar</GhostButton></div>
+                {loading ? (
+                    <div className="grid place-items-center py-12"><div className="w-10 h-10 rounded-full border-4 border-purple-800 border-t-transparent animate-spin" /><div className="mt-4 text-gray-600 dark:text-gray-400">Calculando nota no padrão AWS…</div></div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="text-center">
+                            <div className={cn("inline-block px-5 py-4 border-2", pass ? "border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-300" : "border-red-600 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-300")} style={{ borderRadius: 14 }}>
+                                <div className="text-xs font-semibold uppercase tracking-wider">PONTUAÇÃO</div>
+                                <div className="mt-1 font-extrabold tracking-tight tabular-nums"><span className="text-5xl">{score}</span><span className="mx-1 text-5xl">/</span><span className="text-5xl">1000</span></div>
+                            </div>
+                            {pass ? (<div className="mt-3 text-lg font-bold text-green-700 dark:text-green-400">Aprovado</div>) : (<div className="mt-3 text-lg font-bold text-red-700 dark:text-red-400">Reprovado</div>)}
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Estimativa aproximada baseada em acertos. Não é nota oficial.</div>
+                        </div>
+                        <div className="border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
+                            <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">Acertos por domínio</div>
+                            <div className="w-full flex items-center justify-center py-4"><DonutChart data={chartData} size={240} thickness={28} /></div>
+                            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+                                {chartData.map(e => (<span key={e.key} className="inline-flex items-center gap-2 font-medium text-gray-800 dark:text-gray-300"><span className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: DONUT_COLORS[e.key] }} /><span>{DOMAIN_LABELS[e.key]}</span><span className="text-gray-500 dark:text-gray-400">({e.total ? Math.round((e.value / e.total) * 100) : 0}%)</span></span>))}
+                            </div>
+                        </div>
+                        <div className="text-center text-gray-700 dark:text-gray-300">Acertos totais: <b>{correct}</b> de <b>{total}</b></div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
