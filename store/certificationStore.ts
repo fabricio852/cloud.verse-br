@@ -1,0 +1,166 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { Certification } from '../types/database';
+import { supabase } from '../services/supabaseClient';
+
+export interface CertificationTheme {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+
+  // Cores do tema
+  primary: string;
+  secondary: string;
+  accent: string;
+
+  // Gradientes Tailwind
+  gradient: string;
+  gradientHover: string;
+
+  // Classes CSS completas
+  bgGradient: string;
+  textPrimary: string;
+  borderPrimary: string;
+  hoverBg: string;
+}
+
+// Definição dos temas por certificação (tema original)
+const THEMES: Record<string, CertificationTheme> = {
+  'SAA-C03': {
+    id: 'SAA-C03',
+    name: 'Solutions Architect Associate',
+    shortName: 'SAA-C03',
+    description: 'Projete arquiteturas resilientes, seguras e de alto desempenho',
+    icon: '???',
+
+    primary: '#6d28d9',
+    secondary: '#4c1d95',
+    accent: '#8b5cf6',
+
+    gradient: 'from-violet-700 to-indigo-900',
+    gradientHover: 'from-violet-800 to-indigo-950',
+
+    bgGradient: 'bg-gradient-to-br from-violet-700 to-indigo-900',
+    textPrimary: 'text-violet-600 dark:text-violet-300',
+    borderPrimary: 'border-violet-600',
+    hoverBg: 'hover:bg-violet-50 dark:hover:bg-violet-900/20'
+  },
+
+  'CLF-C02': {
+    id: 'CLF-C02',
+    name: 'Cloud Practitioner',
+    shortName: 'CLF-C02',
+    description: 'Fundamentos da nuvem AWS e principais serviços',
+    icon: '??',
+
+    primary: '#0d9488',
+    secondary: '#06b6d4',
+    accent: '#10b981',
+
+    gradient: 'from-teal-500 via-cyan-500 to-emerald-500',
+    gradientHover: 'from-teal-600 via-cyan-600 to-emerald-600',
+
+    bgGradient: 'bg-gradient-to-br from-teal-500 via-cyan-500 to-emerald-500',
+    textPrimary: 'text-teal-600 dark:text-teal-300',
+    borderPrimary: 'border-teal-500',
+    hoverBg: 'hover:bg-teal-50 dark:hover:bg-teal-900/20'
+  },
+
+  'AIF-C01': {
+    id: 'AIF-C01',
+    name: 'AI Practitioner',
+    shortName: 'AIF-C01',
+    description: 'IA e Machine Learning na AWS',
+    icon: '??',
+
+    primary: '#dc2626',
+    secondary: '#991b1b',
+    accent: '#ef4444',
+
+    gradient: 'from-red-600 to-red-900',
+    gradientHover: 'from-red-700 to-red-950',
+
+    bgGradient: 'bg-gradient-to-br from-red-600 to-red-900',
+    textPrimary: 'text-red-600 dark:text-red-400',
+    borderPrimary: 'border-red-600',
+    hoverBg: 'hover:bg-red-50 dark:hover:bg-red-900/20'
+  }
+};
+
+interface CertificationState {
+  // Estado
+  certifications: Certification[];
+  selectedCertId: string | null; // 'SAA-C03', 'CLF-C02', 'AIF-C01'
+  isLoading: boolean;
+
+  // Actions
+  fetchCertifications: () => Promise<void>;
+  selectCertification: (certId: string) => void;
+  getSelectedCert: () => Certification | null;
+  getTheme: () => CertificationTheme;
+}
+
+export const useCertificationStore = create<CertificationState>()(
+  persist(
+    (set, get) => ({
+      // Estado inicial
+      certifications: [],
+      selectedCertId: null,
+      isLoading: false,
+
+      // Buscar certificações disponíveis
+      fetchCertifications: async () => {
+        set({ isLoading: true });
+
+        try {
+          const { data, error } = await supabase
+            .from('certifications')
+            .select('*')
+            .eq('active', true)
+            .order('id', { ascending: true });
+
+          if (error) throw error;
+
+          set({ certifications: data || [] });
+
+          // Se não tem certificação selecionada, selecionar a primeira (SAA-C03)
+          const { selectedCertId } = get();
+          if (!selectedCertId && data && data.length > 0) {
+            set({ selectedCertId: data[0].id });
+          }
+        } catch (error) {
+          console.error('Error fetching certifications:', error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Selecionar certificação
+      selectCertification: (certId) => {
+        set({ selectedCertId: certId });
+      },
+
+      // Obter certificação selecionada
+      getSelectedCert: () => {
+        const { certifications, selectedCertId } = get();
+        return certifications.find((c) => c.id === selectedCertId) || null;
+      },
+
+      // Obter tema da certificação selecionada
+      getTheme: () => {
+        const { selectedCertId } = get();
+        const certId = selectedCertId || 'SAA-C03';
+        return THEMES[certId] || THEMES['SAA-C03'];
+      },
+    }),
+    {
+      name: 'certification-storage',
+      partialize: (state) => ({
+        // Persistir certificação selecionada
+        selectedCertId: state.selectedCertId,
+      }),
+    }
+  )
+);

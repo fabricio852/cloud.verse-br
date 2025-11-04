@@ -5,17 +5,16 @@ import { Button, GhostButton } from '../ui/Button';
 import { Checkbox } from '../ui/Input';
 import { cn, linkAWS } from '../../utils';
 import { R } from '../../constants';
-import { getAiExplanation } from '../../services/geminiService';
 
 interface QuestionViewerProps {
     questao: Question;
     indice: number;
     total: number;
-    onEnviar: (answer: string) => void;
+    onEnviar: (answer: string[]) => void;
     onProxima: () => void;
     level: 'basic' | 'detailed';
     onPrev?: () => void;
-    initialAnswer: string;
+    initialAnswer: string[];
     plano: Plano;
     isMarked: boolean;
     onMark: (marked: boolean) => void;
@@ -23,143 +22,236 @@ interface QuestionViewerProps {
 }
 
 export const QuestionViewer: React.FC<QuestionViewerProps> = ({
-    questao, indice, total, onEnviar, onProxima, level, onPrev, initialAnswer, plano, isMarked, onMark, navAfterBack = false
+    questao,
+    indice,
+    total,
+    onEnviar,
+    onProxima,
+    level,
+    onPrev,
+    initialAnswer,
+    plano: _plano,
+    isMarked,
+    onMark,
+    navAfterBack = false,
 }) => {
-    const [escolha, setEscolha] = useState(initialAnswer || "");
-    const [enviado, setEnviado] = useState(!!initialAnswer);
-    const [aiExplanation, setAiExplanation] = useState("");
-    const [isLoadingAi, setIsLoadingAi] = useState(false);
+    const isMultiSelect = questao.requiredSelections > 1 || questao.answerKey.length > 1;
+
+    const [escolha, setEscolha] = useState<string[]>(initialAnswer ?? []);
+    const [enviado, setEnviado] = useState<boolean>(
+        (initialAnswer ?? []).length >= questao.requiredSelections && (initialAnswer ?? []).length > 0
+    );
+
+    const initialAnswerKey = useMemo(
+        () => (initialAnswer ?? []).slice().sort().join('|'),
+        [initialAnswer]
+    );
 
     useEffect(() => {
-        setEscolha(initialAnswer || "");
-        setEnviado(!!initialAnswer);
-        setAiExplanation("");
-    }, [indice, initialAnswer]);
+        const normalizedInitial = (initialAnswer ?? []).slice();
+        setEscolha(normalizedInitial);
+        setEnviado(
+            normalizedInitial.length >= questao.requiredSelections && normalizedInitial.length > 0
+        );
+    }, [indice, initialAnswerKey, questao.requiredSelections]);
 
-    const handleGetAiExplanation = async () => {
-        setIsLoadingAi(true);
-        setAiExplanation("");
-        try {
-            const explanation = await getAiExplanation(questao);
-            setAiExplanation(explanation);
-        } catch (error: any) {
-            setAiExplanation(error.message || "Ocorreu um erro ao buscar la explicação da IA.");
-        } finally {
-            setIsLoadingAi(false);
-        }
+    const handleOptionToggle = (optionKey: string) => {
+        if (enviado) return;
+
+        setEscolha((prev) => {
+            if (prev.includes(optionKey)) {
+                return prev.filter((opt) => opt !== optionKey);
+            }
+
+            if (isMultiSelect) {
+                if (prev.length >= questao.requiredSelections) {
+                    return prev;
+                }
+                return [...prev, optionKey];
+            }
+
+            return [optionKey];
+        });
     };
 
-    const parsedAiExplanation = useMemo(() => {
-        if (!aiExplanation) return "";
-
-        let processedText = aiExplanation
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-purple-600 dark:text-purple-400 underline hover:text-purple-800 dark:hover:text-purple-300">$1</a>');
-
-        const lines = processedText.split('\n');
-        let htmlResult = '';
-        let inList = false;
-
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
-                if (!inList) {
-                    htmlResult += '<ul class="list-disc list-inside my-2 space-y-1">';
-                    inList = true;
-                }
-                htmlResult += `<li>${trimmedLine.substring(2)}</li>`;
-            } else {
-                if (inList) {
-                    htmlResult += '</ul>';
-                    inList = false;
-                }
-                if (trimmedLine) {
-                    htmlResult += `<p class="my-2">${trimmedLine}</p>`;
-                }
-            }
-        }
-        if (inList) {
-            htmlResult += '</ul>';
-        }
-
-        return htmlResult;
-    }, [aiExplanation]);
+    const selectionReady = escolha.length === questao.requiredSelections;
 
     const submit = () => {
-        if (!escolha) return;
+        if (!selectionReady) return;
         setEnviado(true);
+        console.log('[Quiz] Responder', { indice: indice + 1, escolha });
         onEnviar(escolha);
     };
 
+    const handleMarkChange = (marked: boolean) => {
+        console.log('[Quiz] Marcar para revisão', { indice: indice + 1, marcado: marked });
+        onMark(marked);
+    };
+
     const isLastQuestion = indice + 1 >= total;
+
+    const formatAnswers = (answers: string[]) =>
+        answers
+            .slice()
+            .sort()
+            .map((letter) => `${letter}`)
+            .join(', ');
 
     return (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
             <div className="flex items-center justify-between mb-3">
                 <div className="text-sm text-gray-600 dark:text-gray-400">Total de questões: {total}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">&nbsp;</div>
             </div>
-            <div className="mb-2"><DomainTag domain={questao.domain} /></div>
+            <div className="mb-2">
+                <DomainTag domain={questao.domain} />
+            </div>
             <div className="flex items-start gap-2 mb-3">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold flex-shrink-0">{indice + 1}</span>
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold flex-shrink-0">
+                    {indice + 1}
+                </span>
                 <div className="font-medium text-gray-900 dark:text-gray-100 flex-grow">{questao.stem}</div>
             </div>
             <div className="space-y-2">
-                {Object.entries(questao.options).map(([k, v]) => {
-                    const selecionada = escolha === k;
-                    const isCerta = enviado && k === questao.answerKey;
-                    const isErrada = enviado && selecionada && !isCerta;
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {isMultiSelect
+                        ? `Selecione ${questao.requiredSelections} alternativas.`
+                        : 'Selecione uma alternativa.'}
+                </div>
+                {Object.entries(questao.options).map(([key, value]) => {
+                    if (!value) return null;
+
+                    const isSelected = escolha.includes(key);
+                    const isCorrectOption = questao.answerKey.includes(key);
+                    const showCorrectSelected = enviado && isCorrectOption && isSelected;
+                    const showCorrectMissed = enviado && isCorrectOption && !isSelected;
+                    const showIncorrect = enviado && isSelected && !isCorrectOption;
+
                     return (
-                        <label key={k} className={cn("flex items-center gap-3 border p-3 cursor-pointer dark:border-gray-700 text-gray-800 dark:text-gray-300 transition-all duration-200 ease-in-out", R.md, selecionada && !enviado && "border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-gray-700/50 scale-[1.02]", enviado && isCerta && "bg-green-50 dark:bg-green-900/50 border-green-300 dark:border-green-700", enviado && isErrada && "bg-red-50 dark:bg-red-900/50 border-red-300 dark:border-red-700")}>
-                            <input type="radio" name={`q-${indice}`} className="text-purple-600 focus:ring-purple-500" checked={selecionada} onChange={() => setEscolha(k)} disabled={enviado} />
-                            <div><span className="font-semibold mr-2">{k}.</span>{v}</div>
+                        <label
+                            key={key}
+                            className={cn(
+                                'flex items-center gap-3 border p-3 cursor-pointer dark:border-gray-700 text-gray-800 dark:text-gray-300 transition-all duration-200 ease-in-out rounded-lg',
+                                R.md,
+                                !enviado &&
+                                    isSelected &&
+                                    'border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-gray-700/50 scale-[1.02]',
+                                showCorrectSelected &&
+                                    'bg-green-50 dark:bg-green-900/40 border-green-400 dark:border-green-500',
+                                showCorrectMissed &&
+                                    'border-green-300 dark:border-green-600 bg-green-50/40 dark:bg-green-900/20',
+                                showIncorrect &&
+                                    'bg-red-50 dark:bg-red-900/50 border-red-300 dark:border-red-700',
+                                enviado && !isSelected && !isCorrectOption && 'opacity-80 cursor-default'
+                            )}
+                        >
+                            <input
+                                type={isMultiSelect ? 'checkbox' : 'radio'}
+                                name={`q-${indice}`}
+                                className="text-purple-600 focus:ring-purple-500"
+                                checked={isSelected}
+                                onChange={() => handleOptionToggle(key)}
+                                disabled={enviado}
+                            />
+                            <div>
+                                <span className="font-semibold mr-2">{key}.</span>
+                                {value}
+                            </div>
                         </label>
                     );
                 })}
+                {isMultiSelect && !enviado && questao.requiredSelections > 1 && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {selectionReady
+                            ? 'Pronto! Você selecionou o número necessário de alternativas.'
+                            : `Selecione ${questao.requiredSelections - escolha.length} alternativa(s) restante(s).`}
+                    </div>
+                )}
             </div>
             <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     {onPrev && <GhostButton onClick={onPrev}>Voltar</GhostButton>}
-                    <Checkbox label="Marcar para revisão" checked={isMarked} onChange={onMark} />
+                    <Checkbox label="Marcar para revisão" checked={isMarked} onChange={handleMarkChange} />
                 </div>
                 <div>
                     {!enviado ? (
-                        <Button onClick={submit}>Responder</Button>
+                        isMarked ? (
+                            <Button
+                                onClick={() => {
+                                    console.log('[Quiz] Pular (marcada) para próxima', { de: indice + 1 });
+                                    onProxima();
+                                }}
+                            >
+                                Próxima
+                            </Button>
+                        ) : (
+                            <Button onClick={submit} disabled={!selectionReady}>
+                                Responder
+                            </Button>
+                        )
                     ) : (
                         <Button onClick={onProxima} disabled={navAfterBack && isLastQuestion}>
-                             {navAfterBack && isLastQuestion ? 'Finalize no cabeçalho' : 'Próxima'}
+                            {navAfterBack && isLastQuestion ? 'Finalize no cabeçalho' : 'Próxima'}
                         </Button>
                     )}
                 </div>
             </div>
             {enviado && (
                 <>
+                    <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200">
+                        <div>
+                            <span className="font-semibold">Sua resposta:</span>{' '}
+                            {escolha.length ? formatAnswers(escolha) : 'Nenhuma alternativa selecionada'}
+                        </div>
+                        <div>
+                            <span className="font-semibold">Resposta correta:</span>{' '}
+                            {formatAnswers(questao.answerKey)}
+                        </div>
+                        {isMultiSelect && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Este item exige {questao.requiredSelections} alternativas corretas.
+                            </div>
+                        )}
+                    </div>
                     {level === 'basic' ? (
-                        <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-700 text-sm text-gray-800 dark:text-gray-300" style={{ borderRadius: 10 }}><div className="font-semibold mb-1">Explicação:</div><div>{questao.explanation_basic}</div></div>
+                        <div
+                            className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-700 text-sm text-gray-800 dark:text-gray-300"
+                            style={{ borderRadius: 10 }}
+                        >
+                            <div className="font-semibold mb-1">Explicação:</div>
+                            <div>{questao.explanation_basic}</div>
+                        </div>
                     ) : (
                         <div>
-                            <div className="mt-4 p-3 border-2 border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200 text-sm" style={{ borderRadius: 10 }}><div className="font-semibold mb-1">Explicação (correta):</div><div dangerouslySetInnerHTML={{ __html: linkAWS(questao.explanation_detailed) }} /></div>
-                            {questao.incorrect && (<div className="mt-3 p-3 border-2 border-red-300 bg-white dark:bg-gray-800 dark:border-red-700/50 text-sm text-gray-800 dark:text-gray-300" style={{ borderRadius: 10 }}><div className="font-semibold text-red-700 dark:text-red-400 mb-1">Por que as outras estão incorretas</div><ul className="list-disc pl-5">{Object.entries(questao.incorrect).filter(([k]) => k !== questao.answerKey).map(([k, txt]) => (<li key={k}><b>{k}.</b> {txt}</li>))}</ul></div>)}
-                        </div>
-                    )}
-                    {plano === 'PRO' && (
-                        <>
-                            <div className="mt-4">
-                                <Button onClick={handleGetAiExplanation} disabled={isLoadingAi} className="w-full text-center flex items-center justify-center gap-2">
-                                    {isLoadingAi ? (<><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Buscando sabedoria na nuvem...</>) : ('✨ Aprendizado profundo')}
-                                </Button>
+                            <div
+                                className="mt-4 p-3 border-2 border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200 text-sm"
+                                style={{ borderRadius: 10 }}
+                            >
+                                <div className="font-semibold mb-1">Explicação (correta):</div>
+                                <div dangerouslySetInnerHTML={{ __html: linkAWS(questao.explanation_detailed) }} />
                             </div>
-                            {aiExplanation && (
-                                <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 text-sm text-gray-800 dark:text-gray-300 rounded-lg">
-                                    <div className="font-semibold mb-2 text-purple-800 dark:text-purple-300">Explicação da IA ✨</div>
-                                    <div dangerouslySetInnerHTML={{ __html: parsedAiExplanation }} />
+                            {questao.incorrect && (
+                                <div
+                                    className="mt-3 p-3 border-2 border-red-300 bg-white dark:bg-gray-800 dark:border-red-700/50 text-sm text-gray-800 dark:text-gray-300"
+                                    style={{ borderRadius: 10 }}
+                                >
+                                    <div className="font-semibold text-red-700 dark:text-red-400 mb-1">
+                                        Por que as outras estão incorretas
+                                    </div>
+                                    <ul className="list-disc pl-5">
+                                        {Object.entries(questao.incorrect)
+                                            .filter(([key]) => !questao.answerKey.includes(key))
+                                            .map(([key, txt]) => (
+                                                <li key={key}>
+                                                    <b>{key}.</b> {txt}
+                                                </li>
+                                            ))}
+                                    </ul>
                                 </div>
                             )}
-                        </>
+                        </div>
                     )}
                 </>
             )}
         </div>
     );
-}
+};

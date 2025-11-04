@@ -1,0 +1,45 @@
+{
+  "id": "CLF-C02",
+  "name": "AWS Certified Cloud Practitioner",
+  "short_name": "CLF-C02",
+  "description": "Valide sua compreensão geral da nuvem AWS e dos principais serviços.",
+  "exam_details": {
+    "duration_minutes": 90,
+    "total_questions": 65,
+    "passing_score": 700,
+    "question_types": ["multiple_choice", "multiple_response"],
+    "price_usd": 100
+  },
+  "domains": [
+    {
+      "key": "CLOUD_CONCEPTS",
+      "label": "Conceitos de Nuvem",
+      "weight": 0.26,
+      "description": "Definir a nuvem AWS e sua proposta de valor",
+      "color": "#3b82f6"
+    },
+    {
+      "key": "SECURITY",
+      "label": "Segurança e Conformidade",
+      "weight": 0.25,
+      "description": "Descrever o modelo de responsabilidade compartilhada",
+      "color": "#22c55e"
+    },
+    {
+      "key": "TECHNOLOGY",
+      "label": "Tecnologia",
+      "weight": 0.33,
+      "description": "Descrever os principais serviços da AWS",
+      "color": "#a855f7"
+    },
+    {
+      "key": "BILLING",
+      "label": "Faturamento e Preços",
+      "weight": 0.16,
+      "description": "Comparar modelos de preços da AWS",
+      "color": "#f59e0b"
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2025-01-30"
+}

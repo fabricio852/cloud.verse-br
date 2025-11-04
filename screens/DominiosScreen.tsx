@@ -1,27 +1,57 @@
 
-import React, { useState } from 'react';
-import { Button, GhostButton } from '../components/ui/Button';
+import React, { useState, useMemo } from 'react';
+import { GhostButton } from '../components/ui/Button';
 import { Logo } from '../components/common/Logo';
 import { StatPill } from '../components/common/StatPill';
 import { Domain, DomainConfig } from '../types';
-import { R } from '../constants';
+import { R, DOMAIN_LABELS } from '../constants';
 import { cn } from '../utils';
+import { useCertificationStore } from '../store/certificationStore';
 
 interface DominiosScreenProps {
     onVoltar: () => void;
     onIniciar: (config: DomainConfig) => void;
 }
 
-const DOMAIN_OPTIONS = [
-    { key: Domain.SECURE, label: 'Arquitetura segura', pct: 30 },
-    { key: Domain.RESILIENT, label: 'Arquitetura resiliente', pct: 26 },
-    { key: Domain.PERFORMANCE, label: 'Arquitetura de alto desempenho', pct: 24 },
-    { key: Domain.COST, label: 'Arquitetura com custo otimizado', pct: 20 },
-];
+// Mapeamento de domínios por certificação
+const CERT_DOMAINS: Record<string, Array<{ key: Domain; pct: number }>> = {
+    'SAA-C03': [
+        { key: Domain.SECURE, pct: 30 },
+        { key: Domain.RESILIENT, pct: 26 },
+        { key: Domain.PERFORMANCE, pct: 24 },
+        { key: Domain.COST, pct: 20 },
+    ],
+    'CLF-C02': [
+        { key: Domain.CLOUD_CONCEPTS, pct: 24 },
+        { key: Domain.SECURITY_COMPLIANCE, pct: 30 },
+        { key: Domain.TECHNOLOGY, pct: 34 },
+        { key: Domain.BILLING_PRICING, pct: 12 },
+    ],
+    'AIF-C01': [
+        { key: Domain.RESPONSIBLE_AI, pct: 24 },
+        { key: Domain.AI_SERVICES, pct: 30 },
+        { key: Domain.AI_FUNDAMENTALS, pct: 24 },
+        { key: Domain.ML_DEVELOPMENT, pct: 22 },
+    ],
+};
 
 export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onIniciar }) => {
+    const { selectedCertId } = useCertificationStore();
     const [qtd, setQtd] = useState(20);
-    const [dom, setDom] = useState({ SECURE: true, RESILIENT: true, PERFORMANCE: true, COST: true });
+
+    // Obter domínios da certificação selecionada
+    const domains = useMemo(() => {
+        return CERT_DOMAINS[selectedCertId || 'CLF-C02'] || CERT_DOMAINS['CLF-C02'];
+    }, [selectedCertId]);
+
+    // Inicializar state com todos os domínios marcados
+    const [dom, setDom] = useState(() => {
+        const initial: Record<string, boolean> = {};
+        domains.forEach(d => {
+            initial[d.key] = true;
+        });
+        return initial;
+    });
 
     const handleCheckboxChange = (key: Domain, checked: boolean) => {
         setDom(s => ({ ...s, [key]: checked }));
@@ -42,7 +72,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onInic
             <main className="max-w-4xl mx-auto px-4 py-8">
                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Prática por Domínios</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
-                    {DOMAIN_OPTIONS.map(d => (
+                    {domains.map(d => (
                         <label key={d.key} className={cn("border bg-white dark:bg-gray-800 dark:border-gray-700 p-4 flex items-start gap-3", R.lg)}>
                             <input
                                 type="checkbox"
@@ -51,13 +81,13 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onInic
                                 onChange={e => handleCheckboxChange(d.key, e.target.checked)}
                             />
                             <div>
-                                <div className="font-medium text-gray-900 dark:text-gray-100">{d.label}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">SAA‑C03 ~ {d.pct}%</div>
+                                <div className="font-medium text-gray-900 dark:text-gray-100">{DOMAIN_LABELS[d.key]}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{selectedCertId} ~ {d.pct}%</div>
                             </div>
                         </label>
                     ))}
                 </div>
-                <div className="mt-6 flex items-center gap-3">
+                <div className="mt-6 flex items-center gap-3" data-tour="dominios-quantity">
                     <label className="text-sm text-gray-700 dark:text-gray-300">Quantidade de questões</label>
                     <input
                         type="number"

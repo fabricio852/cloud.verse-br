@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface LoadingOverlayProps {
@@ -6,7 +5,7 @@ interface LoadingOverlayProps {
     message?: string;
 }
 
-export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message = "Preparando questões…" }) => {
+export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message = "Preparando questões." }) => {
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-40 grid place-items-center">

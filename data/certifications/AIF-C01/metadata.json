@@ -1,0 +1,45 @@
+{
+  "id": "AIF-C01",
+  "name": "AWS Certified AI Practitioner",
+  "short_name": "AIF-C01",
+  "description": "Valide sua compreensão de conceitos fundamentais de IA e ML na AWS.",
+  "exam_details": {
+    "duration_minutes": 90,
+    "total_questions": 65,
+    "passing_score": 700,
+    "question_types": ["multiple_choice", "multiple_response"],
+    "price_usd": 100
+  },
+  "domains": [
+    {
+      "key": "AI_FUNDAMENTALS",
+      "label": "Fundamentos de IA",
+      "weight": 0.20,
+      "description": "Compreender conceitos básicos de IA e ML",
+      "color": "#a855f7"
+    },
+    {
+      "key": "AI_SECURITY",
+      "label": "Segurança de IA",
+      "weight": 0.24,
+      "description": "Implementar práticas de segurança para IA",
+      "color": "#22c55e"
+    },
+    {
+      "key": "AI_APPLICATIONS",
+      "label": "Aplicações de IA",
+      "weight": 0.28,
+      "description": "Aplicar serviços de IA da AWS",
+      "color": "#3b82f6"
+    },
+    {
+      "key": "AI_GOVERNANCE",
+      "label": "Governança de IA",
+      "weight": 0.28,
+      "description": "Implementar governança e conformidade em IA",
+      "color": "#f59e0b"
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2025-01-30"
+}

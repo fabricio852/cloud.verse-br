@@ -1,0 +1,27 @@
+{
+  "certification": "SAA-C03",
+  "domain": "COST",
+  "questions": [
+    {
+      "id": "saa-cost-001",
+      "question": "[ADICIONE SUA QUESTÃO AQUI]",
+      "options": {
+        "A": "[Opção A]",
+        "B": "[Opção B]",
+        "C": "[Opção C]",
+        "D": "[Opção D]"
+      },
+      "correct": "A",
+      "explanation_basic": "[Explicação curta - disponível para usuários FREE]",
+      "explanation_detailed": "[Explicação detalhada com links e aprofundamento - apenas PRO]",
+      "incorrect_explanations": {
+        "B": "[Por que B está incorreta]",
+        "C": "[Por que C está incorreta]",
+        "D": "[Por que D está incorreta]"
+      },
+      "tags": ["Tag1", "Tag2", "Tag3"],
+      "difficulty": "medium",
+      "tier": "FREE"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run verify:*)",
+      "Bash(npm run dev)",
+      "Bash(npm run analyze:*)",
+      "Bash(move clf.png public )",
+      "Bash(move saa.png public )",
+      "Bash(move:*)",
+      "Bash(npm run update-cert:*)",
+      "Bash(npm run show-example:*)",
+      "Bash(powershell -Command \"Get-Content ''supabase\\schema.sql'' | Select-String -Pattern ''questions|correct|required_selection|option_e'' -Context 2,2\")",
+      "Bash(npm run import-custom:*)",
+      "Bash(npm run import-aif:*)",
+      "Bash(npm run verify:aif-c01:*)",
+      "Bash(node -e:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -9,9 +9,10 @@ interface CardProps {
     onClick?: () => void;
     disabled?: boolean;
     badge?: React.ReactNode;
+    'data-tour'?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ title, subtitle, onClick, disabled, badge }) => {
+export const Card: React.FC<CardProps> = ({ title, subtitle, onClick, disabled, badge, ...props }) => {
     const cardRef = useRef<HTMLDivElement>(null);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -33,6 +34,7 @@ export const Card: React.FC<CardProps> = ({ title, subtitle, onClick, disabled, 
                 R.lg,
                 disabled ? "opacity-60" : "hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-600"
             )}
+            {...props}
         >
             <button disabled={disabled} onClick={onClick} className="w-full h-full inset-0 absolute z-20" />
             <div className="relative z-10 flex flex-col justify-between h-full">

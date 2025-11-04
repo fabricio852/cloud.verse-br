@@ -1,0 +1,45 @@
+{
+  "id": "SAA-C03",
+  "name": "AWS Certified Solutions Architect - Associate",
+  "short_name": "SAA-C03",
+  "description": "Valide sua capacidade de projetar arquiteturas resilientes, de alto desempenho, seguras e com custo otimizado na AWS.",
+  "exam_details": {
+    "duration_minutes": 130,
+    "total_questions": 65,
+    "passing_score": 720,
+    "question_types": ["multiple_choice", "multiple_response"],
+    "price_usd": 150
+  },
+  "domains": [
+    {
+      "key": "SECURE",
+      "label": "Arquitetura Segura",
+      "weight": 0.30,
+      "description": "Projetar arquiteturas seguras",
+      "color": "#22c55e"
+    },
+    {
+      "key": "RESILIENT",
+      "label": "Arquitetura Resiliente",
+      "weight": 0.26,
+      "description": "Projetar arquiteturas resilientes",
+      "color": "#3b82f6"
+    },
+    {
+      "key": "PERFORMANCE",
+      "label": "Alto Desempenho",
+      "weight": 0.24,
+      "description": "Projetar arquiteturas de alto desempenho",
+      "color": "#ef4444"
+    },
+    {
+      "key": "COST",
+      "label": "Custo Otimizado",
+      "weight": 0.20,
+      "description": "Projetar arquiteturas com custo otimizado",
+      "color": "#f59e0b"
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2025-01-30"
+}

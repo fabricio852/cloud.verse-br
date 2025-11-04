@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,600,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@1,400;1,500;1,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply text-slate-100 bg-[#070312];
+    font-feature-settings: 'liga' 1, 'kern' 1, 'cv05' 1, 'cv08' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Satoshi', 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .italic-elegant {
+    font-family: 'Crimson Pro', 'Georgia', serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer utilities {
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient 8s ease infinite;
+  }
+
+  @keyframes shine {
+    0%, 100% {
+      transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    10%, 90% {
+      transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    50% {
+      transform: translateX(200%) translateY(200%) rotate(45deg);
+    }
+  }
+
+  .animate-shine {
+    animation: shine 6s ease-in-out infinite;
+  }
+}

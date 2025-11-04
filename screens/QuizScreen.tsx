@@ -3,9 +3,27 @@ import { QuestionViewer } from '../components/quiz/QuestionViewer';
 import { Logo } from '../components/common/Logo';
 import { Button, GhostButton } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
+import { MoonIcon, SunIcon } from '../components/common/Icons';
+import { ContributionOverlay } from '../components/quiz/ContributionOverlay';
+import { KofiWidget } from '../components/quiz/KofiWidget';
 import { Question, Plano, ResultSummary, DomainStats } from '../types';
 import { Q_BANK } from '../constants';
 import { fmtTime, weightedAccuracy } from '../utils';
+import { useQuizAttempt } from '../hooks/useQuizAttempt';
+import { useContributionReminder } from '../hooks/useContributionReminder';
+import { useCertificationStore } from '../store/certificationStore';
+
+const toRgba = (hex: string, alpha = 1) => {
+    const sanitized = hex.replace('#', '');
+    const expanded = sanitized.length === 3
+        ? sanitized.split('').map((char) => char + char).join('')
+        : sanitized;
+    const parsed = parseInt(expanded, 16);
+    const r = (parsed >> 16) & 255;
+    const g = (parsed >> 8) & 255;
+    const b = parsed & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 interface QuizScreenProps {
     plano: Plano;
@@ -18,34 +36,132 @@ interface QuizScreenProps {
     questions?: Question[];
     onExit: () => void;
     diagramUrl?: string | null;
+    theme?: string;
+    toggleTheme?: () => void;
+    quizType?: 'daily' | 'full' | 'practice' | 'domains' | 'review';
 }
 
 export const QuizScreen: React.FC<QuizScreenProps> = ({
-    plano, tamanho, onSair, level = 'basic', timed = false, durationSec = 0, navAfterBack = false, questions, onExit, diagramUrl
+    plano, tamanho, onSair, level = 'basic', timed = false, durationSec = 0, navAfterBack = false, questions, onExit, diagramUrl, theme = 'light', toggleTheme, quizType = 'practice'
 }) => {
+    const { getTheme } = useCertificationStore();
+    const certTheme = getTheme();
+    const backgroundStyle = {
+        background: `
+            radial-gradient(120% 120% at 15% 10%, ${toRgba(certTheme.primary, 0.32)} 0%, transparent 58%),
+            radial-gradient(135% 125% at 85% -10%, ${toRgba(certTheme.secondary, 0.26)} 0%, transparent 60%),
+            radial-gradient(130% 135% at 50% 110%, ${toRgba(certTheme.accent, 0.22)} 0%, transparent 68%)
+        `,
+    };
     const [i, setI] = useState(0);
-    const [resps, setResps] = useState<(string | null)[]>([]);
+    const [resps, setResps] = useState<(string[] | null)[]>([]);
     const [marked, setMarked] = useState<{ [key: number]: boolean }>({});
     const [showConfirm, setShowConfirm] = useState(false);
-    const [byDomCorrect, setByDomCorrect] = useState<DomainStats>({ SECURE: 0, RESILIENT: 0, PERFORMANCE: 0, COST: 0 });
-    const [byDomTotal, setByDomTotal] = useState<DomainStats>({ SECURE: 0, RESILIENT: 0, PERFORMANCE: 0, COST: 0 });
+    const [byDomCorrect, setByDomCorrect] = useState<DomainStats>({});
+    const [byDomTotal, setByDomTotal] = useState<DomainStats>({});
     const [secsLeft, setSecsLeft] = useState(durationSec);
 
-    const quizBank = questions || Q_BANK;
+    const quizBank = questions && questions.length > 0 ? questions : Q_BANK;
     const quizSize = tamanho || quizBank.length;
-    const questao = quizBank[i % quizBank.length];
+    const questao = quizBank.length > 0 ? quizBank[i % quizBank.length] : null;
 
-    const finalize = () => {
-        const correct = resps.filter((a, idx) => a === quizBank[idx % quizBank.length].answerKey).length;
+    const normalizeSelection = (selection: string[] | null | undefined) =>
+        selection && selection.length ? selection.slice().sort().join('|') : '';
+    const normalizeAnswerKey = (answers: string[]) =>
+        answers.slice().sort().join('|');
+    const answersEqual = (selection: string[] | null | undefined, correctAnswers: string[]) =>
+        normalizeSelection(selection) === normalizeAnswerKey(correctAnswers);
+
+    // Quiz attempt hook para persistência no Supabase
+    const {
+        startAttempt,
+        startQuestionTimer,
+        recordAnswer,
+        finishAttempt,
+        isSaving,
+    } = useQuizAttempt({
+        certificationId: 'CLF-C02',
+        quizType,
+        totalQuestions: quizSize,
+        timeLimit: timed ? durationSec : undefined,
+        questions: quizBank,
+    });
+
+    // Hook para gerenciar lembretes de contribuição
+    const {
+        shouldShowReminder,
+        closeReminder,
+        incrementQuestions,
+        forceShowReminder,
+    } = useContributionReminder({
+        questionsBeforeReminder: 15,
+        minTimeBetweenReminders: 1000 * 60 * 60 * 24, // 24 horas
+    });
+
+    // Iniciar quiz attempt ao montar componente (se houver questões)
+    useEffect(() => {
+        if (quizBank && quizBank.length > 0) {
+            startAttempt();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Iniciar timer da questão quando mudar de índice
+    useEffect(() => {
+        startQuestionTimer(i);
+    }, [i, startQuestionTimer]);
+
+    // Mostrar lembrete de contribuição ao iniciar o quiz
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            forceShowReminder();
+        }, 3000); // Mostrar após 3 segundos de iniciar o quiz
+
+        return () => clearTimeout(timer);
+    }, [forceShowReminder]);
+
+    const finalize = async () => {
+        console.log('[QuizScreen] finalize() chamado');
+        const correct = resps.filter((answer, idx) => {
+            const question = quizBank[idx % quizBank.length];
+            if (!question) return false;
+            return answersEqual(answer, question.answerKey);
+        }).length;
+        console.log('[QuizScreen] correct:', correct, 'total:', quizSize);
+        console.log('[QuizScreen] byDomainCorrect:', byDomCorrect);
+        console.log('[QuizScreen] byDomainTotal:', byDomTotal);
+
         const wAcc = weightedAccuracy(byDomCorrect, byDomTotal);
+        console.log('[QuizScreen] weightedAccuracy:', wAcc);
+
+        const calculatedScore = 100 + Math.round(wAcc * 900);
+        console.log('[QuizScreen] calculated score:', calculatedScore);
+
         const summary: ResultSummary = {
             correct,
             total: quizSize,
-            score: 100 + Math.round(wAcc * 900),
+            score: calculatedScore,
             byDomainCorrect: byDomCorrect,
             byDomainTotal: byDomTotal,
         };
+        console.log('[QuizScreen] summary:', summary);
+
+        try {
+            // Salvar tentativa no Supabase
+            console.log('[QuizScreen] Salvando no Supabase...');
+            await finishAttempt(correct, {
+                byDomainCorrect,
+                byDomainTotal,
+            });
+            console.log('[QuizScreen] Salvo com sucesso!');
+        } catch (error) {
+            console.error('[QuizScreen] Erro ao salvar:', error);
+        }
+
+        // Ir direto para tela de resultados
+        console.log('[QuizScreen] Chamando onSair...');
         onSair(summary);
+        console.log('[QuizScreen] onSair chamado!');
     };
 
     useEffect(() => {
@@ -68,35 +184,92 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timed]);
 
-    const enviar = (answer: string) => {
+    const enviar = async (answer: string[]) => {
+
+        if (!questao) return;
+
+
+
         const prevAnswer = resps[i];
-        const isFirstTimeAnswered = prevAnswer === undefined || prevAnswer === null;
-        const wasCorrect = prevAnswer === questao.answerKey;
-        const isNowCorrect = answer === questao.answerKey;
-    
+
+        const isFirstTimeAnswered = !prevAnswer || prevAnswer.length === 0;
+
+        const wasCorrect = answersEqual(prevAnswer, questao.answerKey);
+
+        const isNowCorrect = answersEqual(answer, questao.answerKey);
+
+
+
         const newResps = [...resps];
+
         newResps[i] = answer;
+
         setResps(newResps);
-        
+
+
+
         if (isFirstTimeAnswered) {
-            setByDomTotal(prev => ({ 
-                ...prev, 
-                [questao.domain]: (prev[questao.domain] || 0) + 1 
+
+            // Incrementar contador de questoes para o lembrete de contribuicao
+
+            incrementQuestions();
+
+
+
+            setByDomTotal(prev => ({
+
+                ...prev,
+
+                [questao.domain]: (prev[questao.domain] || 0) + 1
+
             }));
+
             if (isNowCorrect) {
-                setByDomCorrect(prev => ({ 
-                    ...prev, 
-                    [questao.domain]: (prev[questao.domain] || 0) + 1 
+
+                setByDomCorrect(prev => ({
+
+                    ...prev,
+
+                    [questao.domain]: (prev[questao.domain] || 0) + 1
+
                 }));
+
             }
+
         } else {
+
             if (wasCorrect && !isNowCorrect) {
-                setByDomCorrect(prev => ({ ...prev, [questao.domain]: (prev[questao.domain] || 1) - 1 }));
+
+                setByDomCorrect(prev => ({
+
+                    ...prev,
+
+                    [questao.domain]: Math.max(0, (prev[questao.domain] || 1) - 1)
+
+                }));
+
             } else if (!wasCorrect && isNowCorrect) {
-                setByDomCorrect(prev => ({ ...prev, [questao.domain]: (prev[questao.domain] || 0) + 1 }));
+
+                setByDomCorrect(prev => ({
+
+                    ...prev,
+
+                    [questao.domain]: (prev[questao.domain] || 0) + 1
+
+                }));
+
             }
+
         }
+
+
+
+        // Salvar resposta no Supabase
+
+        await recordAnswer(i, normalizeSelection(answer), isNowCorrect);
+
     };
+
     
     const proxima = () => {
         if (i + 1 < quizSize) {
@@ -108,29 +281,56 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     
     const goPrev = () => { if (i > 0) setI(i - 1); };
 
-    const correctCount = resps.filter((a, idx) => a === quizBank[idx % quizBank.length].answerKey).length;
+    // Proteção: não renderizar se não houver questões
+    if (!quizBank || quizBank.length === 0 || !questao) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-center p-8">
+                    <div className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+                        Carregando questões...
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400">
+                        Se demorar muito, verifique sua conexão com a internet.
+                    </div>
+                    <div className="mt-6">
+                        <Button onClick={onExit}>Voltar ao Painel</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const correctCount = resps.filter((answer, idx) => {
+
+        const question = quizBank[idx % quizBank.length];
+
+        if (!question) return false;
+
+        return answersEqual(answer, question.answerKey);
+
+    }).length;
     const timePct = timed && durationSec ? Math.max(0, Math.min(100, Math.round((secsLeft / durationSec) * 100))) : 0;
 
-    const answeredCount = resps.filter(r => r != null).length;
+    const answeredCount = resps.filter(r => Array.isArray(r) && r.length > 0).length;
     const modalText = `Você respondeu ${answeredCount} de ${quizSize} questões. Tem certeza de que deseja finalizar o simulado? Suas respostas serão enviadas para avaliação.`;
 
     const Grid = () => (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl shadow-sm">
-            <h3 className="text-lg font-bold mb-3 text-gray-800 dark:text-gray-100">Revisão</h3>
             <div className="flex items-center gap-4 text-xs mb-4 text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" />Respondida</div>
-                <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-yellow-400 rounded-full" />Marcada</div>
+                <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-500 rounded-full" />Marcada</div>
                 <div className="flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-400 rounded-full" />Pendente</div>
             </div>
             <div className="flex flex-wrap gap-2">
                 {Array.from({ length: quizSize }).map((_, index) => {
-                    const hasResponse = resps[index] != null;
+                    const responseEntry = resps[index];
+                    const hasResponse = Array.isArray(responseEntry) && responseEntry.length > 0;
                     const isMarked = marked[index];
                     const isActive = i === index;
 
                     let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-                    if (isMarked) { // Marked takes precedence
-                        buttonClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+                    if (isMarked) { // Marked takes precedence over response
+                        buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
                     } else if (hasResponse) {
                         buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
                     }
@@ -138,32 +338,47 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     return (
                         <button
                             key={index}
-                            onClick={() => setI(index)}
+                            onClick={() => { console.log(`[Quiz] Navegar para questão`, index + 1); setI(index); }}
                             className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-gray-800' : ''}`}
                         >{index + 1}</button>
                     );
                 })}
-            </div>
         </div>
+    </div>
     );
 
     return (
-        <div className="min-h-screen">
-            <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b dark:border-gray-700 sticky top-0 z-30">
-                <div className={`mx-auto px-4 py-3 ${navAfterBack ? 'max-w-7xl' : 'max-w-4xl'}`}>
-                    <div className="flex items-center justify-between">
-                        <Logo />
-                        <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                            <div>Progresso: <b>{i + 1}/{quizSize}</b></div>
-                            {timed && <div className="hidden sm:block">Tempo: <b>{fmtTime(secsLeft)}</b></div>}
-                            <div>Acertos: <b>{correctCount}</b></div>
-                            {navAfterBack && <Button onClick={() => setShowConfirm(true)}>Finalizar</Button>}
-                            <GhostButton onClick={onExit}>Sair</GhostButton>
+        <div className="relative min-h-screen overflow-hidden bg-[#050b1a]">
+            <div aria-hidden className="absolute inset-0 opacity-100" style={backgroundStyle} />
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 mix-blend-screen opacity-[0.18]"
+                style={{
+                    background: `radial-gradient(80% 60% at 20% 80%, ${toRgba(certTheme.primary, 0.35)} 0%, transparent 70%)`,
+                }}
+            />
+
+            <div className="relative z-10 flex min-h-screen flex-col">
+                <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b dark:border-gray-700 sticky top-0 z-30">
+                    <div className={`mx-auto px-4 py-3 ${navAfterBack ? 'max-w-7xl' : 'max-w-4xl'}`}>
+                        <div className="flex items-center justify-between">
+                            <Logo />
+                            <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                                <div data-tour="quiz-progress">Progresso: <b>{i + 1}/{quizSize}</b></div>
+                                {timed && <div className="hidden sm:block" data-tour="quiz-timer">Tempo: <b>{fmtTime(secsLeft)}</b></div>}
+                                <div data-tour="quiz-score">Acertos: <b>{correctCount}</b></div>
+                                {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">Finalizar</Button>}
+                                {toggleTheme && (
+                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+                                        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                                    </button>
+                                )}
+                                <GhostButton onClick={onExit}>Sair</GhostButton>
+                            </div>
                         </div>
+                        {timed && (<div className="mt-3 h-1 bg-gray-200 dark:bg-gray-700 w-full overflow-hidden rounded-full"><div className="h-1 bg-gradient-to-r from-blue-600 to-rose-500 transition-all rounded-full" style={{ width: `${timePct}%` }} /></div>)}
                     </div>
-                    {timed && (<div className="mt-3 h-1 bg-gray-200 dark:bg-gray-700 w-full overflow-hidden rounded-full"><div className="h-1 bg-gradient-to-r from-blue-600 to-rose-500 transition-all rounded-full" style={{ width: `${timePct}%` }} /></div>)}
-                </div>
-            </header>
+                </header>
 
             <main className={`mx-auto px-4 py-8 ${navAfterBack ? 'max-w-7xl' : 'max-w-4xl'}`}>
                 {diagramUrl && (
@@ -171,10 +386,13 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                         <img src={diagramUrl} alt="Diagrama da Arquitetura" className="w-full h-auto rounded-lg" />
                     </div>
                 )}
+                <div className="mb-6" data-tour="quiz-navigation">
+                    <Grid />
+                </div>
                 
                 {navAfterBack ? (
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                         <div className="lg:col-span-2">
+                         <div className="lg:col-span-3">
                             <QuestionViewer
                                 questao={questao}
                                 indice={i}
@@ -183,15 +401,12 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                 onProxima={proxima}
                                 level={level}
                                 onPrev={i > 0 ? goPrev : undefined}
-                                initialAnswer={resps[i] || ""}
+                                initialAnswer={resps[i] || []}
                                 plano={plano}
                                 isMarked={!!marked[i]}
                                 onMark={() => setMarked(prev => ({ ...prev, [i]: !prev[i] }))}
                                 navAfterBack={navAfterBack}
                             />
-                         </div>
-                         <div className="lg:col-span-1">
-                            <Grid />
                          </div>
                      </div>
                 ) : (
@@ -203,7 +418,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                         onProxima={proxima}
                         level={level}
                         onPrev={undefined}
-                        initialAnswer={resps[i] || ""}
+                        initialAnswer={resps[i] || []}
                         plano={plano}
                         isMarked={!!marked[i]}
                         onMark={() => setMarked(prev => ({ ...prev, [i]: !prev[i] }))}
@@ -216,9 +431,23 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 <p>{modalText}</p>
                 <div className="mt-6 flex justify-end gap-2">
                     <Button onClick={() => setShowConfirm(false)} className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Continuar</Button>
-                    <Button onClick={finalize} className="bg-red-600 hover:bg-red-700">Sim, finalizar</Button>
+                    <Button onClick={() => {
+                        console.log('[QuizScreen] Botão "Sim, finalizar" clicado');
+                        setShowConfirm(false);
+                        finalize();
+                    }} className="bg-red-600 hover:bg-red-700">Sim, finalizar</Button>
                 </div>
             </Modal>
+
+            {/* Lembrete de Contribuição */}
+            <ContributionOverlay
+                isOpen={shouldShowReminder}
+                onClose={closeReminder}
+            />
+
+            {/* Widget Flutuante Ko-fi com Iframe */}
+            <KofiWidget />
         </div>
+    </div>
     );
 };

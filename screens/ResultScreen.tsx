@@ -1,17 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ResultSummary, Domain } from '../types';
 import { GhostButton } from '../components/ui/Button';
 import { DonutChart } from '../components/charts/DonutChart';
+import { MoonIcon, SunIcon } from '../components/common/Icons';
 import { DOMAIN_LABELS, DONUT_COLORS } from '../constants';
 import { cn } from '../utils';
+import { useCertificationStore } from '../store/certificationStore';
 
 interface ResultScreenProps {
     summary: ResultSummary | null;
     onBack: () => void;
+    theme?: string;
+    toggleTheme?: () => void;
 }
 
-export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack }) => {
+export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, theme = 'light', toggleTheme }) => {
+    const { selectedCertId } = useCertificationStore();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -22,12 +27,18 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack }) =
     const score = summary?.score ?? 100;
     const total = summary?.total ?? 0;
     const correct = summary?.correct ?? 0;
-    const pass = score >= 720;
-    const domains: Domain[] = [Domain.SECURE, Domain.RESILIENT, Domain.PERFORMANCE, Domain.COST];
-    
+    const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const pass = percentage >= 70; // 70% é passing score para AWS
+
+    // Obter domínios baseado na certificação
+    const domains = useMemo(() => {
+        const byDomain = summary?.byDomainCorrect || {};
+        return Object.keys(byDomain) as Domain[];
+    }, [summary]);
+
     const chartData = domains.map(k => ({
         key: k,
-        name: DOMAIN_LABELS[k],
+        name: DOMAIN_LABELS[k] || k,
         value: summary?.byDomainCorrect?.[k] ?? 0,
         total: summary?.byDomainTotal?.[k] ?? 0,
     }));
@@ -54,18 +65,35 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack }) =
                 </div>
             )}
             <div className={cn("w-full max-w-2xl bg-white dark:bg-gray-800 border dark:border-gray-700 p-6 rounded-2xl shadow-2xl relative z-10", pass && !loading && "animate-screen-shake")}>
-                <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado — Simulação</h2><GhostButton onClick={onBack}>Voltar</GhostButton></div>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado — Simulação</h2>
+                    <div className="flex items-center gap-2">
+                        {toggleTheme && (
+                            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+                                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                            </button>
+                        )}
+                        <GhostButton onClick={onBack}>Voltar</GhostButton>
+                    </div>
+                </div>
                 {loading ? (
                     <div className="grid place-items-center py-12"><div className="w-10 h-10 rounded-full border-4 border-purple-800 border-t-transparent animate-spin" /><div className="mt-4 text-gray-600 dark:text-gray-400">Calculando nota no padrão AWS…</div></div>
                 ) : (
                     <div className="space-y-6">
+                        {pass && (
+                            <div className="text-center mb-4">
+                                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">🎉 Parabéns! 🎉</div>
+                                <p className="text-lg text-gray-700 dark:text-gray-300">Você está preparado para a certificação {selectedCertId}!</p>
+                            </div>
+                        )}
                         <div className="text-center">
                             <div className={cn("inline-block px-5 py-4 border-2", pass ? "border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-300" : "border-red-600 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-300")} style={{ borderRadius: 14 }}>
-                                <div className="text-xs font-semibold uppercase tracking-wider">PONTUAÇÃO</div>
+                                <div className="text-xs font-semibold uppercase tracking-wider">PONTUAÇÃO AWS</div>
                                 <div className="mt-1 font-extrabold tracking-tight tabular-nums"><span className="text-5xl">{score}</span><span className="mx-1 text-5xl">/</span><span className="text-5xl">1000</span></div>
+                                <div className="mt-3 text-2xl font-bold">{percentage}%</div>
                             </div>
-                            {pass ? (<div className="mt-3 text-lg font-bold text-green-700 dark:text-green-400">Aprovado</div>) : (<div className="mt-3 text-lg font-bold text-red-700 dark:text-red-400">Reprovado</div>)}
-                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Estimativa aproximada baseada em acertos. Não é nota oficial.</div>
+                            {pass ? (<div className="mt-3 text-lg font-bold text-green-700 dark:text-green-400">✓ Aprovado</div>) : (<div className="mt-3 text-lg font-bold text-red-700 dark:text-red-400">✗ Reprovado (mínimo 70%)</div>)}
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Nota estimada baseada em acertos. Não é nota oficial AWS.</div>
                         </div>
                         <div className="border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
                             <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">Acertos por domínio</div>

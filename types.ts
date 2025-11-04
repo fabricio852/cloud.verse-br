@@ -1,9 +1,22 @@
 
 export enum Domain {
+    // SAA-C03 domains
     SECURE = 'SECURE',
     RESILIENT = 'RESILIENT',
     PERFORMANCE = 'PERFORMANCE',
-    COST = 'COST'
+    COST = 'COST',
+
+    // CLF-C02 domains
+    CLOUD_CONCEPTS = 'CLOUD_CONCEPTS',
+    SECURITY_COMPLIANCE = 'SECURITY_COMPLIANCE',
+    TECHNOLOGY = 'TECHNOLOGY',
+    BILLING_PRICING = 'BILLING_PRICING',
+
+    // AIF-C01 domains
+    RESPONSIBLE_AI = 'RESPONSIBLE_AI',
+    AI_SERVICES = 'AI_SERVICES',
+    AI_FUNDAMENTALS = 'AI_FUNDAMENTALS',
+    ML_DEVELOPMENT = 'ML_DEVELOPMENT'
 }
 
 export interface Question {
@@ -15,19 +28,18 @@ export interface Question {
         B: string;
         C: string;
         D: string;
+        E?: string;
     };
-    answerKey: string;
+    answerKey: string[];
+    requiredSelections: number;
     explanation_detailed: string;
     explanation_basic?: string;
     incorrect?: { [key: string]: string };
 }
 
-export interface DomainStats {
-    SECURE: number;
-    RESILIENT: number;
-    PERFORMANCE: number;
-    COST: number;
-}
+export type DomainStats = {
+    [key: string]: number;
+};
 
 export interface ResultSummary {
     correct: number;
@@ -39,14 +51,15 @@ export interface ResultSummary {
 
 export type Plano = 'FREE' | 'PRO';
 
-export type Rota = 
-    | 'landing' 
-    | 'painel' 
-    | 'cenario' 
-    | 'quiz-cenario' 
-    | 'quiz-rapido' 
-    | 'quiz-completo' 
-    | 'quiz-dominios' 
+export type Rota =
+    | 'landing'
+    | 'certification-selector'
+    | 'painel'
+    | 'cenario'
+    | 'quiz-cenario'
+    | 'quiz-rapido'
+    | 'quiz-completo'
+    | 'quiz-dominios'
     | 'revisao'
     | 'flashcards'
     | 'evolucao'

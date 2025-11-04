@@ -1,0 +1,48 @@
+{
+  "certification": "SAA-C03",
+  "domain": "SECURE",
+  "questions": [
+    {
+      "id": "saa-secure-001",
+      "question": "Uma empresa precisa armazenar logs de auditoria no S3 por 7 anos, garantindo que não possam ser deletados ou modificados, mesmo pelo root account. Qual solução atende esse requisito com o MENOR custo?",
+      "options": {
+        "A": "S3 Standard com versionamento habilitado",
+        "B": "S3 Glacier Deep Archive com S3 Object Lock em modo Compliance",
+        "C": "S3 Standard-IA com lifecycle policy para Glacier",
+        "D": "EBS volumes criptografados com snapshots diários no S3"
+      },
+      "correct": "B",
+      "explanation_basic": "S3 Object Lock em modo Compliance impede deleção/modificação de logs, mesmo pelo root. Glacier Deep Archive é a classe de storage mais barata da AWS (~$0.00099/GB/mês).",
+      "explanation_detailed": "S3 Object Lock em modo **Compliance** garante imutabilidade absoluta dos logs - nem o root account pode deletar objetos locked durante o período de retenção. Isso atende requisitos rigorosos de auditoria e compliance (SOX, HIPAA, etc). Glacier Deep Archive tem custo de ~$0.00099 por GB/mês (vs $0.023 do Standard), sendo ideal para dados raramente acessados. O tempo de recuperação é 12-48h, aceitável para logs de auditoria.",
+      "incorrect_explanations": {
+        "A": "Versionamento não IMPEDE deleção permanente. Um usuário com permissões pode deletar todas as versões de um objeto.",
+        "C": "Lifecycle policy não garante imutabilidade. Os objetos ainda podem ser deletados manualmente.",
+        "D": "EBS é para block storage (instâncias EC2), não é ideal para armazenamento de longo prazo de logs. Muito mais caro que S3 e requer gerenciamento de snapshots."
+      },
+      "tags": ["S3", "Object Lock", "Glacier", "Compliance", "Storage", "Security"],
+      "difficulty": "medium",
+      "tier": "FREE"
+    },
+    {
+      "id": "saa-secure-002",
+      "question": "[ADICIONE SUA QUESTÃO AQUI]",
+      "options": {
+        "A": "[Opção A]",
+        "B": "[Opção B]",
+        "C": "[Opção C]",
+        "D": "[Opção D]"
+      },
+      "correct": "A",
+      "explanation_basic": "[Explicação curta - disponível para usuários FREE]",
+      "explanation_detailed": "[Explicação detalhada com links e aprofundamento - apenas PRO]",
+      "incorrect_explanations": {
+        "B": "[Por que B está incorreta]",
+        "C": "[Por que C está incorreta]",
+        "D": "[Por que D está incorreta]"
+      },
+      "tags": ["Tag1", "Tag2", "Tag3"],
+      "difficulty": "easy",
+      "tier": "FREE"
+    }
+  ]
+}
