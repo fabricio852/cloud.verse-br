@@ -6,7 +6,6 @@ import { QuizScreen } from './screens/QuizScreen';
 import { ReviewScreen } from './screens/ReviewScreen';
 import { ResultScreen } from './screens/ResultScreen';
 import { DominiosScreen } from './screens/DominiosScreen';
-import { CertificationSelector } from './screens/CertificationSelector';
 import { LoadingOverlay } from './components/ui/LoadingOverlay';
 import { Modal } from './components/ui/Modal';
 import { Button } from './components/ui/Button';
@@ -79,12 +78,7 @@ const start = (fn: () => void) => {
         switch (rota) {
             case 'landing': return (
                 <ScreenTransition screenKey="landing">
-                    <LandingPage onStart={() => setRota('certification-selector')} />
-                </ScreenTransition>
-            );
-            case 'certification-selector': return (
-                <ScreenTransition screenKey="certification-selector">
-                    <CertificationSelector onSelect={() => setRota('painel')} />
+                    <LandingPage onStart={() => setRota('painel')} />
                 </ScreenTransition>
             );
             case 'painel': return (
@@ -192,7 +186,7 @@ const start = (fn: () => void) => {
             );
             default: return (
                 <ScreenTransition screenKey="default">
-                    <LandingPage onLoginSuccess={() => setRota('painel')} />
+                    <LandingPage onStart={() => setRota('painel')} />
                 </ScreenTransition>
             );
         }

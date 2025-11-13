@@ -1,13 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../components/ui/Button";
 import { Logo } from "../components/common/Logo";
 import { FeatureItem } from "../components/landing/FeatureItem";
 import { TestimonialsCarousel } from "../components/landing/TestimonialsCarousel";
+import { useCertificationStore } from "../store/certificationStore";
 
 interface LandingPageProps {
   onStart: () => void;
 }
+
+const GRADIENTS: Record<string, string> = {
+  'CLF-C02': 'from-teal-300/60 via-cyan-400/50 to-emerald-300/65',
+  'SAA-C03': 'from-violet-400/65 via-indigo-500/50 to-blue-500/55',
+  'AIF-C01': 'from-rose-500/65 via-red-500/50 to-orange-400/60',
+};
+
+const INDICATOR_COLORS: Record<string, string> = {
+  'CLF-C02': 'bg-cyan-300/85',
+  'SAA-C03': 'bg-violet-300/85',
+  'AIF-C01': 'bg-rose-300/85',
+};
 
 const features = [
   {
@@ -29,7 +42,25 @@ const features = [
 ];
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
-  const handleAction = () => onStart();
+  const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
+
+  useEffect(() => {
+    if (certifications.length === 0) {
+      fetchCertifications();
+    }
+  }, [certifications.length, fetchCertifications]);
+
+  const handleCertSelect = (certId: string) => {
+    selectCertification(certId);
+    onStart();
+  };
+
+  const handleScrollToCerts = () => {
+    const certSection = document.getElementById('certification-section');
+    if (certSection) {
+      certSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#070312] text-slate-100">
@@ -193,7 +224,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 Cloud Practitioner · Solutions Architect · AI Practitioner
               </p>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Button onClick={handleAction} className="btn-glow">
+                <Button onClick={handleScrollToCerts} className="btn-glow">
                   Começar agora
                 </Button>
               </motion.div>
@@ -262,6 +293,88 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 />
               ))}
             </div>
+          </div>
+        </section>
+
+        <section id="certification-section" className="py-16 px-4 bg-gradient-to-br from-[#0b061f] via-[#120a2b] to-[#1c0f3d] border-y border-white/5">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-10"
+            >
+              <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-3">
+                Escolha sua certificação
+              </h2>
+              <p className="text-slate-300 max-w-2xl mx-auto">
+                Selecione o exame AWS que deseja praticar e acesse todos os modos de estudo disponíveis
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="space-y-5 max-w-3xl mx-auto"
+            >
+              {isLoading && (
+                <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center text-slate-300">
+                  Carregando certificações...
+                </div>
+              )}
+
+              {!isLoading &&
+                certifications.map((cert) => {
+                  const examCode = cert.id;
+
+                  return (
+                    <button
+                      key={cert.id}
+                      onClick={() => handleCertSelect(cert.id)}
+                      className="group relative w-full overflow-hidden rounded-3xl border border-white/15 bg-white/[0.07] px-6 py-7 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_45px_120px_-60px_rgba(9,20,45,0.85)]"
+                    >
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 via-white/12 to-white/4 opacity-80 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-100" />
+                      <div
+                        className={`pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-95 transition duration-500 bg-gradient-to-br ${
+                          GRADIENTS[cert.id] ?? 'from-slate-500/25 via-slate-500/15 to-slate-500/30'
+                        }`}
+                      />
+                      <div className="relative flex flex-col gap-5">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                          <div className="space-y-2">
+                            {examCode && (
+                              <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-100/80">
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full ${
+                                    INDICATOR_COLORS[cert.id] ?? 'bg-sky-300/80'
+                                  }`}
+                                />
+                                {examCode}
+                              </div>
+                            )}
+                            <div className="text-2xl md:text-[26px] font-semibold text-white">
+                              {cert.name}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-200 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white">
+                            Iniciar <span aria-hidden="true">&rarr;</span>
+                          </div>
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-200/80 transition-colors duration-300 group-hover:text-white">
+                          {cert.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+
+              {!isLoading && certifications.length === 0 && (
+                <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center text-slate-300">
+                  Nenhuma certificação encontrada. Verifique sua conexão ou tente novamente mais tarde.
+                </div>
+              )}
+            </motion.div>
           </div>
         </section>
 
@@ -337,34 +450,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             </motion.div>
           </div>
         </section>
-
-        <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white/[0.03] border border-white/15 rounded-3xl p-12 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.95)]"
-            >
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">
-                Pronto para passar de primeira?
-              </h2>
-              <p className="text-gray-300 mb-8 text-base md:text-lg leading-relaxed">
-                Comece pelo quiz rápido, aprofunde-se nos domínios específicos, revise suas marcações e finalize com o simulado completo.
-              </p>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Button onClick={handleAction} className="btn-glow">
-                  Começar agora
-                </Button>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
       </main>
 
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-7xl mx-auto text-center text-gray-400 text-sm">
-          <p>© 2025 Nuvem Azul · Fabrício Félix — Todos os direitos reservados</p>
+          <p>© 2025 BluCloud · Fabrício Félix — Todos os direitos reservados</p>
           <p className="mt-3 text-xs text-gray-500">
             Esta plataforma não é afiliada, patrocinada ou endossada pela Amazon Web Services.
           </p>
