@@ -10,6 +10,7 @@ import { useCertificationStore } from '../store/certificationStore';
 
 interface DominiosScreenProps {
     onVoltar: () => void;
+    onBackToLanding?: () => void;
     onIniciar: (config: DomainConfig) => void;
 }
 
@@ -35,7 +36,7 @@ const CERT_DOMAINS: Record<string, Array<{ key: Domain; pct: number }>> = {
     ],
 };
 
-export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onIniciar }) => {
+export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBackToLanding, onIniciar }) => {
     const { selectedCertId } = useCertificationStore();
     const [qtd, setQtd] = useState(20);
 
@@ -61,16 +62,30 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onInic
         <div className="min-h-screen">
             <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Logo />
+                    {/* Logo - icon only on mobile, full logo on desktop */}
+                    <div className="block sm:hidden">
+                        <Logo onClick={onBackToLanding} iconOnly={true} size={40} />
+                    </div>
+                    <div className="hidden sm:block">
+                        <Logo onClick={onBackToLanding} />
+                    </div>
                     <div className="flex items-center gap-2">
                         <StatPill label="Total" value={`${qtd}`} />
-                        <GhostButton onClick={onVoltar}>Voltar</GhostButton>
-                        <button type="button" onClick={() => onIniciar({ qtd, dom })} className={cn("px-4 py-2 bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white font-semibold", R.md)}>Iniciar</button>
+                        {onBackToLanding && (
+                            <button
+                                onClick={onBackToLanding}
+                                className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                                Back
+                            </button>
+                        )}
+                        <GhostButton onClick={onVoltar}>Back to Dashboard</GhostButton>
+                        <button type="button" onClick={() => onIniciar({ qtd, dom })} className={cn("px-4 py-2 bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white font-semibold", R.md)}>Start</button>
                     </div>
                 </div>
             </header>
             <main className="max-w-4xl mx-auto px-4 py-8">
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Prática por Domínios</h2>
+                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Practice by Domains</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                     {domains.map(d => (
                         <label key={d.key} className={cn("border bg-white dark:bg-gray-800 dark:border-gray-700 p-4 flex items-start gap-3", R.lg)}>
@@ -88,7 +103,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onInic
                     ))}
                 </div>
                 <div className="mt-6 flex items-center gap-3" data-tour="dominios-quantity">
-                    <label className="text-sm text-gray-700 dark:text-gray-300">Quantidade de questões</label>
+                    <label className="text-sm text-gray-700 dark:text-gray-300">Number of questions</label>
                     <input
                         type="number"
                         value={qtd}
@@ -100,7 +115,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onInic
                         }}
                         className="w-24 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1"
                     />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Sem proporções obrigatórias</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">No mandatory proportions</div>
                 </div>
             </main>
         </div>

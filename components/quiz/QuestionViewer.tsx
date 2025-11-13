@@ -100,7 +100,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
     return (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
             <div className="flex items-center justify-between mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total de questões: {total}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Total questions: {total}</div>
             </div>
             <div className="mb-2">
                 <DomainTag domain={questao.domain} />
@@ -114,8 +114,8 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
             <div className="space-y-2">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                     {isMultiSelect
-                        ? `Selecione ${questao.requiredSelections} alternativas.`
-                        : 'Selecione uma alternativa.'}
+                        ? `Select ${questao.requiredSelections} alternatives.`
+                        : 'Select one alternative.'}
                 </div>
                 {Object.entries(questao.options).map(([key, value]) => {
                     if (!value) return null;
@@ -162,15 +162,15 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                 {isMultiSelect && !enviado && questao.requiredSelections > 1 && (
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                         {selectionReady
-                            ? 'Pronto! Você selecionou o número necessário de alternativas.'
-                            : `Selecione ${questao.requiredSelections - escolha.length} alternativa(s) restante(s).`}
+                            ? 'Ready! You selected the required number of alternatives.'
+                            : `Select ${questao.requiredSelections - escolha.length} remaining alternative(s).`}
                     </div>
                 )}
             </div>
             <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    {onPrev && <GhostButton onClick={onPrev}>Voltar</GhostButton>}
-                    <Checkbox label="Marcar para revisão" checked={isMarked} onChange={handleMarkChange} />
+                    {onPrev && <GhostButton onClick={onPrev}>Back</GhostButton>}
+                    <Checkbox label="Mark for review" checked={isMarked} onChange={handleMarkChange} />
                 </div>
                 <div>
                     {!enviado ? (
@@ -181,16 +181,16 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                     onProxima();
                                 }}
                             >
-                                Próxima
+                                Next
                             </Button>
                         ) : (
                             <Button onClick={submit} disabled={!selectionReady}>
-                                Responder
+                                Answer
                             </Button>
                         )
                     ) : (
                         <Button onClick={onProxima} disabled={navAfterBack && isLastQuestion}>
-                            {navAfterBack && isLastQuestion ? 'Finalize no cabeçalho' : 'Próxima'}
+                            {navAfterBack && isLastQuestion ? 'Finish in header' : 'Next'}
                         </Button>
                     )}
                 </div>
@@ -199,16 +199,16 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                 <>
                     <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200">
                         <div>
-                            <span className="font-semibold">Sua resposta:</span>{' '}
-                            {escolha.length ? formatAnswers(escolha) : 'Nenhuma alternativa selecionada'}
+                            <span className="font-semibold">Your answer:</span>{' '}
+                            {escolha.length ? formatAnswers(escolha) : 'No alternative selected'}
                         </div>
                         <div>
-                            <span className="font-semibold">Resposta correta:</span>{' '}
+                            <span className="font-semibold">Correct answer:</span>{' '}
                             {formatAnswers(questao.answerKey)}
                         </div>
                         {isMultiSelect && (
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Este item exige {questao.requiredSelections} alternativas corretas.
+                                This item requires {questao.requiredSelections} correct alternatives.
                             </div>
                         )}
                     </div>
@@ -217,7 +217,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                             className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-700 text-sm text-gray-800 dark:text-gray-300"
                             style={{ borderRadius: 10 }}
                         >
-                            <div className="font-semibold mb-1">Explicação:</div>
+                            <div className="font-semibold mb-1">Explanation:</div>
                             <div>{questao.explanation_basic}</div>
                         </div>
                     ) : (
@@ -226,7 +226,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                 className="mt-4 p-3 border-2 border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200 text-sm"
                                 style={{ borderRadius: 10 }}
                             >
-                                <div className="font-semibold mb-1">Explicação (correta):</div>
+                                <div className="font-semibold mb-1">Explanation (correct):</div>
                                 <div dangerouslySetInnerHTML={{ __html: linkAWS(questao.explanation_detailed) }} />
                             </div>
                             {questao.incorrect && (
@@ -235,7 +235,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                     style={{ borderRadius: 10 }}
                                 >
                                     <div className="font-semibold text-red-700 dark:text-red-400 mb-1">
-                                        Por que as outras estão incorretas
+                                        Why the others are incorrect
                                     </div>
                                     <ul className="list-disc pl-5">
                                         {Object.entries(questao.incorrect)

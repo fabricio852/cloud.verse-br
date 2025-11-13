@@ -7,10 +7,10 @@ interface ContributionOverlayProps {
 }
 
 const contributionMessages = [
-  "Your support means everything to me. Creating these free AWS certification resources is my passion, and every contribution motivates me to keep going. Thanks for being part of this journey! ??",
-  "I pour my heart into creating these AWS study materials because I believe knowledge should be accessible to all. Your support means a lot to me! Together, we're breaking down barriers! ??",
-  "When I see learners succeeding with these resources, it fills my heart with joy. Your support helps keep this dream alive: providing free, high-quality AWS certification materials to anyone willing to learn. ?"
+  "Your contribution keeps everything free. Supporting on Ko-fi helps cover infrastructure costs and keeps the door open for those who cannot pay. Thank you for strengthening the community!",
 ];
+
+const avatarUrl = "/profile.jpg";
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
@@ -59,13 +59,20 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                 <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-teal-600/20 p-6 border-b border-white/10">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-purple-500 to-blue-500 rounded-full p-2">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-                        </svg>
+                      <div className="relative h-12 w-12 rounded-full border border-white/20 p-[2px] shadow-lg shadow-black/30">
+                        <div className="h-full w-full overflow-hidden rounded-full bg-black/60">
+                          <img
+                            src={avatarUrl}
+                            alt="Fabricio Felix"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
                       </div>
                       <h3 className="text-xl font-semibold text-white">
-                        Support Free Education
+                        Support free education
                       </h3>
                     </div>
                     <button
@@ -117,7 +124,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
 
                   {/* Footer note */}
                   <p className="text-xs text-gray-500 text-center">
-                    This platform will always be free. Your support helps keep it alive. ??
+                    This platform will remain free. Your contribution covers costs and allows me to continuously improve it.
                   </p>
                 </div>
               </div>

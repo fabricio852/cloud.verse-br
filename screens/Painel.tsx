@@ -1,11 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useMemo, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../components/common/Logo';
-import { MoonIcon, SunIcon } from '../components/common/Icons';
-import { CertificationSidebar } from '../components/common/CertificationSidebar';
-import { Modal } from '../components/ui/Modal';
 import { useCertificationStore } from '../store/certificationStore';
-import { KofiWidget } from '../components/quiz/KofiWidget';
+import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
 
 interface PainelProps {
   totalQuestoes: number;
@@ -13,6 +10,7 @@ interface PainelProps {
   onQuizCompleto: () => void;
   onDominios: () => void;
   onRevisao: () => void;
+  onVoltar?: () => void;
   theme?: string;
   toggleTheme?: () => void;
 }
@@ -31,44 +29,21 @@ const toRgba = (hex: string, alpha = 1) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-type ModeKey = 'quizRapido' | 'quizCompleto' | 'dominios' | 'revisao';
+const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.meta.url).href;
 
-const MODE_SUGGESTIONS: Record<ModeKey, string[]> = {
-  quizRapido: [
-    'Treino de Reflexo — responde sob pressão leve, fortalecendo raciocínio automático e memorização instantânea.',
-    'Pílulas de Conceito — fragmenta o estudo em microsessões de 15 minutos que sedimentam os fundamentos.',
-    'Ritmo Diário — transforma a prática em hábito, permitindo acompanhar evolução diária sem sobrecarga.',
-  ],
-  quizCompleto: [
-    'Simulação Real — replica o ambiente do exame oficial, calibrando tempo, foco e resistência mental.',
-    'Diagnóstico Profundo — revela lacunas estruturais no conhecimento e orienta revisões estratégicas.',
-    'Teste de Fôlego — mede a capacidade de concentração prolongada, essencial para provas extensas.',
-  ],
-  dominios: [
-    'Treino Focado — isola áreas temáticas, permitindo avanço seletivo em tópicos com maior peso no exame.',
-    'Mapa de Força — identifica pontos fortes e fracos de cada domínio para otimizar o plano de estudo.',
-    'Mastery Mode — repete padrões dentro de um mesmo domínio até atingir fluência cognitiva.',
-  ],
-  revisao: [
-    'Revisão Expandida — percorre cada questão com explicações e contexto, reforçando entendimento conceitual.',
-    'Consolidação — transforma erros em aprendizado ativo, fortalecendo memórias de longo prazo.',
-    'Descompressão — reduz ansiedade pré-prova ao revisar sem limite de tempo nem cobrança de desempenho.',
-  ],
+// Cores únicas para todos os exames
+const THEME_COLORS = {
+  primary: '#00FFFF', // cyan
+  secondary: '#FF9900', // orange
+  accent: '#0891b2', // cyan-600
 };
 
-const MODE_LABELS: Record<ModeKey, string> = {
-  quizRapido: 'Quiz Rápido',
-  quizCompleto: 'Quiz Completo',
-  dominios: 'Prática por Domínios',
-  revisao: 'Modo Revisão',
+// Nomes completos das certificações
+const CERT_NAMES: Record<string, string> = {
+  'CLF-C02': 'Cloud Practitioner',
+  'SAA-C03': 'Solutions Architect Associate',
+  'AIF-C01': 'AI Practitioner',
 };
-
-const SUGGESTION_POOL = (Object.keys(MODE_SUGGESTIONS) as ModeKey[]).flatMap((mode) =>
-  MODE_SUGGESTIONS[mode].map((text) => ({
-    mode,
-    text,
-  }))
-);
 
 export const Painel: React.FC<PainelProps> = ({
   totalQuestoes,
@@ -76,355 +51,432 @@ export const Painel: React.FC<PainelProps> = ({
   onQuizCompleto,
   onDominios,
   onRevisao,
+  onVoltar,
   theme = 'dark',
   toggleTheme,
 }) => {
-  const { getTheme } = useCertificationStore();
-  const certTheme = getTheme();
-  const [showMobileCertModal, setShowMobileCertModal] = useState(false);
-  const isLight = theme === 'light';
-  void totalQuestoes; // mantido para compatibilidade sem exibir contador
-  const [suggestionIndex, setSuggestionIndex] = useState(() =>
-    SUGGESTION_POOL.length > 0 ? Math.floor(Math.random() * SUGGESTION_POOL.length) : 0
-  );
-  const currentSuggestion =
-    SUGGESTION_POOL.length > 0
-      ? SUGGESTION_POOL[suggestionIndex % SUGGESTION_POOL.length]
-      : null;
+  const { certifications, selectCertification, selectedCertId } = useCertificationStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const kofiWidgetRef = useRef<KofiWidgetHandle>(null);
+  void totalQuestoes;
+  void theme;
+  void toggleTheme;
 
-  useEffect(() => {
-    if (SUGGESTION_POOL.length === 0) return;
-    setSuggestionIndex(Math.floor(Math.random() * SUGGESTION_POOL.length));
-  }, [certTheme.shortName]);
+  // Get certification name
+  const certName = CERT_NAMES[selectedCertId || 'CLF-C02'] || 'Cloud Practitioner';
+  const themeColors = THEME_COLORS;
 
-  useEffect(() => {
-    if (SUGGESTION_POOL.length === 0) return undefined;
-    const interval = window.setInterval(() => {
-      setSuggestionIndex((prev) => (prev + 1) % SUGGESTION_POOL.length);
-    }, 9000);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  const palette = useMemo(() => ({
-    surface: isLight
-      ? `linear-gradient(140deg, ${toRgba('#ffffff', 0.96)} 0%, ${toRgba(certTheme.primary, 0.1)} 45%, ${toRgba(certTheme.secondary, 0.08)} 100%)`
-      : '#070312',
-    headerGradient: isLight
-      ? `linear-gradient(120deg, ${toRgba('#ffffff', 0.92)} 0%, ${toRgba(certTheme.primary, 0.22)} 55%, ${toRgba(certTheme.secondary, 0.16)} 100%)`
-      : `linear-gradient(120deg, ${toRgba(certTheme.primary, 0.18)} 0%, rgba(7, 3, 18, 0.9) 45%, ${toRgba(certTheme.secondary, 0.18)} 100%)`,
-    headerBorder: toRgba(certTheme.primary, isLight ? 0.18 : 0.32),
-    sidebarBg: isLight
-      ? `linear-gradient(155deg, ${toRgba('#ffffff', 0.94)} 0%, ${toRgba(certTheme.primary, 0.14)} 70%)`
-      : `linear-gradient(160deg, ${toRgba(certTheme.primary, 0.22)} 0%, ${toRgba(certTheme.secondary, 0.18)} 55%, rgba(7, 3, 18, 0.88) 100%)`,
-    sidebarBorder: toRgba(certTheme.primary, isLight ? 0.22 : 0.5),
-    cardBorder: toRgba(certTheme.primary, isLight ? 0.22 : 0.55),
-    cardBackground: isLight
-      ? `linear-gradient(145deg, ${toRgba('#ffffff', 0.94)} 0%, ${toRgba(certTheme.primary, 0.16)} 48%, ${toRgba(certTheme.secondary, 0.12)} 100%)`
-      : `linear-gradient(150deg, ${toRgba(certTheme.primary, 0.18)} 0%, ${toRgba(certTheme.secondary, 0.12)} 45%, rgba(11, 17, 32, 0.78) 100%)`,
-    cardGlow: `radial-gradient(circle at 12% 0%, ${toRgba(certTheme.accent, 0.26)} 0%, transparent 55%)`,
-    cardShadow: isLight
-      ? '0 22px 55px -38px rgba(15, 23, 42, 0.28)'
-      : '0 32px 120px -60px rgba(8, 15, 30, 0.95)',
-    cardHoverShadow: isLight
-      ? '0 26px 62px -40px rgba(15, 23, 42, 0.32)'
-      : `0 46px 125px -65px ${toRgba(certTheme.accent, 0.72)}`,
-  }), [certTheme, isLight]);
+  const handleCertSelect = (certId: string) => {
+    selectCertification(certId);
+    setSidebarOpen(false);
+  };
 
   return (
-    <div
-      className="relative min-h-screen overflow-hidden bg-slate-100 text-slate-900 transition-colors duration-500 dark:bg-[#070312] dark:text-slate-100"
-      style={{ background: palette.surface }}
-    >
+    <div className="relative min-h-screen bg-[#0a0a12] text-slate-100 overflow-hidden">
       <style>{`
-        .panel-animated-bg {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          z-index: 0;
+        /* CRT Overlay */
+        .crt-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
           pointer-events: none;
+          z-index: 9999;
+          background: repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15),
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 2px
+          );
+          animation: scanline 8s linear infinite;
         }
-        .panel-blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(${isLight ? 48 : 72}px);
-          opacity: ${isLight ? 0.55 : 0.72};
-          will-change: transform;
-          mix-blend-mode: ${isLight ? 'screen' : 'normal'};
+
+        @keyframes scanline {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(100%); }
         }
-        .panel-blob-1 {
-          width: 560px;
-          height: 560px;
-          top: -240px;
-          left: -200px;
-          animation: panel-drift-1 16s ease-in-out infinite;
+
+        /* VT323 text */
+        .vt323-text {
+          font-family: 'VT323', monospace;
         }
-        .panel-blob-2 {
-          width: 540px;
-          height: 540px;
-          top: -200px;
-          right: -220px;
-          animation: panel-drift-2 20s ease-in-out infinite;
+
+        /* Pixel card */
+        .pixel-card {
+          border: 3px solid ${themeColors.primary};
+          background: rgba(10, 10, 18, 0.8);
+          box-shadow: 6px 6px 0 ${toRgba(themeColors.primary, 0.3)};
+          transition: all 0.2s;
+          cursor: pointer;
         }
-        .panel-blob-3 {
-          width: 520px;
-          height: 520px;
-          bottom: -220px;
-          left: 18%;
-          animation: panel-drift-3 18s ease-in-out infinite;
+
+        .pixel-card:hover {
+          border-color: ${themeColors.secondary};
+          box-shadow: 6px 6px 0 ${toRgba(themeColors.secondary, 0.5)}, 0 0 20px ${toRgba(themeColors.secondary, 0.3)};
+          transform: translate(-2px, -2px);
         }
-        @keyframes panel-drift-1 {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(140px, 110px, 0) scale(1.22); }
+
+        .pixel-card:active {
+          transform: translate(3px, 3px);
+          box-shadow: 3px 3px 0 ${toRgba(themeColors.primary, 0.3)};
         }
-        @keyframes panel-drift-2 {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(-150px, 140px, 0) scale(1.18); }
+
+        /* Hamburger menu */
+        .hamburger-line {
+          width: 24px;
+          height: 3px;
+          background: ${themeColors.primary};
+          transition: all 0.3s;
+          box-shadow: 0 0 5px ${toRgba(themeColors.primary, 0.5)};
         }
-        @keyframes panel-drift-3 {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(120px, -120px, 0) scale(1.25); }
+
+        .hamburger-open .hamburger-line:nth-child(1) {
+          transform: rotate(45deg) translate(6px, 6px);
         }
-        .themed-card {
-          border: 1px solid ${palette.cardBorder};
-          background: ${palette.cardBackground};
-          box-shadow: ${palette.cardShadow};
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        }
-        .themed-card::before {
-          content: '';
-          position: absolute;
-          inset: -60% -25%;
-          background: ${palette.cardGlow};
+
+        .hamburger-open .hamburger-line:nth-child(2) {
           opacity: 0;
-          transition: opacity 0.35s ease;
         }
-        .themed-card:hover::before {
-          opacity: 1;
+
+        .hamburger-open .hamburger-line:nth-child(3) {
+          transform: rotate(-45deg) translate(6px, -6px);
         }
-        .themed-card:not(.disabled):hover {
-          transform: translateY(-6px);
-          border-color: ${toRgba(certTheme.accent, isLight ? 0.52 : 0.76)};
-          box-shadow: ${palette.cardHoverShadow};
+
+        /* Sidebar */
+        .sidebar {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 280px;
+          height: 100vh;
+          background: rgba(10, 10, 18, 0.95);
+          border-left: 3px solid ${themeColors.primary};
+          z-index: 1000;
+          padding: 2rem 1.5rem;
+          box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
         }
-        .themed-card.disabled {
-          opacity: 0.6;
+
+        /* Ko-fi animations */
+        .kofi-badge-highlight {
+          animation: kofi-badge-pulse 8s ease-in-out infinite;
+          will-change: transform, filter;
+        }
+
+        @keyframes kofi-badge-pulse {
+          0%, 70%, 100% {
+            transform: scale(1) rotate(0deg);
+            filter: drop-shadow(0 18px 45px rgba(255, 153, 0, 0));
+          }
+          74% {
+            transform: scale(1.12) rotate(-1.5deg);
+            filter: drop-shadow(0 25px 60px rgba(255, 153, 0, 0.45));
+          }
+          78% {
+            transform: scale(1.18) rotate(1deg);
+            filter: drop-shadow(0 28px 70px rgba(255, 153, 0, 0.55));
+          }
+          82% {
+            transform: scale(1.08) rotate(-0.4deg);
+            filter: drop-shadow(0 22px 55px rgba(255, 153, 0, 0.4));
+          }
+        }
+
+        .kofi-glow-ring {
+          animation: kofi-glow-spin 9s linear infinite;
+          filter: blur(30px);
+          opacity: 0.9;
+        }
+
+        @keyframes kofi-glow-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
 
-      <div className="panel-animated-bg" aria-hidden="true">
-        <div
-          className="panel-blob panel-blob-1"
-          style={{
-            background: `radial-gradient(circle, ${toRgba(certTheme.primary, isLight ? 0.48 : 0.62)} 0%, ${toRgba(certTheme.primary, 0.18)} 52%, transparent 72%)`,
-          }}
-        />
-        <div
-          className="panel-blob panel-blob-2"
-          style={{
-            background: `radial-gradient(circle, ${toRgba(certTheme.secondary, isLight ? 0.45 : 0.55)} 0%, ${toRgba(certTheme.secondary, 0.16)} 52%, transparent 70%)`,
-          }}
-        />
-        <div
-          className="panel-blob panel-blob-3"
-          style={{
-            background: `radial-gradient(circle, ${toRgba(certTheme.accent, isLight ? 0.42 : 0.58)} 0%, ${toRgba(certTheme.accent, 0.16)} 52%, transparent 72%)`,
-          }}
-        />
-      </div>
+      {/* CRT Overlay */}
+      <div className="crt-overlay" />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="relative border-b border-white/20 backdrop-blur-lg dark:border-white/10">
-          <div
-            className="absolute inset-0 opacity-95 dark:opacity-90"
-            style={{ background: palette.headerGradient, borderColor: palette.headerBorder }}
-            aria-hidden="true"
-          />
-
-          <div className="relative mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <Logo />
-              <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-800/90 dark:bg-white/10 dark:text-white/90">
-                {certTheme.shortName}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowMobileCertModal(true)}
-                className="flex items-center gap-2 rounded-full border border-white/30 bg-white/80 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-white/95 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 sm:hidden"
-              >
-                {certTheme.shortName}
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {toggleTheme && (
-                <button
-                  onClick={toggleTheme}
-                  className="rounded-full border border-white/30 bg-white/80 p-2 text-slate-700 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/15"
-                  aria-label="Alternar tema"
-                >
-                  {isLight ? <MoonIcon /> : <SunIcon />}
-                </button>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1">
-          <div className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-              <aside className="hidden w-72 flex-shrink-0 lg:block">
-                <div
-                  className="sticky top-24 rounded-2xl border p-5 shadow-[0_30px_90px_-60px_rgba(7,3,18,0.85)] backdrop-blur-xl"
-                  style={{
-                    background: palette.sidebarBg,
-                    borderColor: palette.sidebarBorder,
-                  }}
-                >
-                  <CertificationSidebar />
-                </div>
-              </aside>
-
-              <section className="flex-1 space-y-8">
-                <div className="rounded-2xl border border-white/10 bg-white/50 p-6 shadow-[0_35px_120px_-70px_rgba(8,15,30,0.95)] backdrop-blur-xl dark:border-white/5 dark:bg-white/[0.04]">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                      <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                        Como você quer praticar hoje?
-                      </h1>
-                      <AnimatePresence mode="wait">
-                        {currentSuggestion ? (
-                          <motion.div
-                            key={`${currentSuggestion.mode}-${suggestionIndex}`}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.45, ease: 'easeOut' }}
-                            className="mt-4 space-y-3"
-                          >
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-300/75">
-                              {MODE_LABELS[currentSuggestion.mode]}
-                            </span>
-                            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-200/85">
-                              {currentSuggestion.text}
-                            </p>
-                          </motion.div>
-                        ) : (
-                          <motion.p
-                            key="default-description"
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -6 }}
-                            transition={{ duration: 0.4, ease: 'easeOut' }}
-                            className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300/90"
-                          >
-                            {certTheme.description}. Escolha um modo de estudo para continuar a preparação para o exame selecionado.
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <button onClick={onQuizRapido} className="themed-card relative rounded-xl p-5 text-left">
-                    <div className="flex h-full flex-col justify-between gap-4">
-                      <div>
-                        <div className="text-base font-semibold text-slate-900 dark:text-white">
-                          Quiz Rápido
-                        </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-200/80">
-                          35 questões com seleção aleatória do banco completo. Ideal para treinar diariamente e reforçar conceitos-chave.
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-300/70">
-                        Iniciar →
-                      </span>
-                    </div>
-                  </button>
-
-                  <button onClick={onQuizCompleto} className="themed-card relative rounded-xl p-5 text-left">
-                    <div className="flex h-full flex-col justify-between gap-4">
-                      <div>
-                        <div className="text-base font-semibold text-slate-900 dark:text-white">
-                          Quiz Completo
-                        </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-200/80">
-                          65 questões em até 130 minutos. Simule a experiência oficial do exame com controle de tempo e desempenho detalhado.
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-300/70">
-                        Iniciar →
-                      </span>
-                    </div>
-                  </button>
-
-                  <button onClick={onDominios} className="themed-card relative rounded-xl p-5 text-left">
-                    <div className="flex h-full flex-col justify-between gap-4">
-                      <div>
-                        <div className="text-base font-semibold text-slate-900 dark:text-white">
-                          Prática por Domínios
-                        </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-200/80">
-                          Foque nos domínios da prova oficial da AWS e acompanhe sua evolução por área de conhecimento.
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-300/70">
-                        Iniciar →
-                      </span>
-                    </div>
-                  </button>
-
-                  <button onClick={onRevisao} className="themed-card relative rounded-xl p-5 text-left">
-                    <div className="flex h-full flex-col justify-between gap-4">
-                      <div>
-                        <div className="text-base font-semibold text-slate-900 dark:text-white">
-                          Modo Revisão
-                        </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-200/80">
-                          Revise com calma, sem limite de tempo. Ideal para analisar explicações e consolidar o aprendizado.
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-300/70">
-                        Iniciar →
-                      </span>
-                    </div>
-                  </button>
-                </div>
-              </section>
-            </div>
-          </div>
-        </main>
-
-        <footer className="border-t border-white/15 bg-white/10 py-6 text-center text-xs font-medium tracking-wide text-slate-600 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
-          Copyright 2025 Nuvem Azul - Fabricio Felix - Nao afiliado a Amazon Web Services.
-        </footer>
-      </div>
-
-      <KofiWidget desktopOnly className="pointer-events-auto" />
-
-      <Modal
-        open={showMobileCertModal}
-        onClose={() => setShowMobileCertModal(false)}
-        title="Selecione"
+      {/* Header */}
+      <header
+        className="border-b-2 bg-[#0a0a12]/90 backdrop-blur-md sticky top-0 z-50"
+        style={{ borderColor: `${themeColors.primary}4d` }}
       >
-        <div className="space-y-3">
-          <CertificationSidebar />
-        </div>
-        <div className="mt-6 flex justify-end">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+          {/* Logo - icon only on mobile, full logo on desktop */}
+          <div className="block sm:hidden">
+            <Logo onClick={onVoltar} iconOnly={true} size={40} />
+          </div>
+          <div className="hidden sm:block">
+            <Logo onClick={onVoltar} />
+          </div>
+
           <button
-            onClick={() => setShowMobileCertModal(false)}
-            className="rounded-lg bg-gray-900 px-4 py-2 font-medium text-white transition hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`hamburger ${sidebarOpen ? 'hamburger-open' : ''} flex flex-col gap-1.5 p-2 focus:outline-none`}
+            aria-label="Menu"
           >
-            Fechar
+            <div className="hamburger-line" />
+            <div className="hamburger-line" />
+            <div className="hamburger-line" />
           </button>
         </div>
-      </Modal>
+      </header>
+
+      {/* Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/70 z-[999]"
+              onClick={() => setSidebarOpen(false)}
+            />
+
+            {/* Sidebar content */}
+            <motion.div
+              initial={{ x: 280 }}
+              animate={{ x: 0 }}
+              exit={{ x: 280 }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="sidebar"
+            >
+              <div className="flex flex-col h-full">
+                <h2
+                  className="text-2xl font-bold mb-8"
+                  style={{
+                    fontFamily: 'Press Start 2P, cursive',
+                    color: themeColors.primary,
+                    textShadow: `0 0 10px ${toRgba(themeColors.primary, 0.5)}`,
+                  }}
+                >
+                  CERTIFICATIONS
+                </h2>
+
+                <div className="flex-1 space-y-4 overflow-y-auto">
+                  {certifications.map((cert) => {
+                    const isSelected = selectedCertId === cert.id;
+
+                    return (
+                      <button
+                        key={cert.id}
+                        onClick={() => handleCertSelect(cert.id)}
+                        className="w-full text-left px-4 py-3 border-2 transition-all duration-200 vt323-text text-xl"
+                        style={{
+                          borderColor: isSelected ? themeColors.primary : `${themeColors.primary}80`,
+                          backgroundColor: isSelected ? `${themeColors.primary}33` : 'transparent',
+                          color: themeColors.primary,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.borderColor = themeColors.primary;
+                            e.currentTarget.style.backgroundColor = `${themeColors.primary}1a`;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.borderColor = `${themeColors.primary}80`;
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }
+                        }}
+                      >
+                        {cert.id}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="mt-6 w-full px-4 py-2 border-2 bg-transparent vt323-text text-lg font-bold uppercase transition-all duration-200"
+                  style={{
+                    borderColor: themeColors.secondary,
+                    color: themeColors.secondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = themeColors.secondary;
+                    e.currentTarget.style.color = '#0a0a12';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = themeColors.secondary;
+                  }}
+                >
+                  CLOSE
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h1
+            className="text-3xl md:text-4xl font-bold mb-4"
+            style={{
+              fontFamily: 'Press Start 2P, cursive',
+              color: themeColors.primary,
+              textShadow: `0 0 10px ${toRgba(themeColors.primary, 0.5)}`,
+            }}
+          >
+            CHOOSE YOUR TRAINING
+          </h1>
+          <p className="vt323-text text-slate-300 text-2xl">
+            Select a practice mode for the <span style={{ color: themeColors.secondary, fontWeight: 'bold' }}>{certName}</span> exam
+          </p>
+        </motion.div>
+
+        <div className="grid gap-8 sm:grid-cols-2 max-w-5xl mx-auto mb-12">
+          {/* Quiz Rápido */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            onClick={onQuizRapido}
+            className="pixel-card p-6"
+          >
+            <div className="flex flex-col gap-4 h-full">
+              <div
+                className="text-xl font-bold"
+                style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
+              >
+                QUICK QUIZ
+              </div>
+              <p className="vt323-text text-lg text-slate-300 flex-1">
+                35 questions with random selection from the complete bank. Ideal for daily training and reinforcing key concepts.
+              </p>
+              <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
+                START &rarr;
+              </span>
+            </div>
+          </motion.button>
+
+          {/* Quiz Completo */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            onClick={onQuizCompleto}
+            className="pixel-card p-6"
+          >
+            <div className="flex flex-col gap-4 h-full">
+              <div
+                className="text-xl font-bold"
+                style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
+              >
+                FULL QUIZ
+              </div>
+              <p className="vt323-text text-lg text-slate-300 flex-1">
+                65 questions in up to 130 minutes. Simulate the official exam experience with time control and detailed performance.
+              </p>
+              <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
+                START &rarr;
+              </span>
+            </div>
+          </motion.button>
+
+          {/* Prática por Domínios */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            onClick={onDominios}
+            className="pixel-card p-6"
+          >
+            <div className="flex flex-col gap-4 h-full">
+              <div
+                className="text-xl font-bold"
+                style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
+              >
+                BY DOMAINS
+              </div>
+              <p className="vt323-text text-lg text-slate-300 flex-1">
+                Focus on AWS official exam domains and track your progress by knowledge area.
+              </p>
+              <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
+                START &rarr;
+              </span>
+            </div>
+          </motion.button>
+
+          {/* Modo Revisão */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            onClick={onRevisao}
+            className="pixel-card p-6"
+          >
+            <div className="flex flex-col gap-4 h-full">
+              <div
+                className="text-xl font-bold"
+                style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
+              >
+                REVIEW MODE
+              </div>
+              <p className="vt323-text text-lg text-slate-300 flex-1">
+                Review at your pace, without time limit. Ideal for analyzing explanations and consolidating learning.
+              </p>
+              <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
+                START &rarr;
+              </span>
+            </div>
+          </motion.button>
+        </div>
+
+        {/* Ko-fi badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="flex justify-center"
+        >
+          <button
+            type="button"
+            onClick={() => kofiWidgetRef.current?.open()}
+            className="relative inline-flex items-center justify-center rounded-3xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+            aria-label="Support on Ko-fi"
+            title="Support on Ko-fi"
+          >
+            <div
+              className="kofi-glow-ring absolute -inset-3 -z-10 rounded-[32px]"
+              style={{
+                background: 'conic-gradient(from 0deg, rgba(0, 255, 255, 0.85) 0%, rgba(255, 153, 0, 0.9) 35%, rgba(0, 255, 255, 0.9) 70%, rgba(255, 153, 0, 0.85) 100%)',
+              }}
+              aria-hidden="true"
+            />
+            <img
+              src={kofiBadgeUrl}
+              alt="Ko-fi"
+              className="kofi-badge-highlight h-28 w-auto"
+              loading="lazy"
+            />
+          </button>
+        </motion.div>
+      </main>
+
+      <footer className="border-t-2 border-[#00FFFF]/30 py-8 px-4 bg-[#0a0a12]/90">
+        <div className="max-w-7xl mx-auto text-center vt323-text text-slate-400 text-lg">
+          <p>© 2025 CLOUD.VERSE · Fabricio Felix</p>
+          <p className="mt-3 text-base text-slate-500">
+            This platform is not affiliated with Amazon Web Services.
+          </p>
+        </div>
+      </footer>
+
+      <KofiWidget ref={kofiWidgetRef} desktopOnly showFloatingButton={false} className="pointer-events-auto" />
     </div>
   );
 };

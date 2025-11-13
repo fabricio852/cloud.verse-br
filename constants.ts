@@ -1,28 +1,28 @@
 
 import { Domain, Question } from './types';
 
-export const BRAND = { name: "Nuvem Azul", initials: "NA" };
+export const BRAND = { name: "CLOUD.VERSE", initials: "CV" };
 
 export const R = { sm:"rounded-md", md:"rounded-lg", lg:"rounded-xl", xl:"rounded-2xl" };
 
 export const DOMAIN_LABELS: Record<string, string> = {
     // SAA-C03
-    SECURE: 'Arquitetura segura',
-    RESILIENT: 'Arquitetura resiliente',
-    PERFORMANCE: 'Arquitetura de alto desempenho',
-    COST: 'Arquitetura com custo otimizado',
+    SECURE: 'Secure Architecture',
+    RESILIENT: 'Resilient Architecture',
+    PERFORMANCE: 'High-Performance Architecture',
+    COST: 'Cost-Optimized Architecture',
 
     // CLF-C02
-    CLOUD_CONCEPTS: 'Conceitos de Nuvem',
-    SECURITY_COMPLIANCE: 'Segurança e Conformidade',
-    TECHNOLOGY: 'Tecnologia',
-    BILLING_PRICING: 'Cobrança e Precificação',
+    CLOUD_CONCEPTS: 'Cloud Concepts',
+    SECURITY_COMPLIANCE: 'Security and Compliance',
+    TECHNOLOGY: 'Technology',
+    BILLING_PRICING: 'Billing and Pricing',
 
     // AIF-C01
-    RESPONSIBLE_AI: 'IA Responsável',
-    AI_SERVICES: 'Serviços de IA',
-    AI_FUNDAMENTALS: 'Fundamentos de IA',
-    ML_DEVELOPMENT: 'Desenvolvimento de ML'
+    RESPONSIBLE_AI: 'Responsible AI',
+    AI_SERVICES: 'AI Services',
+    AI_FUNDAMENTALS: 'AI Fundamentals',
+    ML_DEVELOPMENT: 'ML Development'
 };
 
 export const DOMAIN_WEIGHTS: { [key in Domain]: number } = {
@@ -84,14 +84,14 @@ export const Q_BANK: Question[] = [
 ];
 
 export const FLASHCARD_BANK_INITIAL = [
-    { id: 'fc1', front: 'O que é Amazon S3?', back: 'Um serviço de armazenamento de objetos que oferece escalabilidade, disponibilidade de dados, segurança e performance líderes do setor.' },
-    { id: 'fc2', front: 'O que é uma Instância EC2?', back: 'Um servidor virtual na nuvem da Amazon. É a sigla para Elastic Compute Cloud. Permite obter e configurar capacidade computacional com agilidade.' },
-    { id: 'fc3', front: 'Qual a função do IAM?', back: 'AWS Identity and Access Management (IAM) é um serviço que ajuda a controlar o acesso aos recursos da AWS de forma segura.' },
-    { id: 'fc4', front: 'O que é um VPC?', back: 'Amazon Virtual Private Cloud (VPC) permite provisionar uma seção da Nuvem AWS isolada logicamente, onde você pode executar recursos da AWS em uma rede virtual que você define.' },
-    { id: 'fc5', front: 'Para que serve o Route 53?', back: 'É um serviço web de Domain Name System (DNS) na nuvem, altamente disponível e escalável.' },
-    { id: 'fc6', front: 'O que é o AWS Lambda?', back: 'Um serviço de computação sem servidor (serverless) que executa seu código em resposta a eventos.' },
-    { id: 'fc7', front: 'Diferença entre RDS e DynamoDB?', back: 'RDS é um serviço de banco de dados relacional (SQL), enquanto DynamoDB é um serviço de banco de dados NoSQL (chave-valor e de documentos).' },
-    { id: 'fc8', front: 'O que é um Application Load Balancer (ALB)?', back: 'Atua na camada 7 (aplicação) e distribui o tráfego de entrada de aplicações com base em regras. Ideal para tráfego HTTP e HTTPS.' },
-    { id: 'fc9', front: 'O que é o Amazon SQS?', back: 'Simple Queue Service. Um serviço de enfileiramento de mensagens que permite desacoplar e escalar microsserviços e sistemas distribuídos.' },
-    { id: 'fc10', front: 'O que é CloudFormation?', back: 'Um serviço que ajuda a modelar e configurar seus recursos da AWS usando Infraestrutura como Código (IaC).' },
+    { id: 'fc1', front: 'What is Amazon S3?', back: 'An object storage service that offers industry-leading scalability, data availability, security, and performance.' },
+    { id: 'fc2', front: 'What is an EC2 Instance?', back: 'A virtual server in the AWS cloud. It stands for Elastic Compute Cloud. It allows you to obtain and configure computing capacity with agility.' },
+    { id: 'fc3', front: 'What is the purpose of IAM?', back: 'AWS Identity and Access Management (IAM) is a service that helps you control access to AWS resources securely.' },
+    { id: 'fc4', front: 'What is a VPC?', back: 'Amazon Virtual Private Cloud (VPC) allows you to provision a logically isolated section of the AWS Cloud where you can run AWS resources in a virtual network that you define.' },
+    { id: 'fc5', front: 'What is Route 53 for?', back: 'It is a highly available and scalable Domain Name System (DNS) web service in the cloud.' },
+    { id: 'fc6', front: 'What is AWS Lambda?', back: 'A serverless computing service that executes your code in response to events.' },
+    { id: 'fc7', front: 'Difference between RDS and DynamoDB?', back: 'RDS is a relational database service (SQL), while DynamoDB is a NoSQL database service (key-value and document-based).' },
+    { id: 'fc8', front: 'What is an Application Load Balancer (ALB)?', back: 'Operates at layer 7 (application) and distributes incoming application traffic based on rules. Ideal for HTTP and HTTPS traffic.' },
+    { id: 'fc9', front: 'What is Amazon SQS?', back: 'Simple Queue Service. A message queuing service that allows you to decouple and scale microservices and distributed systems.' },
+    { id: 'fc10', front: 'What is CloudFormation?', back: 'A service that helps you model and configure your AWS resources using Infrastructure as Code (IaC).' },
 ];

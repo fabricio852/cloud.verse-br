@@ -13,6 +13,7 @@ type DBQuestion = Database['public']['Tables']['questions']['Row'];
 
 interface ReviewScreenProps {
     onBack: () => void;
+    onVoltar?: () => void;
     plano: Plano;
     theme?: string;
 }
@@ -38,7 +39,7 @@ const convertQuestion = (dbQ: DBQuestion): Question => {
     };
 };
 
-export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, plano, theme = 'light' }) => {
+export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, plano, theme = 'light' }) => {
     const { selectedCertId } = useCertificationStore();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
@@ -93,9 +94,23 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, plano, theme
         <div className="min-h-screen">
             <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
                 <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Logo />
+                    {/* Logo - icon only on mobile, full logo on desktop */}
+                    <div className="block sm:hidden">
+                        <Logo onClick={onVoltar} iconOnly={true} size={40} />
+                    </div>
+                    <div className="hidden sm:block">
+                        <Logo onClick={onVoltar} />
+                    </div>
                     <div className="flex items-center gap-2">
-                        <GhostButton onClick={onBack}>Encerrar</GhostButton>
+                        {onVoltar && (
+                            <button
+                                onClick={onVoltar}
+                                className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                                Back
+                            </button>
+                        )}
+                        <GhostButton onClick={onBack}>Exit</GhostButton>
                     </div>
                 </div>
             </header>
@@ -104,21 +119,21 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, plano, theme
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
                             <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-600 dark:text-gray-400">Carregando questões...</p>
+                            <p className="text-gray-600 dark:text-gray-400">Loading questions...</p>
                         </div>
                     </div>
                 ) : !selectedCertId ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">Nenhuma certificação selecionada</p>
-                            <p className="text-gray-500 dark:text-gray-500 text-sm">Volte e selecione uma certificação</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">No certification selected</p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm">Go back and select a certification</p>
                         </div>
                     </div>
                 ) : questions.length === 0 ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">Nenhuma questão encontrada</p>
-                            <p className="text-gray-500 dark:text-gray-500 text-sm">Certificação: {selectedCertId}</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">No questions found</p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm">Certification: {selectedCertId}</p>
                         </div>
                     </div>
                 ) : (
@@ -141,8 +156,8 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, plano, theme
                                     })}
                                 </div>
                                 <div className="flex items-center gap-4 text-xs dark:text-gray-400">
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" />Respondida</div>
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" />Marcada</div>
+                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" />Answered</div>
+                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" />Marked</div>
                                 </div>
                             </div>
                         </div>
