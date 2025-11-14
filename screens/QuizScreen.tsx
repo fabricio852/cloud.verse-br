@@ -314,7 +314,17 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     const timePct = timed && durationSec ? Math.max(0, Math.min(100, Math.round((secsLeft / durationSec) * 100))) : 0;
 
     const answeredCount = resps.filter(r => Array.isArray(r) && r.length > 0).length;
-    const modalText = `You answered ${answeredCount} of ${quizSize} questions. Are you sure you want to finish the quiz? Your answers will be sent for evaluation.`;
+    const markedCount = Object.values(marked).filter(m => m).length;
+    const unansweredCount = quizSize - answeredCount;
+
+    let modalText = `You answered ${answeredCount} of ${quizSize} questions.`;
+    if (markedCount > 0) {
+        modalText += ` You have ${markedCount} question${markedCount > 1 ? 's' : ''} marked for review.`;
+    }
+    if (unansweredCount > 0) {
+        modalText += ` ${unansweredCount} question${unansweredCount > 1 ? 's remain' : ' remains'} unanswered.`;
+    }
+    modalText += ' Are you sure you want to finish the quiz? Your answers will be sent for evaluation.';
 
     const Grid = () => (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl shadow-sm">
@@ -460,10 +470,25 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                         navAfterBack={navAfterBack}
                     />
                 )}
+
+                {/* Ko-fi Widget positioned below answer cards (mobile only) */}
+                <div className="flex justify-center mt-6 mb-8 md:hidden">
+                    <KofiWidget showFloatingButton={true} inline={true} className="" />
+                </div>
             </main>
 
             <Modal open={showConfirm} onClose={() => setShowConfirm(false)} title="Finish Quiz?">
-                <p>{modalText}</p>
+                <p className="text-gray-800 dark:text-gray-300">{modalText}</p>
+                {markedCount > 0 && (
+                    <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                        <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            <span className="font-semibold text-sm">Reminder: You have marked questions for review</span>
+                        </div>
+                    </div>
+                )}
                 <div className="mt-6 flex justify-end gap-2">
                     <Button onClick={() => setShowConfirm(false)} className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Continue</Button>
                     <Button onClick={() => {
@@ -480,8 +505,10 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 onClose={closeReminder}
             />
 
-            {/* Widget Flutuante Ko-fi com Iframe */}
-            <KofiWidget />
+            {/* Ko-fi Widget fixed position (desktop only) */}
+            <div className="hidden md:block">
+                <KofiWidget showFloatingButton={true} className="" />
+            </div>
         </div>
     </div>
     );

@@ -5,6 +5,7 @@ interface KofiWidgetProps {
     className?: string;
     desktopOnly?: boolean;
     showFloatingButton?: boolean;
+    inline?: boolean;
 }
 
 export interface KofiWidgetHandle {
@@ -12,7 +13,7 @@ export interface KofiWidgetHandle {
     close: () => void;
 }
 
-export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ className = '', desktopOnly = false, showFloatingButton = true }, ref) => {
+export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ className = '', desktopOnly = false, showFloatingButton = true, inline = false }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const initialDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,16 +67,10 @@ export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ class
 
                 @keyframes kofi-glow-pulse {
                     0%, 100% {
-                        box-shadow:
-                            0 12px 24px rgba(15, 23, 42, 0.2),
-                            0 0 35px rgba(250, 204, 21, 0),
-                            0 0 60px rgba(250, 204, 21, 0);
+                        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
                     }
                     50% {
-                        box-shadow:
-                            0 14px 28px rgba(15, 23, 42, 0.25),
-                            0 0 40px rgba(251, 191, 36, 0.45),
-                            0 0 75px rgba(250, 204, 21, 0.35);
+                        filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 40px rgba(250, 204, 21, 0.4));
                     }
                 }
 
@@ -85,21 +80,27 @@ export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ class
 
                 .kofi-glow {
                     animation: kofi-glow-pulse 1.2s ease-in-out forwards;
-                    border-color: rgba(252, 211, 77, 0.65) !important;
                 }
             `}</style>
 
-            {/* Floating Button */}
+            {/* Floating Button with Ko-fi Symbol */}
             {showFloatingButton && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className={`${baseButtonClass} ${attentionClass} ${visibilityClass} ${className}`.trim()}
+                    className={`${inline ? 'relative' : 'fixed right-4 bottom-4 md:right-6 md:bottom-6 z-40'} transition-all duration-200 transform hover:scale-110 ${attentionClass} ${inline ? '' : visibilityClass} ${className}`.trim()}
                     title="Support on Ko-fi"
+                    style={{
+                        filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                    }}
                 >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-1.735 1.904.047 2.276 1.103 2.276 1.103.663 1.418.148 2.678-.553 3.98z" />
-                    </svg>
-                    <span className="hidden sm:inline">Support</span>
+                    <img
+                        src="/kofi_symbol.png"
+                        alt="Support me on Ko-fi"
+                        className="h-12 md:h-14 w-auto"
+                        style={{
+                            display: 'block',
+                        }}
+                    />
                 </button>
             )}
 

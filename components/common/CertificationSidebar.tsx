@@ -22,6 +22,34 @@ export const CertificationSidebar: React.FC = () => {
 
   return (
     <div className="space-y-2">
+      {/* Highlighted CTA Buttons */}
+      <div className="space-y-2 mb-4 px-3">
+        {/* LinkedIn Button */}
+        <a
+          href="https://www.linkedin.com/in/fabriciocosta85/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full px-4 py-3 border-2 border-[#00FFFF] bg-transparent text-[#00FFFF] text-center font-bold uppercase transition-all duration-200 hover:bg-[#00FFFF] hover:text-black hover:scale-105 rounded-lg"
+          style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
+        >
+          LINKEDIN
+        </a>
+
+        {/* Ko-fi Button */}
+        <a
+          href="https://ko-fi.com/fabriciocosta"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full px-4 py-3 border-2 border-[#FF9900] bg-transparent text-[#FF9900] text-center font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-black hover:scale-105 rounded-lg"
+          style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
+        >
+          ☕ SUPPORT
+        </a>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
+
       <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 mb-3">
         Selecione
       </h3>

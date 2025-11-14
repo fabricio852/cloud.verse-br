@@ -97,7 +97,7 @@ const start = (fn: () => void) => {
             case 'quiz-rapido': return (
                 <QuizTransition screenKey="quiz-rapido">
                     {loadingQuick ? (
-                        <LoadingOverlay open={true} message="Carregando questoes..." />
+                        <LoadingOverlay open={true} />
                     ) : questionsQuick.length === 0 ? (
                         <EmptyQuestions
                             certificationId={certificationId}
@@ -109,8 +109,8 @@ const start = (fn: () => void) => {
                             tamanho={35}
                             level="detailed"
                             onSair={handleQuizExit}
-                            onExit={() => setRota('painel')}
-                            onVoltar={() => setRota('landing')}
+                            onExit={() => setRota('landing')}
+                            onVoltar={() => setRota('painel')}
                             timed
                             durationSec={40 * 60}
                             navAfterBack={true}
@@ -124,7 +124,7 @@ const start = (fn: () => void) => {
             case 'quiz-completo': return (
                 <QuizTransition screenKey="quiz-completo">
                     {loadingCompleto ? (
-                        <LoadingOverlay open={true} message="Carregando questoes..." />
+                        <LoadingOverlay open={true} />
                     ) : questionsCompleto.length === 0 ? (
                         <EmptyQuestions
                             certificationId={certificationId}
@@ -139,8 +139,8 @@ const start = (fn: () => void) => {
                             durationSec={130 * 60}
                             navAfterBack
                             onSair={handleQuizExit}
-                            onExit={() => setRota('painel')}
-                            onVoltar={() => setRota('landing')}
+                            onExit={() => setRota('landing')}
+                            onVoltar={() => setRota('painel')}
                             theme={theme}
                             questions={questionsCompleto}
                             quizType="full"
@@ -151,7 +151,7 @@ const start = (fn: () => void) => {
             case 'quiz-dominios': return (
                 <QuizTransition screenKey="quiz-dominios">
                     {loadingDominios ? (
-                        <LoadingOverlay open={true} message="Carregando questoes..." />
+                        <LoadingOverlay open={true} />
                     ) : questionsDominios.length === 0 ? (
                         <EmptyQuestions
                             certificationId={certificationId}
@@ -164,8 +164,8 @@ const start = (fn: () => void) => {
                             level="detailed"
                             navAfterBack
                             onSair={handleQuizExit}
-                            onExit={() => setRota('painel')}
-                            onVoltar={() => setRota('landing')}
+                            onExit={() => setRota('landing')}
+                            onVoltar={() => setRota('painel')}
                             theme={theme}
                             questions={questionsDominios}
                             quizType="domains"
@@ -175,7 +175,7 @@ const start = (fn: () => void) => {
             );
             case 'revisao': return (
                 <ScreenTransition screenKey="revisao">
-                    <ReviewScreen onBack={() => setRota('painel')} onVoltar={() => setRota('landing')} plano="PRO" theme={theme} />
+                    <ReviewScreen onBack={() => setRota('landing')} onVoltar={() => setRota('painel')} plano="PRO" theme={theme} />
                 </ScreenTransition>
             );
             case 'resultado': return (
@@ -208,7 +208,7 @@ const start = (fn: () => void) => {
             
             {renderContent()}
 
-            <LoadingOverlay open={loading} message="Preparando questoes." />
+            <LoadingOverlay open={loading} />
         </div>
     );
 }

@@ -602,7 +602,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     2x AWS Certified · Platform Founder
                   </p>
                   <p className="vt323-text text-slate-200 mb-6 leading-relaxed text-lg">
-                    I’m a Brazilian developer who built this platform solo with one clear goal: give people a real shot at AWS certification prep without hitting a paywall. All practice exams here are free, no strings attached, because I believe cloud knowledge should be accessible, not a luxury. This project, however, runs entirely on donations — when you chip in, you help keep the lights on (servers, tools, new questions) and make it possible for people with fewer resources to keep studying for free. Your support doesn’t just fund a website; it pays it forward and opens doors for someone else’s career.
+                    I'm a Brazilian solo developer who built this platform with one clear goal: give people a fair shot at AWS certification without a paywall. Every practice exam here is free because I believe cloud skills should be accessible, not a luxury. This project runs entirely on donations, so when you chip in you help keep the servers online, fund new questions, and make it possible for people with fewer resources to keep studying for free. Your support doesn't just back a website — it pays opportunity forward and helps open doors for someone else's career.
                   </p>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                     <motion.a

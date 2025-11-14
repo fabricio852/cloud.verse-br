@@ -291,9 +291,37 @@ export const Painel: React.FC<PainelProps> = ({
                   })}
                 </div>
 
+                {/* Divider */}
+                <div className="border-t border-gray-700 mt-6 mb-4" />
+
+                {/* Highlighted CTA Buttons */}
+                <div className="space-y-3 mb-4">
+                  {/* LinkedIn Button */}
+                  <a
+                    href="https://www.linkedin.com/in/fabriciocosta85/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full px-4 py-3 border-2 border-[#00FFFF] bg-transparent text-[#00FFFF] text-center font-bold uppercase transition-all duration-200 hover:bg-[#00FFFF] hover:text-black hover:scale-105"
+                    style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
+                  >
+                    LINKEDIN
+                  </a>
+
+                  {/* Ko-fi Button */}
+                  <a
+                    href="https://ko-fi.com/fabriciocosta"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full px-4 py-3 border-2 border-[#FF9900] bg-transparent text-[#FF9900] text-center font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-black hover:scale-105"
+                    style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
+                  >
+                    ☕ SUPPORT
+                  </a>
+                </div>
+
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="mt-6 w-full px-4 py-2 border-2 bg-transparent vt323-text text-lg font-bold uppercase transition-all duration-200"
+                  className="w-full px-4 py-2 border-2 bg-transparent vt323-text text-lg font-bold uppercase transition-all duration-200"
                   style={{
                     borderColor: themeColors.secondary,
                     color: themeColors.secondary,
