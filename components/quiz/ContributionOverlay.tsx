@@ -97,14 +97,20 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     href="https://ko-fi.com/fabriciocosta"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 text-center shadow-lg shadow-blue-500/25"
+                    className="block w-full transition-all duration-200 transform hover:scale-105"
+                    style={{
+                      filter: 'drop-shadow(0 0 20px rgba(255, 193, 7, 0.4))',
+                    }}
                   >
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-1.735 1.904.047 2.276 1.103 2.276 1.103.663 1.418.148 2.678-.553 3.98z" />
-                      </svg>
-                      <span>Support on Ko-fi</span>
-                    </div>
+                    <img
+                      src="/support_me_on_kofi_beige.png"
+                      alt="Support me on Ko-fi"
+                      className="w-full h-auto"
+                      style={{
+                        maxWidth: '100%',
+                        display: 'block',
+                      }}
+                    />
                   </a>
 
                   {/* Divider */}

@@ -14,6 +14,7 @@ export const DOMAIN_LABELS: Record<string, string> = {
 
     // CLF-C02
     CLOUD_CONCEPTS: 'Cloud Concepts',
+    CLOUD_TECHNOLOGY_SERVICES: 'Cloud Technology and Services',
     SECURITY_COMPLIANCE: 'Security and Compliance',
     TECHNOLOGY: 'Technology',
     BILLING_PRICING: 'Billing and Pricing',
@@ -34,6 +35,7 @@ export const DOMAIN_WEIGHTS: { [key in Domain]: number } = {
 
     // CLF-C02
     CLOUD_CONCEPTS: 0.24,
+    CLOUD_TECHNOLOGY_SERVICES: 0.34,
     SECURITY_COMPLIANCE: 0.30,
     TECHNOLOGY: 0.34,
     BILLING_PRICING: 0.12,
@@ -54,6 +56,7 @@ export const DONUT_COLORS: { [key in Domain]: string } = {
 
     // CLF-C02
     CLOUD_CONCEPTS: '#8b5cf6',
+    CLOUD_TECHNOLOGY_SERVICES: '#06b6d4',
     SECURITY_COMPLIANCE: '#ec4899',
     TECHNOLOGY: '#06b6d4',
     BILLING_PRICING: '#84cc16',

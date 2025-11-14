@@ -27,7 +27,7 @@ export const DomainTag: React.FC<DomainTagProps> = ({ domain }) => {
     const cls = DOMAIN_STYLES[domain] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
     return (
-        <span className={cn('inline-block px-2 py-0.5 text-xs font-medium rounded-full', cls)}>
+        <span className={cn('inline-block px-2 py-0.5 text-xs font-medium rounded-full normal-case no-underline', cls)}>
             {label}
         </span>
     );

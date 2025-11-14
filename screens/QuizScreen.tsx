@@ -61,6 +61,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     const [byDomCorrect, setByDomCorrect] = useState<DomainStats>({});
     const [byDomTotal, setByDomTotal] = useState<DomainStats>({});
     const [secsLeft, setSecsLeft] = useState(durationSec);
+    const [isGridCollapsed, setIsGridCollapsed] = useState(false);
 
     const quizBank = questions && questions.length > 0 ? questions : Q_BANK;
     const quizSize = tamanho || quizBank.length;
@@ -317,35 +318,54 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
 
     const Grid = () => (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl shadow-sm">
-            <div className="flex items-center gap-4 text-xs mb-4 text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" />Answered</div>
-                <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-500 rounded-full" />Marked</div>
-                <div className="flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-400 rounded-full" />Pending</div>
+            <div className={`flex items-center ${isGridCollapsed ? 'justify-end' : 'justify-between mb-4'}`}>
+                {!isGridCollapsed && (
+                    <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" />Answered</div>
+                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-500 rounded-full" />Marked</div>
+                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-400 rounded-full" />Pending</div>
+                    </div>
+                )}
+                <button
+                    onClick={() => setIsGridCollapsed(!isGridCollapsed)}
+                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
+                    aria-label={isGridCollapsed ? "Expand grid" : "Collapse grid"}
+                >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {isGridCollapsed ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        )}
+                    </svg>
+                </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-                {Array.from({ length: quizSize }).map((_, index) => {
-                    const responseEntry = resps[index];
-                    const hasResponse = Array.isArray(responseEntry) && responseEntry.length > 0;
-                    const isMarked = marked[index];
-                    const isActive = i === index;
+            {!isGridCollapsed && (
+                <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: quizSize }).map((_, index) => {
+                        const responseEntry = resps[index];
+                        const hasResponse = Array.isArray(responseEntry) && responseEntry.length > 0;
+                        const isMarked = marked[index];
+                        const isActive = i === index;
 
-                    let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-                    if (isMarked) { // Marked takes precedence over response
-                        buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-                    } else if (hasResponse) {
-                        buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
-                    }
+                        let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                        if (isMarked) { // Marked takes precedence over response
+                            buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+                        } else if (hasResponse) {
+                            buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+                        }
 
-                    return (
-                        <button
-                            key={index}
-                            onClick={() => { console.log(`[Quiz] Navegar para questão`, index + 1); setI(index); }}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-gray-800' : ''}`}
-                        >{index + 1}</button>
-                    );
-                })}
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => { console.log(`[Quiz] Navegar para questão`, index + 1); setI(index); }}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-gray-800' : ''}`}
+                            >{index + 1}</button>
+                        );
+                    })}
+                </div>
+            )}
         </div>
-    </div>
     );
 
     return (
