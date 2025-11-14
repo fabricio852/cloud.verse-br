@@ -53,6 +53,7 @@ export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ class
         "fixed bottom-6 right-6 z-40 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 px-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 border border-transparent";
     const attentionClass = isAnimating ? " kofi-shake kofi-glow" : "";
     const visibilityClass = desktopOnly ? 'hidden lg:flex' : 'flex';
+    const symbolUrl = new URL('../../kofi_symbol.png', import.meta.url).href;
 
     return (
         <>
@@ -94,11 +95,18 @@ export const KofiWidget = forwardRef<KofiWidgetHandle, KofiWidgetProps>(({ class
                     }}
                 >
                     <img
-                        src="/kofi_symbol.png"
+                        src={symbolUrl}
                         alt="Support me on Ko-fi"
                         className="h-12 md:h-14 w-auto"
-                        style={{
-                            display: 'block',
+                        style={{ display: 'block' }}
+                        onError={(e) => {
+                            const el = e.currentTarget as HTMLImageElement & { _fallback?: boolean };
+                            if (!el._fallback) {
+                                el._fallback = true;
+                                el.src = 'https://storage.ko-fi.com/cdn/cup-border.png';
+                            } else {
+                                el.style.display = 'none';
+                            }
                         }}
                     />
                 </button>
