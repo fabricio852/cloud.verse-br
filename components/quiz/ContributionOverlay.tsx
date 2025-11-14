@@ -11,6 +11,7 @@ const contributionMessages = [
 ];
 
 const avatarUrl = "/profile.png";
+const kofiImgUrl = new URL('../../support_me_on_kofi_beige.png', import.meta.url).href;
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
@@ -103,7 +104,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     }}
                   >
                     <img
-                      src="/support_me_on_kofi_beige.png"
+                      src={kofiImgUrl}
                       alt="Support me on Ko-fi"
                       className="w-full h-auto"
                       style={{
