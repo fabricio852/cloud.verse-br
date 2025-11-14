@@ -68,9 +68,11 @@ export async function ensureSession(): Promise<string | null> {
   const initialPath = window.location.pathname + window.location.search
   const userId = await getUserId()
 
-  const { data, error } = await supabase
+  const sid = uuid()
+  const { error } = await supabase
     .from('sessions')
     .insert({
+      id: sid,
       anon_id: anonId,
       user_id: userId,
       initial_path: initialPath,
@@ -78,20 +80,14 @@ export async function ensureSession(): Promise<string | null> {
       utm,
       user_agent: userAgent,
     })
-    .select('id')
-    .single()
 
   if (error) {
-    console.warn('[analytics] ensureSession error', error)
+    console.warn('[analytics] ensureSession insert error', error)
     return null
   }
 
-  try {
-    localStorage.setItem(SESSION_KEY, data.id)
-  } catch {
-    // ignore
-  }
-  return data.id
+  try { localStorage.setItem(SESSION_KEY, sid) } catch {}
+  return sid
 }
 
 function getSessionId(): string | null {
@@ -108,12 +104,24 @@ export async function trackPageview(path?: string) {
   const referrer = document.referrer || null
   const utm = parseUtm()
 
-  await supabase.from('pageviews').insert({
-    session_id: sessionId,
+  const { error } = await supabase.from('pageviews').insert({
+    session_id: sessionId || null,
     path: p,
     referrer,
     utm,
   })
+
+  if (!error) {
+    // best-effort: update last_seen and notify listeners to refresh counters
+    if (sessionId) {
+      supabase.from('sessions')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', sessionId)
+        .then(() => {})
+        .catch(() => {})
+    }
+    try { window.dispatchEvent(new CustomEvent('analytics:pageview-recorded')) } catch {}
+  }
 }
 
 export async function trackEvent(name: string, props?: Record<string, any>) {

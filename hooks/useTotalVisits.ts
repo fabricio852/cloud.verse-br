@@ -21,9 +21,17 @@ export function useTotalVisits(pollMs = 30000) {
 
   useEffect(() => {
     fetchCount()
+    // Immediate refresh when a pageview is recorded locally
+    const handler = () => fetchCount()
+    window.addEventListener('analytics:pageview-recorded', handler)
+
+    let id: any
     if (pollMs > 0) {
-      const id = setInterval(fetchCount, pollMs)
-      return () => clearInterval(id)
+      id = setInterval(fetchCount, pollMs)
+    }
+    return () => {
+      window.removeEventListener('analytics:pageview-recorded', handler)
+      if (id) clearInterval(id)
     }
   }, [pollMs])
 

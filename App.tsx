@@ -28,9 +28,9 @@ export default function App() {
 
     const weeklySeed = getWeeklySeed({ certificationId });
 
-    // Inicializa sessão de analytics e registra pageview inicial
+    // Inicializa sessão de analytics (pageviews são registrados no efeito de rota)
     useEffect(() => {
-        ensureSession().then(() => trackPageview('landing'));
+        ensureSession();
     }, []);
 
     // Buscar questoes do Supabase (agora todos têm acesso total)

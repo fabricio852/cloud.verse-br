@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
-import { useTotalVisitors } from "../hooks/useTotalVisitors";
+import { useTotalVisits } from "../hooks/useTotalVisits";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -50,7 +50,7 @@ const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.met
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
-  const { totalVisitors, loading } = useTotalVisitors(30000);
+  const { totalVisits, loading } = useTotalVisits(5000);
   const [minHold, setMinHold] = useState(true);
 
   // Keep the loading label visible for ~3s to avoid a too-quick flash
@@ -669,7 +669,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   animate={{ opacity: [0.55, 1, 0.55] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
                 >
-                  LOADING TOTAL VISITORS...
+                  LOADING PAGEVIEWS...
                 </motion.span>
               ) : (
                 <motion.span
@@ -679,7 +679,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   className="tabular-nums"
                   style={{ fontWeight: 400 }}
                 >
-                  {totalVisitors.toLocaleString()}
+                  {totalVisits.toLocaleString()}
                 </motion.span>
               )}
             </div>
