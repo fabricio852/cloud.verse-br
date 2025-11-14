@@ -57,7 +57,8 @@ export const Painel: React.FC<PainelProps> = ({
   toggleTheme,
 }) => {
   const { certifications, selectCertification, selectedCertId } = useCertificationStore();
-  const { online } = useOnlinePresence();
+  const channel = selectedCertId ? `presence:cert:${selectedCertId}` : 'presence:site';
+  const { online } = useOnlinePresence(channel);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const kofiWidgetRef = useRef<KofiWidgetHandle>(null);
   void totalQuestoes;

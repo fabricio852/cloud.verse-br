@@ -135,9 +135,9 @@ export interface PresenceHandle {
 /**
  * Minimal presence: join a shared channel and expose online count
  */
-export function initPresence(onChange: (count: number) => void): PresenceHandle {
+export function initPresence(onChange: (count: number) => void, channelName: string = 'presence:site'): PresenceHandle {
   const anon = getAnonId()
-  const channel = supabase.channel('presence:site', {
+  const channel = supabase.channel(channelName, {
     config: { presence: { key: anon } },
   })
 
