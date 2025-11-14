@@ -353,7 +353,7 @@ $$ LANGUAGE plpgsql;
 INSERT INTO certifications (id, name, short_name, description, exam_duration_minutes, total_questions, passing_score, domains) VALUES
 (
   'SAA-C03',
-  'AWS Certified Solutions Architect - Associate',
+  'Solutions Architect - Associate',
   'SAA-C03',
   'Valide sua capacidade de projetar arquiteturas resilientes, de alto desempenho, seguras e com custo otimizado na AWS.',
   130,
@@ -368,7 +368,7 @@ INSERT INTO certifications (id, name, short_name, description, exam_duration_min
 ),
 (
   'CLF-C02',
-  'AWS Certified Cloud Practitioner',
+  'Cloud Practitioner',
   'CLF-C02',
   'Valide sua compreensão geral da nuvem AWS e dos principais serviços.',
   90,
@@ -383,7 +383,7 @@ INSERT INTO certifications (id, name, short_name, description, exam_duration_min
 ),
 (
   'AIF-C01',
-  'AWS Certified AI Practitioner',
+  'AI Practitioner',
   'AIF-C01',
   'Valide sua compreensão de conceitos fundamentais de IA e ML na AWS.',
   90,

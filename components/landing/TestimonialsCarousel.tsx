@@ -24,7 +24,7 @@ export const TestimonialsCarousel: React.FC<TestimonialsCarouselProps> = ({
   autoPlayMs = 3500,
   seed,
   max = 12,
-  height = 160,
+  height = 320,
   variant = 'standalone',
   className = '',
   wrapClassName = '',
@@ -90,8 +90,10 @@ export const TestimonialsCarousel: React.FC<TestimonialsCarouselProps> = ({
     return `${base.replace(/\/$/, '')}/testimonials/${src}`;
   };
 
+  const cardHeight = Math.max(180, height);
+
   const card = (
-    <div className={className} style={{ minHeight: height }}>
+    <div className={className} style={{ minHeight: cardHeight }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={`${index}-${current.src}`}
@@ -99,15 +101,17 @@ export const TestimonialsCarousel: React.FC<TestimonialsCarouselProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.4 }}
-          className="w-full h-full flex items-center justify-center"
+          className="w-full flex items-center justify-center"
+          style={{ minHeight: cardHeight, height: cardHeight }}
         >
-          <img
-            src={resolveSrc(current.src)}
-            alt={current.alt || 'Depoimento'}
-            className="max-h-full max-w-full object-contain select-none rounded-xl"
-            style={{ filter: 'none', transform: 'none' }}
-            loading="lazy"
-          />
+          <div className="h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_35px_120px_-70px_rgba(15,23,42,0.95)]">
+            <img
+              src={resolveSrc(current.src)}
+              alt={current.alt || 'Depoimento'}
+              className="h-full w-full object-cover object-top select-none"
+              loading="lazy"
+            />
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -126,4 +130,3 @@ export const TestimonialsCarousel: React.FC<TestimonialsCarouselProps> = ({
     </section>
   );
 };
-

@@ -15,7 +15,14 @@
       "Bash(npm run import-custom:*)",
       "Bash(npm run import-aif:*)",
       "Bash(npm run verify:aif-c01:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(git add:*)",
+      "Bash(if exist NUL del /F /Q NUL)",
+      "Bash(powershell -Command \"if (Test-Path ''NUL'') { Remove-Item ''NUL'' -Force }\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdicionar seleção de certificação na landing page com scroll suave\n\n- Adiciona seção de seleção de certificações diretamente na landing page\n- Botão \"Começar agora\" agora faz scroll suave até seleção de certificações\n- Remove tela intermediária de seleção de certificação\n- Mantém glass-morphism e gradientes temáticos por certificação\n- Reduz fluxo de 3 para 2 cliques: Landing → Painel → Quiz\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(powershell -Command \"Get-Content ''data\\certifications\\SAA-C03\\secure.json'' -Head 50\")",
+      "Bash(npx tsx:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nTranslate entire interface to American English\n\n- Updated domain labels for all certifications (SAA-C03, CLF-C02, AIF-C01)\n- Translated flashcard bank (10 items)\n- Translated landing page (hero section, buttons, footer)\n- Translated dashboard (Painel) with all training modes\n- Translated quiz screen (progress, buttons, modals)\n- Translated result screen (scoring, feedback)\n- Translated review screen\n- Translated practice by domains screen\n- Translated question viewer component\n- Translated contribution overlay\n- All UI text now in professional American English\n- Maintains all functionality and styling\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

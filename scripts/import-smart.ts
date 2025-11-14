@@ -34,6 +34,7 @@ interface CustomQuestion {
   correctAnswer: string | string[];
   explanation: string;
   multiSelect: boolean;
+  incorrect_explanations?: Record<string, string>; // Adicionar suporte para explicações pré-fornecidas
 }
 
 // Argumentos
@@ -313,20 +314,26 @@ function convertQuestion(custom: CustomQuestion, index: number): any {
   const allCorrectLetters = extractAllAnswerLetters(custom.correctAnswer);
   const correctOption = custom.correctAnswer;
 
-  // Gerar explicações para alternativas incorretas
+  // Usar explicações fornecidas ou gerar automaticamente
   const incorrectExplanations: any = {};
 
-  if (!allCorrectLetters.includes('A')) {
-    incorrectExplanations.A = generateIncorrectExplanation(custom.question, optionA, correctOption as string, correctLetter);
-  }
-  if (!allCorrectLetters.includes('B')) {
-    incorrectExplanations.B = generateIncorrectExplanation(custom.question, optionB, correctOption as string, correctLetter);
-  }
-  if (!allCorrectLetters.includes('C')) {
-    incorrectExplanations.C = generateIncorrectExplanation(custom.question, optionC, correctOption as string, correctLetter);
-  }
-  if (!allCorrectLetters.includes('D')) {
-    incorrectExplanations.D = generateIncorrectExplanation(custom.question, optionD, correctOption as string, correctLetter);
+  // Se já existem explicações fornecidas no JSON, usar elas
+  if (custom.incorrect_explanations) {
+    Object.assign(incorrectExplanations, custom.incorrect_explanations);
+  } else {
+    // Senão, gerar automaticamente (para compatibilidade com formatos antigos)
+    if (!allCorrectLetters.includes('A')) {
+      incorrectExplanations.A = generateIncorrectExplanation(custom.question, optionA, correctOption as string, correctLetter);
+    }
+    if (!allCorrectLetters.includes('B')) {
+      incorrectExplanations.B = generateIncorrectExplanation(custom.question, optionB, correctOption as string, correctLetter);
+    }
+    if (!allCorrectLetters.includes('C')) {
+      incorrectExplanations.C = generateIncorrectExplanation(custom.question, optionC, correctOption as string, correctLetter);
+    }
+    if (!allCorrectLetters.includes('D')) {
+      incorrectExplanations.D = generateIncorrectExplanation(custom.question, optionD, correctOption as string, correctLetter);
+    }
   }
 
   // Tags e dificuldade

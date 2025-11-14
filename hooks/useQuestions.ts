@@ -114,7 +114,20 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
           take,
         };
 
-        const dbQuestions = await fetchQuestions(filters);
+        let dbQuestions = await fetchQuestions(filters);
+
+        // Filtro: Remover questões em português (identificadas por palavras-chave)
+        const portugueseKeywords = ['empresa', 'qual', 'aplicação', 'precisa', 'solução', 'serviço', 'usuário'];
+        const filteredQuestions = dbQuestions.filter(q => {
+          const text = q.question_text.toLowerCase();
+          return !portugueseKeywords.some(keyword => text.includes(keyword));
+        });
+
+        if (filteredQuestions.length < dbQuestions.length) {
+          console.log(`[useQuestions] ⚠️  Removidas ${dbQuestions.length - filteredQuestions.length} questões em português`);
+          dbQuestions = filteredQuestions;
+        }
+
         const appQuestions = dbQuestions.map(convertDBQuestionToAppFormat);
 
         console.log(`[useQuestions] ✅ ${appQuestions.length} questões carregadas`);

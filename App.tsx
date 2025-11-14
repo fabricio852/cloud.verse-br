@@ -89,6 +89,7 @@ const start = (fn: () => void) => {
                         onQuizCompleto={() => start(() => setRota('quiz-completo'))}
                         onDominios={() => setRota('dominios')}
                         onRevisao={() => setRota('revisao')}
+                        onVoltar={() => setRota('landing')}
                         theme={theme}
                     />
                 </PanelTransition>
@@ -109,6 +110,7 @@ const start = (fn: () => void) => {
                             level="detailed"
                             onSair={handleQuizExit}
                             onExit={() => setRota('painel')}
+                            onVoltar={() => setRota('landing')}
                             timed
                             durationSec={40 * 60}
                             navAfterBack={true}
@@ -138,6 +140,7 @@ const start = (fn: () => void) => {
                             navAfterBack
                             onSair={handleQuizExit}
                             onExit={() => setRota('painel')}
+                            onVoltar={() => setRota('landing')}
                             theme={theme}
                             questions={questionsCompleto}
                             quizType="full"
@@ -162,6 +165,7 @@ const start = (fn: () => void) => {
                             navAfterBack
                             onSair={handleQuizExit}
                             onExit={() => setRota('painel')}
+                            onVoltar={() => setRota('landing')}
                             theme={theme}
                             questions={questionsDominios}
                             quizType="domains"
@@ -171,17 +175,17 @@ const start = (fn: () => void) => {
             );
             case 'revisao': return (
                 <ScreenTransition screenKey="revisao">
-                    <ReviewScreen onBack={() => setRota('painel')} plano="PRO" theme={theme} />
+                    <ReviewScreen onBack={() => setRota('painel')} onVoltar={() => setRota('landing')} plano="PRO" theme={theme} />
                 </ScreenTransition>
             );
             case 'resultado': return (
                 <ResultTransition screenKey="resultado">
-                    <ResultScreen summary={resultSummary} onBack={() => setRota('painel')} theme={theme} />
+                    <ResultScreen summary={resultSummary} onBack={() => setRota('painel')} onVoltar={() => setRota('landing')} theme={theme} />
                 </ResultTransition>
             );
             case 'dominios': return (
                 <ScreenTransition screenKey="dominios">
-                    <DominiosScreen onVoltar={() => setRota('painel')} onIniciar={(cfg) => { setDomCfg(cfg); start(() => setRota('quiz-dominios')); }} />
+                    <DominiosScreen onVoltar={() => setRota('painel')} onBackToLanding={() => setRota('landing')} onIniciar={(cfg) => { setDomCfg(cfg); start(() => setRota('quiz-dominios')); }} />
                 </ScreenTransition>
             );
             default: return (

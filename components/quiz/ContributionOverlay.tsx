@@ -10,7 +10,7 @@ const contributionMessages = [
   "Your contribution keeps everything free. Supporting on Ko-fi helps cover infrastructure costs and keeps the door open for those who cannot pay. Thank you for strengthening the community!",
 ];
 
-const avatarUrl = "/profile.jpg";
+const avatarUrl = "/profile.png";
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
@@ -135,3 +135,4 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
     </AnimatePresence>
   );
 };
+

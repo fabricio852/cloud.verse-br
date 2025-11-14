@@ -1,13 +1,13 @@
 [
-  { "src": "/testimonials/1.jpeg" },
-  { "src": "/testimonials/2.jpeg" },
-  { "src": "/testimonials/3.jpeg" },
-  { "src": "/testimonials/4.jpeg" },
-  { "src": "/testimonials/5.jpeg" },
-  { "src": "/testimonials/6.jpeg" },
-  { "src": "/testimonials/7.jpeg" },
-  { "src": "/testimonials/8.jpeg" },
-  { "src": "/testimonials/9.jpeg" },
-  { "src": "/testimonials/10.jpeg" },
-  { "src": "/testimonials/11.jpeg" }
+  { "src": "/testimonials/1.jpg" },
+  { "src": "/testimonials/2.jpg" },
+  { "src": "/testimonials/3.jpg" },
+  { "src": "/testimonials/4.jpg" },
+  { "src": "/testimonials/5.jpg" },
+  { "src": "/testimonials/6.jpg" },
+  { "src": "/testimonials/7.jpg" },
+  { "src": "/testimonials/8.jpg" },
+  { "src": "/testimonials/9.jpg" },
+  { "src": "/testimonials/10.jpg" },
+  { "src": "/testimonials/11.jpg" }
 ]
