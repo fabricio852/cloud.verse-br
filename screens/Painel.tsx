@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
 import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
+import { useOnlinePresence } from '../hooks/useOnlinePresence';
 
 interface PainelProps {
   totalQuestoes: number;
@@ -56,6 +57,7 @@ export const Painel: React.FC<PainelProps> = ({
   toggleTheme,
 }) => {
   const { certifications, selectCertification, selectedCertId } = useCertificationStore();
+  const { online } = useOnlinePresence();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const kofiWidgetRef = useRef<KofiWidgetHandle>(null);
   void totalQuestoes;
@@ -211,16 +213,22 @@ export const Painel: React.FC<PainelProps> = ({
           <div className="hidden sm:block">
             <Logo onClick={onVoltar} />
           </div>
-
-          <button
+          <div className="flex items-center gap-3">
+            {/* Online now counter */}
+            <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-200 border border-white/20 rounded-full px-3 py-1 bg-white/5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Online now: {online}
+            </span>
+            <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className={`hamburger ${sidebarOpen ? 'hamburger-open' : ''} flex flex-col gap-1.5 p-2 focus:outline-none`}
             aria-label="Menu"
-          >
-            <div className="hamburger-line" />
-            <div className="hamburger-line" />
-            <div className="hamburger-line" />
-          </button>
+            >
+              <div className="hamburger-line" />
+              <div className="hamburger-line" />
+              <div className="hamburger-line" />
+            </button>
+          </div>
         </div>
       </header>
 

@@ -12,6 +12,7 @@ import { fmtTime, weightedAccuracy } from '../utils';
 import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useContributionReminder } from '../hooks/useContributionReminder';
 import { useCertificationStore } from '../store/certificationStore';
+import { trackEvent } from '../services/analytics';
 
 const toRgba = (hex: string, alpha = 1) => {
     const sanitized = hex.replace('#', '');
@@ -104,6 +105,11 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     useEffect(() => {
         if (quizBank && quizBank.length > 0) {
             startAttempt();
+            // Analytics: quiz started
+            trackEvent('quiz_started', {
+                quizType,
+                total: quizSize,
+            }).catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -156,6 +162,13 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 byDomainTotal,
             });
             console.log('[QuizScreen] Salvo com sucesso!');
+            // Analytics: quiz finished
+            trackEvent('quiz_finished', {
+                quizType,
+                correct,
+                total: quizSize,
+                score: calculatedScore,
+            }).catch(() => {});
         } catch (error) {
             console.error('[QuizScreen] Erro ao salvar:', error);
         }

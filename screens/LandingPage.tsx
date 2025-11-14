@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
+import { useTotalVisitors } from "../hooks/useTotalVisitors";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -49,6 +50,14 @@ const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.met
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
+  const { totalVisitors, loading } = useTotalVisitors(30000);
+  const [minHold, setMinHold] = useState(true);
+
+  // Keep the loading label visible for ~3s to avoid a too-quick flash
+  useEffect(() => {
+    const id = setTimeout(() => setMinHold(false), 3000);
+    return () => clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (certifications.length === 0) {
@@ -440,6 +449,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
               
 
+
               {/* Icons removed as requested */}
 
               {/* Removed redundant START NOW button */}
@@ -637,6 +647,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Total Visits Counter (below bio) - small pixel art button */}
+        <section className="pb-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div
+              className="inline-flex items-center justify-center select-none"
+              style={{
+                fontFamily: 'VT323, monospace',
+                letterSpacing: '0.02em',
+                fontSize: '32px',
+                color: '#00FFFF',
+                textTransform: 'uppercase',
+              }}
+            >
+              {loading || minHold ? (
+                <motion.span
+                  style={{ fontWeight: 400, opacity: 0.95 }}
+                  animate={{ opacity: [0.55, 1, 0.55] }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
+                >
+                  LOADING TOTAL VISITORS...
+                </motion.span>
+              ) : (
+                <motion.span
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="tabular-nums"
+                  style={{ fontWeight: 400 }}
+                >
+                  {totalVisitors.toLocaleString()}
+                </motion.span>
+              )}
+            </div>
           </div>
         </section>
       </main>

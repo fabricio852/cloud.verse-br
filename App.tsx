@@ -14,6 +14,7 @@ import { ScreenTransition, QuizTransition, ResultTransition, PanelTransition } f
 import { useCertificationStore } from './store/certificationStore';
 import { useQuestions } from './hooks/useQuestions';
 import { getWeeklySeed } from './utils';
+import { ensureSession, trackPageview } from './services/analytics';
 
 export default function App() {
     // Certification state
@@ -26,6 +27,11 @@ export default function App() {
     const [domCfg, setDomCfg] = useState<DomainConfig | null>(null);
 
     const weeklySeed = getWeeklySeed({ certificationId });
+
+    // Inicializa sessão de analytics e registra pageview inicial
+    useEffect(() => {
+        ensureSession().then(() => trackPageview('landing'));
+    }, []);
 
     // Buscar questoes do Supabase (agora todos têm acesso total)
     const { questions: questionsQuick, loading: loadingQuick } = useQuestions({
@@ -73,6 +79,11 @@ const start = (fn: () => void) => {
         setRota('resultado');
         console.log('[App] Rota alterada para:', 'resultado');
     }
+
+    // Registrar pageview a cada mudança de rota
+    useEffect(() => {
+        trackPageview(rota);
+    }, [rota]);
 
     const renderContent = () => {
         switch (rota) {

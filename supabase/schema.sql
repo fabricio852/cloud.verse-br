@@ -192,6 +192,122 @@ CREATE TABLE IF NOT EXISTS flashcards (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ============================================
+-- ANALYTICS: sessions, pageviews, events
+-- Leve e suficiente para pageviews, sessões e eventos
+-- ============================================
+
+-- Sessões anônimas (ou autenticadas) no site
+CREATE TABLE IF NOT EXISTS sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  anon_id TEXT NOT NULL,
+  user_id UUID NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  initial_path TEXT,
+  referrer TEXT,
+  utm JSONB,
+  user_agent TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_last_seen ON sessions(last_seen);
+CREATE INDEX IF NOT EXISTS idx_sessions_anon ON sessions(anon_id);
+
+-- Pageviews por rota
+CREATE TABLE IF NOT EXISTS pageviews (
+  id BIGSERIAL PRIMARY KEY,
+  session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  referrer TEXT,
+  utm JSONB,
+  ts TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pageviews_ts ON pageviews(ts);
+CREATE INDEX IF NOT EXISTS idx_pageviews_path_ts ON pageviews(path, ts);
+
+-- Eventos de produto (quiz_started, quiz_finished, etc.)
+CREATE TABLE IF NOT EXISTS events (
+  id BIGSERIAL PRIMARY KEY,
+  session_id UUID REFERENCES sessions(id) ON DELETE SET NULL,
+  user_id UUID NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  props JSONB,
+  ts TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_name_ts ON events(name, ts);
+
+-- RLS (abrir apenas INSERT p/ anon e authenticated)
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pageviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'sessions' AND policyname = 'insert_sessions_anon'
+  ) THEN
+    CREATE POLICY insert_sessions_anon ON sessions
+      FOR INSERT TO anon, authenticated
+      WITH CHECK (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'sessions' AND policyname = 'update_sessions_anon'
+  ) THEN
+    CREATE POLICY update_sessions_anon ON sessions
+      FOR UPDATE TO anon, authenticated
+      USING (true) WITH CHECK (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'pageviews' AND policyname = 'insert_pageviews_anon'
+  ) THEN
+    CREATE POLICY insert_pageviews_anon ON pageviews
+      FOR INSERT TO anon, authenticated
+      WITH CHECK (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'events' AND policyname = 'insert_events_anon'
+  ) THEN
+    CREATE POLICY insert_events_anon ON events
+      FOR INSERT TO anon, authenticated
+      WITH CHECK (true);
+  END IF;
+END$$;
+
+-- ============================================
+-- RPC: total_visits() - returns total pageviews
+-- Uses SECURITY DEFINER to bypass RLS for a safe aggregate
+-- ============================================
+CREATE OR REPLACE FUNCTION public.total_visits()
+RETURNS BIGINT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT COUNT(*)::BIGINT FROM pageviews;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.total_visits() TO anon, authenticated;
+
+-- Count of unique visitors (distinct anon_id across sessions)
+CREATE OR REPLACE FUNCTION public.total_visitors()
+RETURNS BIGINT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT COUNT(DISTINCT anon_id)::BIGINT FROM sessions;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.total_visitors() TO anon, authenticated;
+
+
 -- Índices para spaced repetition
 CREATE INDEX IF NOT EXISTS idx_flashcards_user ON flashcards(user_id);
 CREATE INDEX IF NOT EXISTS idx_flashcards_next_review ON flashcards(user_id, next_review_at);
@@ -221,55 +337,66 @@ ALTER TABLE user_answers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 
--- Policies: Profiles
+-- Policies: Profiles (idempotent)
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile"
   ON profiles FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
 
--- Policies: Quiz Attempts
+-- Policies: Quiz Attempts (idempotent)
+DROP POLICY IF EXISTS "Users can view own quiz attempts" ON quiz_attempts;
 CREATE POLICY "Users can view own quiz attempts"
   ON quiz_attempts FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own quiz attempts" ON quiz_attempts;
 CREATE POLICY "Users can insert own quiz attempts"
   ON quiz_attempts FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- Policies: User Answers
+-- Policies: User Answers (idempotent)
+DROP POLICY IF EXISTS "Users can view own answers" ON user_answers;
 CREATE POLICY "Users can view own answers"
   ON user_answers FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own answers" ON user_answers;
 CREATE POLICY "Users can insert own answers"
   ON user_answers FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- Policies: Flashcards
+-- Policies: Flashcards (idempotent)
+DROP POLICY IF EXISTS "Users can manage own flashcards" ON flashcards;
 CREATE POLICY "Users can manage own flashcards"
   ON flashcards FOR ALL
   USING (auth.uid() = user_id);
 
--- Policies: Achievements
+-- Policies: Achievements (idempotent)
+DROP POLICY IF EXISTS "Users can view own achievements" ON user_achievements;
 CREATE POLICY "Users can view own achievements"
   ON user_achievements FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own achievements" ON user_achievements;
 CREATE POLICY "Users can insert own achievements"
   ON user_achievements FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- Questions e Certifications são públicas (mas tier controlado via app logic)
 ALTER TABLE certifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
 
+-- Public read policies (idempotent)
+DROP POLICY IF EXISTS "Everyone can view active certifications" ON certifications;
 CREATE POLICY "Everyone can view active certifications"
   ON certifications FOR SELECT
   USING (active = true);
 
+DROP POLICY IF EXISTS "Everyone can view active questions" ON questions;
 CREATE POLICY "Everyone can view active questions"
   ON questions FOR SELECT
   USING (active = true);

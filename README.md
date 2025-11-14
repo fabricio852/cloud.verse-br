@@ -112,3 +112,23 @@ If you find this platform helpful, consider supporting the project:
 
 - [Ko-fi](https://ko-fi.com/fabriciocosta) - Buy me a coffee
 - [LinkedIn](https://www.linkedin.com/in/fabriciocosta85/) - Connect with me
+
+## Analytics & Realtime
+
+- Page analytics (sessions, pageviews, events) backed by Supabase tables.
+- Realtime presence is used to display "Online now" in the dashboard header.
+
+### Setup
+
+1) Open `supabase/schema.sql` in Supabase SQL editor and run the script to create analytics tables/policies:
+   - `sessions`, `pageviews`, `events` with INSERT RLS for `anon` and `authenticated` roles.
+
+2) Ensure environment variables:
+   - `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+
+3) Where it appears:
+   - Realtime counter in the panel header.
+   - Pageviews recorded on each route change.
+   - Quiz start/finish tracked as events.
+
+Note: For stricter RLS or server-side ingestion, consider a Supabase Edge Function collector and tighten table policies accordingly.
