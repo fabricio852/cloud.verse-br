@@ -12,6 +12,7 @@ const contributionMessages = [
 
 const avatarUrl = "/profile.png";
 const kofiImgUrl = new URL('../../support_me_on_kofi_beige.png', import.meta.url).href;
+const kofiBadgeFallback = new URL('../../support_me_on_kofi_badge_beige.png', import.meta.url).href;
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
@@ -110,6 +111,19 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                       style={{
                         maxWidth: '100%',
                         display: 'block',
+                      }}
+                      onError={(e) => {
+                        const el = e.currentTarget as HTMLImageElement & { _fallbackStep?: number };
+                        el._fallbackStep = (el._fallbackStep || 0) + 1;
+                        if (el._fallbackStep === 1) {
+                          // Try bundled badge fallback
+                          el.src = kofiBadgeFallback;
+                        } else if (el._fallbackStep === 2) {
+                          // Try Ko-fi CDN as last resort
+                          el.src = 'https://storage.ko-fi.com/cdn/kofi2.png';
+                        } else {
+                          el.style.display = 'none';
+                        }
                       }}
                     />
                   </a>
