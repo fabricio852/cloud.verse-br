@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
-import { SupportButton } from "../components/donation/SupportButton";
-import { DonationModal } from "../components/donation/DonationModal";
+import { ThemedSupportButton } from "../components/donation/ThemedSupportButton";
+import { ThemedDonationModal } from "../components/donation/ThemedDonationModal";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -617,9 +617,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       {t('landing:creator.linkedin_button')}
                     </motion.a>
                     {/* Support button - PIX donations */}
-                    <SupportButton
+                    <ThemedSupportButton
                       onClick={() => setIsDonationModalOpen(true)}
                       variant="inline"
+                      theme="landing"
                     />
                   </div>
                 </div>
@@ -675,12 +676,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
       </footer>
 
       {/* Donation Modal */}
-      <DonationModal
+      <ThemedDonationModal
         isOpen={isDonationModalOpen}
         onClose={() => setIsDonationModalOpen(false)}
         pixKey="00000000000" // TODO: Configure with actual PIX key
         pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
         pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+        theme="landing"
       />
     </div>
   );
