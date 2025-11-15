@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
-import { ThemedSupportButton } from "../components/donation/ThemedSupportButton";
 import { ThemedDonationModal } from "../components/donation/ThemedDonationModal";
 
 interface LandingPageProps {
@@ -395,6 +394,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           opacity: 0.4;
         }
 
+        /* Support button shake animation */
+        @keyframes support-shake {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          10% { transform: translate(-2px, -1px) rotate(-1deg); }
+          20% { transform: translate(2px, 1px) rotate(1deg); }
+          30% { transform: translate(-2px, 1px) rotate(-1deg); }
+          40% { transform: translate(2px, -1px) rotate(1deg); }
+          50% { transform: translate(-1px, 2px) rotate(-0.5deg); }
+          60% { transform: translate(1px, -2px) rotate(0.5deg); }
+          70% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+          80% { transform: translate(1px, 1px) rotate(0.5deg); }
+          90% { transform: translate(-1px, 0px) rotate(0deg); }
+        }
+
+        .support-btn-shake {
+          animation: support-shake 3s ease-in-out 2s infinite;
+        }
+
+        .support-btn-shake:hover {
+          animation: none;
+        }
+
       `}</style>
 
       {/* CRT Overlay */}
@@ -617,11 +638,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       {t('landing:creator.linkedin_button')}
                     </motion.a>
                     {/* Support button - PIX donations */}
-                    <ThemedSupportButton
+                    <motion.button
                       onClick={() => setIsDonationModalOpen(true)}
-                      variant="inline"
-                      theme="landing"
-                    />
+                      whileTap={{ scale: 0.95 }}
+                      className="support-btn-shake inline-flex items-center gap-2 px-6 py-3 border-2 border-[#FF9900] bg-[#FF9900]/10 text-[#FF9900] vt323-text text-lg font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-[#0a0a12] hover:shadow-[0_0_20px_rgba(255,153,0,0.6)]"
+                    >
+                      <span className="text-xl">♥</span>
+                      {t('landing:creator.support_button')}
+                    </motion.button>
                   </div>
                 </div>
               </div>
