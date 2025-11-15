@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
 import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
+import { DonationFloatingButton } from '../components/donation/DonationFloatingButton';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
 
 interface PainelProps {
@@ -516,6 +517,14 @@ export const Painel: React.FC<PainelProps> = ({
       </footer>
 
       <KofiWidget ref={kofiWidgetRef} desktopOnly showFloatingButton={false} className="pointer-events-auto" />
+
+      {/* Donation Floating Button */}
+      <DonationFloatingButton
+        pixKey="00000000000" // TODO: Configure with actual PIX key
+        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
+        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+        desktopOnly={false}
+      />
     </div>
   );
 };

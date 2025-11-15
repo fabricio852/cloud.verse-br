@@ -10,7 +10,7 @@ import { DOMAIN_LABELS, DONUT_COLORS } from '../constants';
 import { cn } from '../utils';
 import { useCertificationStore } from '../store/certificationStore';
 import { DomainTag } from '../components/common/DomainTag';
-import { PixDonationModal } from '../components/donation/PixDonationModal';
+import { DonationModal } from '../components/donation/DonationModal';
 
 interface ResultScreenProps {
     summary: ResultSummary | null;
@@ -238,7 +238,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
             </div>
 
             {/* PIX Donation Modal - shown after successful completion */}
-            <PixDonationModal
+            <DonationModal
                 isOpen={showDonationModal}
                 onClose={() => setShowDonationModal(false)}
                 pixKey="00000000000" // TODO: Configure with actual PIX key
