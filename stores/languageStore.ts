@@ -9,7 +9,7 @@ interface LanguageStore {
 }
 
 export const useLanguageStore = create<LanguageStore>((set) => ({
-  language: (localStorage.getItem('language') as Language) || 'en',
+  language: (localStorage.getItem('language') as Language) || 'pt-BR',
 
   setLanguage: (language: Language) => {
     localStorage.setItem('language', language);

@@ -4,7 +4,7 @@
 
 import { supabase } from './supabaseClient';
 import type { Database } from '../types/database';
-import { seededShuffle, shuffle } from '../utils';
+import { seededShuffle, shuffle, getBaseQuestionId } from '../utils';
 
 type Question = Database['public']['Tables']['questions']['Row'];
 type QuizAttempt = Database['public']['Tables']['quiz_attempts']['Row'];
@@ -75,7 +75,13 @@ export async function fetchQuestions(filters: QuizFilters): Promise<Question[]> 
     throw error;
   }
 
-  let results = data || [];
+  // Ordena de forma determin�stica pelo ID base para que a posi��o seja consistente entre idiomas
+  let results = (data || []).sort((a, b) => {
+    const baseA = getBaseQuestionId(a.id);
+    const baseB = getBaseQuestionId(b.id);
+    if (baseA === baseB) return a.id.localeCompare(b.id);
+    return baseA.localeCompare(baseB);
+  });
 
   if (!filters.excludeAnswered) {
     if (filters.seed) {

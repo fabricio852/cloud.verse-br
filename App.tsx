@@ -38,14 +38,20 @@ export default function App() {
         certificationId,
         tier: 'ALL',
         limit: 100,
-        enabled: rota === 'quiz-rapido'
+        enabled: rota === 'quiz-rapido',
+        seed: weeklySeed,
+        preloadBoth: true,
+        anchorLanguage: 'en',
     });
 
     const { questions: questionsCompleto, loading: loadingCompleto } = useQuestions({
         certificationId,
         tier: 'ALL',
         limit: 65,
-        enabled: rota === 'quiz-completo'
+        enabled: rota === 'quiz-completo',
+        seed: weeklySeed,
+        preloadBoth: true,
+        anchorLanguage: 'en',
     });
 
     const { questions: questionsDominios, loading: loadingDominios } = useQuestions({
@@ -53,7 +59,10 @@ export default function App() {
         domains: domCfg ? Object.keys(domCfg.dom).filter(d => domCfg.dom[d as keyof typeof domCfg.dom]) : undefined,
         tier: 'ALL',
         limit: domCfg?.qtd,
-        enabled: rota === 'quiz-dominios' && !!domCfg
+        enabled: rota === 'quiz-dominios' && !!domCfg,
+        seed: weeklySeed,
+        preloadBoth: true,
+        anchorLanguage: 'en',
     });
 
 const total = 650;

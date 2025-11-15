@@ -48,6 +48,24 @@ export interface ResultSummary {
     score: number;
     byDomainCorrect: DomainStats;
     byDomainTotal: DomainStats;
+    reviews?: AnswerReview[];
+}
+
+export interface AnswerReview {
+    questionId: string;
+    baseId: string;
+    domain: Domain | string;
+    stem: string;
+    options: {
+        A: string;
+        B: string;
+        C: string;
+        D: string;
+        E?: string;
+    };
+    correctAnswer: string[];
+    userAnswer: string[];
+    isCorrect: boolean;
 }
 
 export type Plano = 'FREE' | 'PRO';

@@ -3,6 +3,7 @@ import { fetchQuestions, QuizFilters } from '../services/questionsService';
 import type { Question as DBQuestion } from '../types/database';
 import { Question, Domain } from '../types';
 import { useLanguageStore } from '../stores/languageStore';
+import { getBaseQuestionId } from '../utils';
 
 /**
  * Converte questão do formato Supabase para o formato da aplicação
@@ -72,15 +73,20 @@ interface UseQuestionsOptions {
   shuffle?: boolean;
   seed?: string;
   take?: number;
+  preloadBoth?: boolean; // busca EN e PT-BR e mantém cache para troca instantânea
+  anchorLanguage?: 'en' | 'pt-BR'; // idioma base para ordenação (default: en)
 }
 
 /**
- * Hook para buscar questões do Supabase
+ * Hook para buscar questões do Supabase com suporte a cache bilíngue
  */
 export function useQuestions(options: UseQuestionsOptions = {}) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [bilingualCache, setBilingualCache] = useState<{ ['en']: Question[]; ['pt-BR']: Question[] } | null>(null);
+  const [lastKey, setLastKey] = useState<string | null>(null);
+
   const language = useLanguageStore((state) => state.language);
 
   const {
@@ -92,7 +98,22 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     shuffle = true,
     seed,
     take,
+    preloadBoth = false,
+    anchorLanguage = 'en',
   } = options;
+
+  // Chave de dependência para identificar o dataset (exclui idioma)
+  const depsKey = JSON.stringify({
+    certificationId,
+    domains: domains?.join('|') || '',
+    tier,
+    limit,
+    shuffle,
+    seed,
+    take,
+    preloadBoth,
+    anchorLanguage,
+  });
 
   useEffect(() => {
     if (!enabled) {
@@ -101,12 +122,19 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     }
 
     const loadQuestions = async () => {
-      console.log('[useQuestions] Iniciando busca...', { certificationId, tier, limit, domains, shuffle, seed, take, language });
+      console.log('[useQuestions] Iniciando busca...', { certificationId, tier, limit, domains, shuffle, seed, take, language, preloadBoth });
       setLoading(true);
       setError(null);
 
       try {
-        const filters: QuizFilters = {
+        // Se já temos cache para o mesmo dataset, apenas troca de idioma sem refetch
+        if (preloadBoth && bilingualCache && lastKey === depsKey) {
+          setQuestions(language === 'pt-BR' ? bilingualCache['pt-BR'] : bilingualCache['en']);
+          setLoading(false);
+          return;
+        }
+
+        const baseFilters: QuizFilters = {
           certificationId,
           domains,
           tier,
@@ -114,14 +142,69 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
           shuffle,
           seed,
           take,
-          language, // Adicionar filtro de idioma
         };
 
-        const dbQuestions = await fetchQuestions(filters);
-        const appQuestions = dbQuestions.map(convertDBQuestionToAppFormat);
+        if (preloadBoth) {
+          const [dbEn, dbPt] = await Promise.all([
+            fetchQuestions({ ...baseFilters, language: 'en' }),
+            fetchQuestions({ ...baseFilters, language: 'pt-BR' }),
+          ]);
 
-        console.log(`[useQuestions] ✅ ${appQuestions.length} questões carregadas em ${language === 'pt-BR' ? 'Português' : 'English'}`);
-        setQuestions(appQuestions);
+          const enQuestions = dbEn.map(convertDBQuestionToAppFormat);
+          const ptQuestions = dbPt.map(convertDBQuestionToAppFormat);
+
+          // Monta mapa por baseId
+          const map: Record<string, { en?: Question; ['pt-BR']?: Question }> = {};
+          const anchorList = anchorLanguage === 'en' ? enQuestions : ptQuestions;
+          const altList = anchorLanguage === 'en' ? ptQuestions : enQuestions;
+
+          anchorList.forEach((q) => {
+            const baseId = getBaseQuestionId(q.id);
+            map[baseId] = map[baseId] || {};
+            (map[baseId] as any)[anchorLanguage] = q;
+          });
+          altList.forEach((q) => {
+            const baseId = getBaseQuestionId(q.id);
+            map[baseId] = map[baseId] || {};
+            (map[baseId] as any)[anchorLanguage === 'en' ? 'pt-BR' : 'en'] = q;
+          });
+
+          // Ordem determinística: segue anchor e acrescenta bases faltantes do alt
+          const order: string[] = [];
+          anchorList.forEach((q) => order.push(getBaseQuestionId(q.id)));
+          altList.forEach((q) => {
+            const base = getBaseQuestionId(q.id);
+            if (!order.includes(base)) order.push(base);
+          });
+
+          const buildList = (lang: 'en' | 'pt-BR') => {
+            const other = lang === 'en' ? 'pt-BR' : 'en';
+            return order
+              .map((base) => {
+                const entry = map[base];
+                return (entry && (entry as any)[lang]) || (entry && (entry as any)[other]);
+              })
+              .filter(Boolean) as Question[];
+          };
+
+          const cache = {
+            'en': buildList('en'),
+            'pt-BR': buildList('pt-BR'),
+          };
+
+          setBilingualCache(cache);
+          setLastKey(depsKey);
+          setQuestions(language === 'pt-BR' ? cache['pt-BR'] : cache['en']);
+        } else {
+          const filters: QuizFilters = { ...baseFilters, language };
+          const dbQuestions = await fetchQuestions(filters);
+          const appQuestions = dbQuestions.map(convertDBQuestionToAppFormat);
+          setQuestions(appQuestions);
+          setBilingualCache(null);
+          setLastKey(depsKey);
+        }
+
+        console.log('[useQuestions] ✅ Questões carregadas');
       } catch (err) {
         console.error('[useQuestions] ❌ Erro ao buscar questões:', err);
         setError(err as Error);
@@ -132,7 +215,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     };
 
     loadQuestions();
-  }, [certificationId, domains?.join(','), tier, limit, enabled, shuffle, seed, take, language]);
+  }, [depsKey, language, enabled, preloadBoth, anchorLanguage, bilingualCache, lastKey]);
 
   return { questions, loading, error };
 }

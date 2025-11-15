@@ -4,6 +4,9 @@ import { DOMAIN_WEIGHTS, AWS_DOCS } from './constants';
 
 export const cn = (...xs: (string | boolean | undefined | null)[]) => xs.filter(Boolean).join(" ");
 
+// Normaliza ID de questão removendo o sufixo de idioma (-br)
+export const getBaseQuestionId = (id: string): string => id.replace(/-br$/i, '');
+
 export const fmtTime = (s: number): string => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);

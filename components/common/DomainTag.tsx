@@ -2,6 +2,7 @@
 import React from 'react';
 import { DOMAIN_LABELS } from '../../constants';
 import { cn } from '../../utils';
+import { useLanguageStore } from '../../stores/languageStore';
 
 interface DomainTagProps {
     domain: string;
@@ -22,8 +23,36 @@ const DOMAIN_STYLES: Record<string, string> = {
     ML_DEVELOPMENT: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
 };
 
+const DOMAIN_LABELS_PT: Record<string, string> = {
+    // SAA-C03
+    SECURE: 'Arquitetura Segura',
+    RESILIENT: 'Arquitetura Resiliente',
+    PERFORMANCE: 'Arquitetura de Alto Desempenho',
+    COST: 'Otimização de Custos',
+    // CLF-C02
+    CLOUD_CONCEPTS: 'Conceitos de Cloud',
+    CLOUD_TECHNOLOGY_SERVICES: 'Tecnologia e Serviços',
+    SECURITY_COMPLIANCE: 'Segurança e Conformidade',
+    BILLING_PRICING: 'Faturamento e Precificação',
+    TECHNOLOGY: 'Tecnologia e Serviços',
+    // AIF-C01
+    RESPONSIBLE_AI: 'IA Responsável',
+    AI_SERVICES: 'Serviços de IA',
+    AI_FUNDAMENTALS: 'Fundamentos de IA',
+    ML_DEVELOPMENT: 'Desenvolvimento de ML',
+    // Extras (metadados antigos)
+    AI_SECURITY: 'Segurança de IA',
+    AI_APPLICATIONS: 'Aplicações de IA',
+    AI_GOVERNANCE: 'Governança de IA',
+};
+
 export const DomainTag: React.FC<DomainTagProps> = ({ domain }) => {
-    const label = DOMAIN_LABELS[domain] || domain;
+    const language = useLanguageStore((state) => state.language);
+    const label =
+        (language === 'pt-BR' ? DOMAIN_LABELS_PT[domain] : DOMAIN_LABELS[domain]) ||
+        DOMAIN_LABELS_PT[domain] ||
+        DOMAIN_LABELS[domain] ||
+        domain;
     const cls = DOMAIN_STYLES[domain] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
     return (

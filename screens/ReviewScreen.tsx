@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { GhostButton } from '../components/ui/Button';
@@ -7,10 +6,8 @@ import { QuestionViewer } from '../components/quiz/QuestionViewer';
 import { Plano, Question } from '../types';
 import { cn } from '../utils';
 import { useCertificationStore } from '../store/certificationStore';
-import { fetchQuestions } from '../services/questionsService';
-import type { Database } from '../types/database';
-
-type DBQuestion = Database['public']['Tables']['questions']['Row'];
+import { useQuestions } from '../hooks/useQuestions';
+import { LanguageToggle } from '../components/LanguageToggle';
 
 interface ReviewScreenProps {
     onBack: () => void;
@@ -19,70 +16,35 @@ interface ReviewScreenProps {
     theme?: string;
 }
 
-// Converter questão do banco para formato do app
-const convertQuestion = (dbQ: DBQuestion): Question => {
-    return {
-        id: dbQ.id,
-        domain: dbQ.domain as any,
-        stem: dbQ.question_text,
-        options: {
-            A: dbQ.option_a,
-            B: dbQ.option_b,
-            C: dbQ.option_c,
-            D: dbQ.option_d,
-            ...(dbQ.option_e ? { E: dbQ.option_e } : {})
-        },
-        answerKey: dbQ.correct_answers || [dbQ.correct_answer || 'A'],
-        requiredSelections: dbQ.required_selection_count || 1,
-        explanation_basic: dbQ.explanation_detailed?.substring(0, 150) || '',
-        explanation_detailed: dbQ.explanation_detailed || '',
-        incorrect: dbQ.incorrect_explanations as any || {}
-    };
-};
-
 export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, plano, theme = 'light' }) => {
     const { t } = useTranslation(['common', 'quiz']);
     const { selectedCertId } = useCertificationStore();
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [loading, setLoading] = useState(true);
+
+    // Usa o hook de perguntas com cache bilíngue para alternar idioma instantaneamente
+    const { questions, loading } = useQuestions({
+        certificationId: selectedCertId || 'CLF-C02',
+        tier: 'ALL',
+        shuffle: false,
+        limit: 65,
+        enabled: !!selectedCertId,
+        preloadBoth: true,
+        anchorLanguage: 'en',
+    });
+
     const [ativo, setAtivo] = useState(0);
     const [respondidas, setRespondidas] = useState<{ [key: number]: boolean }>({});
     const [marked, setMarked] = useState<{ [key: number]: boolean }>({});
+    const [isGridCollapsed, setIsGridCollapsed] = useState(false);
 
     const total = questions.length;
     const questao = questions[ativo] || null;
 
-    // Carregar questões do Supabase
+    // Ajusta índice se tamanho da lista mudar (ex.: troca de idioma)
     useEffect(() => {
-        const loadQuestions = async () => {
-            if (!selectedCertId) {
-                console.log('[ReviewScreen] Nenhuma certificação selecionada');
-                setLoading(false);
-                return;
-            }
-
-            console.log('[ReviewScreen] Carregando questões para:', selectedCertId);
-            setLoading(true);
-            try {
-                const dbQuestions = await fetchQuestions({
-                    certificationId: selectedCertId,
-                    tier: 'ALL',
-                    shuffle: false,
-                    limit: 65
-                });
-
-                console.log('[ReviewScreen] Questões carregadas:', dbQuestions.length);
-                const converted = dbQuestions.map(convertQuestion);
-                setQuestions(converted);
-            } catch (error) {
-                console.error('[ReviewScreen] Erro ao carregar questões:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadQuestions();
-    }, [selectedCertId]);
+        if (ativo >= total) {
+            setAtivo(total > 0 ? total - 1 : 0);
+        }
+    }, [ativo, total]);
 
     const onAnswered = () => setRespondidas(prev => ({ ...prev, [ativo]: true }));
     const toggleMark = (index: number, markedValue: boolean) => {
@@ -91,6 +53,32 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
 
     const next = () => setAtivo(i => Math.min(total - 1, i + 1));
     const prev = () => setAtivo(i => Math.max(0, i - 1));
+
+    const gridButtons = useMemo(() => {
+        return Array.from({ length: total }).map((_, i) => {
+            const ativoNow = i === ativo;
+            const isAnswered = respondidas[i];
+            const isMarked = marked[i];
+            return (
+                <button
+                    key={i}
+                    onClick={() => setAtivo(i)}
+                    className={cn(
+                        'w-9 h-9 grid place-items-center border text-sm font-medium rounded-full transition',
+                        ativoNow
+                            ? 'bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white border-transparent ring-2 ring-offset-2 ring-purple-500 dark:ring-offset-gray-900'
+                            : isMarked
+                            ? 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700'
+                            : isAnswered
+                            ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    )}
+                >
+                    {i + 1}
+                </button>
+            );
+        });
+    }, [ativo, total, respondidas, marked]);
 
     return (
         <div className="min-h-screen">
@@ -103,7 +91,8 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
                     <div className="hidden sm:block">
                         <Logo onClick={onVoltar} />
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        <LanguageToggle />
                         {onVoltar && (
                             <button
                                 onClick={onVoltar}
@@ -140,27 +129,41 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
                     </div>
                 ) : (
                     <>
-                        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-3" style={{ borderRadius: 12 }}>
-                            <div className="flex items-center justify-between flex-wrap gap-3">
-                                <div className="flex flex-wrap gap-2">
-                                    {Array.from({ length: total }).map((_, i) => {
-                                        const ativoNow = i === ativo;
-                                        const isAnswered = respondidas[i];
-                                        const isMarked = marked[i];
-                                        return (
-                                            <button key={i} onClick={() => setAtivo(i)} className={cn("w-9 h-9 grid place-items-center border text-sm font-medium rounded-full transition",
-                                                ativoNow ? "bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white border-transparent ring-2 ring-offset-2 ring-purple-500 dark:ring-offset-gray-900" :
-                                                isMarked ? "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700" :
-                                                isAnswered ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700" :
-                                                "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                                            )}>{i + 1}</button>
-                                        );
-                                    })}
+                        <div className="relative w-full">
+                            <div className="h-32" aria-hidden />
+                            <div
+                                className={cn(
+                                    "absolute inset-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4",
+                                    isGridCollapsed ? "py-1 h-10" : "py-3"
+                                )}
+                            >
+                                <div className="flex items-center justify-between">
+                                    {!isGridCollapsed && (
+                                        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                                            <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" />{t('quiz:navigation_legend.answered')}</div>
+                                            <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-500 rounded-full" />{t('quiz:navigation_legend.marked')}</div>
+                                            <div className="flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-400 rounded-full" />{t('quiz:navigation_legend.pending')}</div>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => setIsGridCollapsed(!isGridCollapsed)}
+                                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
+                                        aria-label={isGridCollapsed ? t('quiz:navigation_legend.expand_grid') : t('quiz:navigation_legend.collapse_grid')}
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            {isGridCollapsed ? (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            ) : (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                            )}
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div className="flex items-center gap-4 text-xs dark:text-gray-400">
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" />{t('quiz:navigation_legend.answered')}</div>
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" />{t('quiz:navigation_legend.marked')}</div>
-                                </div>
+                                {!isGridCollapsed && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {gridButtons}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         {questao && (

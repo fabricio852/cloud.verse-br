@@ -9,13 +9,13 @@ import { ContributionOverlay } from '../components/quiz/ContributionOverlay';
 import { KofiWidget } from '../components/quiz/KofiWidget';
 import { Question, Plano, ResultSummary, DomainStats } from '../types';
 import { Q_BANK } from '../constants';
-import { fmtTime, weightedAccuracy } from '../utils';
+import { fmtTime, weightedAccuracy, getBaseQuestionId, cn } from '../utils';
 import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useContributionReminder } from '../hooks/useContributionReminder';
 import { useLanguageAwareQuiz } from '../hooks/useLanguageAwareQuiz';
 import { useCertificationStore } from '../store/certificationStore';
-import { useLanguageStore } from '../stores/languageStore';
 import { trackEvent } from '../services/analytics';
+import { LanguageToggle } from '../components/LanguageToggle';
 
 const toRgba = (hex: string, alpha = 1) => {
     const sanitized = hex.replace('#', '');
@@ -74,6 +74,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         answeredCount,
         markedCount,
         getDomainStats,
+        getAllResponses,
     } = useLanguageAwareQuiz(questions && questions.length > 0 ? questions : Q_BANK);
 
     const [showConfirm, setShowConfirm] = useState(false);
@@ -145,11 +146,17 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
 
     const finalize = async () => {
         console.log('[QuizScreen] finalize() chamado');
-        const correct = resps.filter((answer, idx) => {
-            const question = quizBank[idx % quizBank.length];
-            if (!question) return false;
-            return answersEqual(answer, question.answerKey);
-        }).length;
+
+        // Estatísticas por domínio e respostas completas
+        const { correct: byDomCorrect, total: byDomTotal } = getDomainStats();
+        const responses = getAllResponses();
+        const responseMap = responses.reduce<Record<string, string[]>>((acc, r) => {
+            acc[getBaseQuestionId(r.questionId)] = r.answer || [];
+            return acc;
+        }, {});
+
+        // Calcular acertos totais
+        const correct = Object.values(byDomCorrect).reduce((a, b) => a + b, 0);
         console.log('[QuizScreen] correct:', correct, 'total:', quizSize);
         console.log('[QuizScreen] byDomainCorrect:', byDomCorrect);
         console.log('[QuizScreen] byDomainTotal:', byDomTotal);
@@ -160,12 +167,30 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         const calculatedScore = 100 + Math.round(wAcc * 900);
         console.log('[QuizScreen] calculated score:', calculatedScore);
 
+        // Relatório de revisões (acertos/erros)
+        const reviews = quizBank.map((q) => {
+            const baseId = getBaseQuestionId(q.id);
+            const userAnswer = responseMap[baseId] || [];
+            const isCorrect = answersEqual(userAnswer, q.answerKey);
+            return {
+                questionId: q.id,
+                baseId,
+                domain: q.domain,
+                stem: q.stem,
+                options: q.options,
+                correctAnswer: q.answerKey,
+                userAnswer,
+                isCorrect,
+            };
+        });
+
         const summary: ResultSummary = {
             correct,
             total: quizSize,
             score: calculatedScore,
-            byDomainCorrect: byDomCorrect,
-            byDomainTotal: byDomTotal,
+            byDomainCorrect,
+            byDomainTotal,
+            reviews,
         };
         console.log('[QuizScreen] summary:', summary);
 
@@ -186,10 +211,13 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             }).catch(() => {});
         } catch (error) {
             console.error('[QuizScreen] Erro ao salvar:', error);
+            // Mesmo com erro, seguimos para a tela de resultados
         }
 
         // Ir direto para tela de resultados
         console.log('[QuizScreen] Chamando onSair...');
+        // Garantir que o overlay de contribuição seja fechado
+        closeReminder();
         onSair(summary);
         console.log('[QuizScreen] onSair chamado!');
     };
@@ -282,21 +310,22 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     modalText += ' ' + t('quiz:finish_modal.confirm');
 
     const Grid = () => (
-        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl shadow-sm">
-            <div className={`flex items-center ${isGridCollapsed ? 'justify-end' : 'justify-between mb-4'}`}>
+        <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3">
+            <div className="flex items-center justify-between mb-3">
                 {!isGridCollapsed && (
-                    <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" />{t('quiz:navigation_legend.answered')}</div>
-                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-500 rounded-full" />{t('quiz:navigation_legend.marked')}</div>
-                        <div className="flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-400 rounded-full" />{t('quiz:navigation_legend.pending')}</div>
+                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" /><span className="font-medium">{t('quiz:navigation_legend.answered')}</span></div>
+                        <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" /><span className="font-medium">{t('quiz:navigation_legend.marked')}</span></div>
+                        <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 border border-gray-400 rounded-full" /><span className="font-medium">{t('quiz:navigation_legend.pending')}</span></div>
                     </div>
                 )}
                 <button
                     onClick={() => setIsGridCollapsed(!isGridCollapsed)}
-                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
+                    className="ml-auto p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
                     aria-label={isGridCollapsed ? t('quiz:navigation_legend.expand_grid') : t('quiz:navigation_legend.collapse_grid')}
+                    title={isGridCollapsed ? 'Expandir grade' : 'Colapsar grade'}
                 >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         {isGridCollapsed ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         ) : (
@@ -306,23 +335,24 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 </button>
             </div>
             {!isGridCollapsed && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                     {Array.from({ length: quizSize }).map((_, index) => {
                         const status = getQuestionStatus(index);
                         const isActive = i === index;
 
-                        let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                        let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600';
                         if (status === 'marked') {
-                            buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+                            buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/70';
                         } else if (status === 'answered') {
-                            buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+                            buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/70';
                         }
 
                         return (
                             <button
                                 key={index}
                                 onClick={() => jumpToIndex(index)}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-gray-800' : ''}`}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-1 dark:ring-offset-gray-800 scale-110' : ''}`}
+                                title={`Questão ${index + 1}`}
                             >{index + 1}</button>
                         );
                     })}
@@ -356,42 +386,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                             <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
                                 <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
                                 {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => {
-                                      const store = useLanguageStore.getState();
-                                      if (store.language !== 'en') {
-                                        store.setLanguage('en');
-                                      }
-                                    }}
-                                    className={`flex items-center justify-center hover:opacity-70 transition-opacity rounded-sm overflow-hidden border ${useLanguageStore.getState().language === 'en' ? 'border-blue-500 border-2' : 'border-gray-300 dark:border-gray-600'}`}
-                                    title="English"
-                                    style={{ aspectRatio: '16/10', width: '36px' }}
-                                  >
-                                    <img
-                                      src="/flag-us.png"
-                                      alt="English"
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      const store = useLanguageStore.getState();
-                                      if (store.language !== 'pt-BR') {
-                                        store.setLanguage('pt-BR');
-                                      }
-                                    }}
-                                    className={`flex items-center justify-center hover:opacity-70 transition-opacity rounded-sm overflow-hidden border ${useLanguageStore.getState().language === 'pt-BR' ? 'border-green-500 border-2' : 'border-gray-300 dark:border-gray-600'}`}
-                                    title="Português"
-                                    style={{ aspectRatio: '16/10', width: '36px' }}
-                                  >
-                                    <img
-                                      src="/flag-br.png"
-                                      alt="Português"
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </button>
-                                </div>
+                                <LanguageToggle />
                                 {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
                                 {toggleTheme && (
                                     <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
