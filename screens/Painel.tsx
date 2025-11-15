@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
-import { DonationFloatingButton } from '../components/donation/DonationFloatingButton';
-import { ThemedSupportButton } from '../components/donation/ThemedSupportButton';
 import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
 
@@ -475,19 +473,45 @@ export const Painel: React.FC<PainelProps> = ({
           </motion.button>
         </div>
 
-        {/* Ko-fi badge */}
+        {/* Support button - PIX donations */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex justify-center"
         >
-          <ThemedSupportButton
+          <motion.button
             onClick={() => setDonationModalOpen(true)}
-            variant="inline"
-            theme="default"
-          />
+            whileTap={{ scale: 0.95 }}
+            className="support-btn-shake inline-flex items-center gap-2 px-6 py-3 border-2 border-[#FF9900] bg-[#FF9900]/10 text-[#FF9900] vt323-text text-lg font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-[#0a0a12] hover:shadow-[0_0_20px_rgba(255,153,0,0.6)]"
+          >
+            <span className="text-xl">♥</span>
+            Apoiar com PIX
+          </motion.button>
         </motion.div>
+
+        <style>{`
+          @keyframes support-shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-2px, -1px) rotate(-1deg); }
+            20% { transform: translate(2px, 1px) rotate(1deg); }
+            30% { transform: translate(-2px, 1px) rotate(-1deg); }
+            40% { transform: translate(2px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-0.5deg); }
+            60% { transform: translate(1px, -2px) rotate(0.5deg); }
+            70% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+            80% { transform: translate(1px, 1px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 0px) rotate(0deg); }
+          }
+
+          .support-btn-shake {
+            animation: support-shake 3s ease-in-out 2s infinite;
+          }
+
+          .support-btn-shake:hover {
+            animation: none;
+          }
+        `}</style>
       </main>
 
       <footer className="border-t-2 border-[#00FFFF]/30 py-8 px-4 bg-[#0a0a12]/90">
@@ -499,14 +523,6 @@ export const Painel: React.FC<PainelProps> = ({
         </div>
       </footer>
 
-      {/* Donation Floating Button */}
-      <DonationFloatingButton
-        pixKey="00000000000" // TODO: Configure with actual PIX key
-        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
-        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
-        desktopOnly={false}
-      />
-
       {/* Donation Modal */}
       <ThemedDonationModal
         isOpen={donationModalOpen}
@@ -514,7 +530,7 @@ export const Painel: React.FC<PainelProps> = ({
         pixKey="00000000000" // TODO: Configure with actual PIX key
         pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
         pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
-        theme="default"
+        theme="landing"
       />
     </div>
   );
