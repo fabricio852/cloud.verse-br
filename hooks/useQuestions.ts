@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchQuestions, QuizFilters } from '../services/questionsService';
 import type { Question as DBQuestion } from '../types/database';
 import { Question, Domain } from '../types';
+import { useLanguageStore } from '../stores/languageStore';
 
 /**
  * Converte questão do formato Supabase para o formato da aplicação
@@ -80,6 +81,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const language = useLanguageStore((state) => state.language);
 
   const {
     certificationId = 'CLF-C02',
@@ -99,7 +101,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     }
 
     const loadQuestions = async () => {
-      console.log('[useQuestions] Iniciando busca...', { certificationId, tier, limit, domains, shuffle, seed, take });
+      console.log('[useQuestions] Iniciando busca...', { certificationId, tier, limit, domains, shuffle, seed, take, language });
       setLoading(true);
       setError(null);
 
@@ -112,25 +114,13 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
           shuffle,
           seed,
           take,
+          language, // Adicionar filtro de idioma
         };
 
-        let dbQuestions = await fetchQuestions(filters);
-
-        // Filtro: Remover questões em português (identificadas por palavras-chave)
-        const portugueseKeywords = ['empresa', 'qual', 'aplicação', 'precisa', 'solução', 'serviço', 'usuário'];
-        const filteredQuestions = dbQuestions.filter(q => {
-          const text = q.question_text.toLowerCase();
-          return !portugueseKeywords.some(keyword => text.includes(keyword));
-        });
-
-        if (filteredQuestions.length < dbQuestions.length) {
-          console.log(`[useQuestions] ⚠️  Removidas ${dbQuestions.length - filteredQuestions.length} questões em português`);
-          dbQuestions = filteredQuestions;
-        }
-
+        const dbQuestions = await fetchQuestions(filters);
         const appQuestions = dbQuestions.map(convertDBQuestionToAppFormat);
 
-        console.log(`[useQuestions] ✅ ${appQuestions.length} questões carregadas`);
+        console.log(`[useQuestions] ✅ ${appQuestions.length} questões carregadas em ${language === 'pt-BR' ? 'Português' : 'English'}`);
         setQuestions(appQuestions);
       } catch (err) {
         console.error('[useQuestions] ❌ Erro ao buscar questões:', err);
@@ -142,7 +132,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     };
 
     loadQuestions();
-  }, [certificationId, domains?.join(','), tier, limit, enabled, shuffle, seed, take]);
+  }, [certificationId, domains?.join(','), tier, limit, enabled, shuffle, seed, take, language]);
 
   return { questions, loading, error };
 }

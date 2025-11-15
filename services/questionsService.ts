@@ -20,6 +20,7 @@ export interface QuizFilters {
   shuffle?: boolean;
   seed?: string;
   take?: number;
+  language?: 'en' | 'pt-BR';
 }
 
 /**
@@ -45,6 +46,17 @@ export async function fetchQuestions(filters: QuizFilters): Promise<Question[]> 
   // Filtro de tier (FREE vs PRO)
   if (filters.tier && filters.tier !== 'ALL') {
     query = query.eq('tier', filters.tier);
+  }
+
+  // Filtro de idioma (EN vs PT-BR)
+  if (filters.language) {
+    if (filters.language === 'pt-BR') {
+      // Questões em português terminam com -br
+      query = query.ilike('id', '%-br');
+    } else {
+      // Questões em inglês NÃO terminam com -br
+      query = query.not('id', 'ilike', '%-br');
+    }
   }
 
   // Limite de questões

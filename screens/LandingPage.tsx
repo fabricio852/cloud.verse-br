@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Logo } from "../components/common/Logo";
+import { LanguageToggle } from "../components/LanguageToggle";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
 
@@ -414,8 +415,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
       <canvas id="bg-canvas" className="particles-canvas" />
 
       <header className="border-b border-[#00FFFF]/30 bg-[#0a0a12]/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <Logo />
+          <LanguageToggle />
         </div>
       </header>
 

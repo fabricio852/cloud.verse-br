@@ -35,7 +35,19 @@
       "Bash(then echo \"EXISTS: $f\")",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(lsof:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "Bash(git config:*)",
+      "Bash(git log:*)",
+      "Bash(tsx scripts/generate-insert-br.ts:*)",
+      "Bash(scripts/insert-br-questions.sql)"
     ],
     "deny": [],
     "ask": []

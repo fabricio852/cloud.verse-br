@@ -2,6 +2,7 @@ import React, { useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
+import { LanguageToggle } from '../components/LanguageToggle';
 import { useCertificationStore } from '../store/certificationStore';
 import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
@@ -222,6 +223,7 @@ export const Painel: React.FC<PainelProps> = ({
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {t('common:header.online_now', { count: online })}
             </span>
+            <LanguageToggle />
             <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className={`hamburger ${sidebarOpen ? 'hamburger-open' : ''} flex flex-col gap-1.5 p-2 focus:outline-none`}

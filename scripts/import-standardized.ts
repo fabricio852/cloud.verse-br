@@ -18,13 +18,29 @@ config({ path: join(__dirname, '..', '.env.local') });
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.VITE_SUPABASE_SERVICE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('❌ Erro: Variáveis de ambiente não encontradas');
+if (!SUPABASE_URL || (!SUPABASE_ANON_KEY && !SUPABASE_SERVICE_ROLE_KEY)) {
+  console.error('? Erro: Variveis de ambiente no encontradas');
   process.exit(1);
 }
 
-const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_KEY = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY!;
+const usingServiceRole = Boolean(SUPABASE_SERVICE_ROLE_KEY);
+
+if (!usingServiceRole) {
+  console.warn(
+    '?  Ateno: usando a chave annima (VITE_SUPABASE_ANON_KEY). Inseres podem ser bloqueadas pelo RLS. ' +
+      'Adicione SUPABASE_SERVICE_ROLE_KEY ao .env.local para ingesto administrativa.'
+  );
+}
+
+const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY);
+
 
 interface StandardizedQuestion {
   id: string;
