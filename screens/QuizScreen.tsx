@@ -419,14 +419,18 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                             <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
                                 <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
                                 {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
-                                {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
                                 <button
                                   onClick={() => useLanguageStore.getState().toggleLanguage()}
-                                  className="text-2xl hover:opacity-70 transition-opacity"
+                                  className="flex items-center hover:opacity-70 transition-opacity"
                                   title={`Switch language`}
                                 >
-                                  {useLanguageStore.getState().language === 'en' ? '🇺🇸' : '🇧🇷'}
+                                  <img
+                                    src={useLanguageStore.getState().language === 'en' ? '/flag-us.png' : '/flag-br.png'}
+                                    alt={useLanguageStore.getState().language === 'en' ? 'English' : 'Portuguese'}
+                                    className="h-6 w-auto rounded-sm"
+                                  />
                                 </button>
+                                {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
                                 {toggleTheme && (
                                     <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
