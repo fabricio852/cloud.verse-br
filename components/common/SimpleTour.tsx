@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface SimpleTourProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const SimpleTour: React.FC<SimpleTourProps> = ({
   description,
   badge
 }) => {
+  const { t } = useTranslation(['tour']);
   const overlayRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -131,7 +133,7 @@ export const SimpleTour: React.FC<SimpleTourProps> = ({
             onClick={onClose}
             className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-purple-500/25"
           >
-            Entendi
+            {t('tour:simple_tour.understood')}
           </button>
         </div>
       </div>

@@ -1,0 +1,28 @@
+{
+  "header": {
+    "title": "PRÁTICA POR DOMÍNIOS",
+    "subtitle": "Customize seu treinamento",
+    "back": "Voltar",
+    "back_to_dashboard": "Voltar ao Painel"
+  },
+  "selection": {
+    "select_domains": "Selecione os domínios para treinar",
+    "all_domains": "Todos os domínios"
+  },
+  "quantity": {
+    "label": "Quantidade de questões",
+    "no_mandatory_proportions": "Sem proporções obrigatórias"
+  },
+  "performance": {
+    "label": "Total",
+    "format": "{{cert}} ~ {{percentage}}%"
+  },
+  "actions": {
+    "start": "Começar",
+    "back": "Voltar"
+  },
+  "empty_state": {
+    "no_domains_selected": "Selecione pelo menos um domínio para continuar",
+    "please_select": "Por favor, escolha um ou mais domínios para iniciar o quiz"
+  }
+}

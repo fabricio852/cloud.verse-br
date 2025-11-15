@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
 import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
@@ -56,6 +57,7 @@ export const Painel: React.FC<PainelProps> = ({
   theme = 'dark',
   toggleTheme,
 }) => {
+  const { t } = useTranslation(['dashboard', 'common']);
   const { certifications, selectCertification, selectedCertId } = useCertificationStore();
   const channel = selectedCertId ? `presence:cert:${selectedCertId}` : 'presence:site';
   const { online } = useOnlinePresence(channel);
@@ -218,7 +220,7 @@ export const Painel: React.FC<PainelProps> = ({
             {/* Online now counter */}
             <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-200 border border-white/20 rounded-full px-3 py-1 bg-white/5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Online now: {online}
+              {t('common:header.online_now', { count: online })}
             </span>
             <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -264,7 +266,7 @@ export const Painel: React.FC<PainelProps> = ({
                     textShadow: `0 0 10px ${toRgba(themeColors.primary, 0.5)}`,
                   }}
                 >
-                  CERTIFICATIONS
+                  {t('common:sidebar.certifications')}
                 </h2>
 
                 <div className="flex-1 space-y-4 overflow-y-auto">
@@ -313,7 +315,7 @@ export const Painel: React.FC<PainelProps> = ({
                     className="block w-full px-4 py-3 border-2 border-[#00FFFF] bg-transparent text-[#00FFFF] text-center font-bold uppercase transition-all duration-200 hover:bg-[#00FFFF] hover:text-black hover:scale-105"
                     style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
                   >
-                    LINKEDIN
+                    {t('common:sidebar.linkedin')}
                   </a>
 
                   {/* Ko-fi Button */}
@@ -324,7 +326,7 @@ export const Painel: React.FC<PainelProps> = ({
                     className="block w-full px-4 py-3 border-2 border-[#FF9900] bg-transparent text-[#FF9900] text-center font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-black hover:scale-105"
                     style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
                   >
-                    ☕ SUPPORT
+                    {t('common:sidebar.support')}
                   </a>
                 </div>
 
@@ -344,7 +346,7 @@ export const Painel: React.FC<PainelProps> = ({
                     e.currentTarget.style.color = themeColors.secondary;
                   }}
                 >
-                  CLOSE
+                  {t('common:sidebar.close')}
                 </button>
               </div>
             </motion.div>
@@ -368,10 +370,10 @@ export const Painel: React.FC<PainelProps> = ({
               textShadow: `0 0 10px ${toRgba(themeColors.primary, 0.5)}`,
             }}
           >
-            CHOOSE YOUR TRAINING
+            {t('dashboard:header.title')}
           </h1>
           <p className="vt323-text text-slate-300 text-2xl">
-            Select a practice mode for the <span style={{ color: themeColors.secondary, fontWeight: 'bold' }}>{certName}</span> exam
+            {t('dashboard:header.subtitle', { cert: certName })}
           </p>
         </motion.div>
 
@@ -389,13 +391,13 @@ export const Painel: React.FC<PainelProps> = ({
                 className="text-xl font-bold"
                 style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
               >
-                QUICK QUIZ
+                {t('dashboard:modes.quick_quiz.title')}
               </div>
               <p className="vt323-text text-lg text-slate-300 flex-1">
-                35 questions with random selection from the complete bank. Ideal for daily training and reinforcing key concepts.
+                {t('dashboard:modes.quick_quiz.description')}
               </p>
               <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
-                START &rarr;
+                {t('common:buttons.start_arrow')}
               </span>
             </div>
           </motion.button>
@@ -413,13 +415,13 @@ export const Painel: React.FC<PainelProps> = ({
                 className="text-xl font-bold"
                 style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
               >
-                FULL QUIZ
+                {t('dashboard:modes.full_quiz.title')}
               </div>
               <p className="vt323-text text-lg text-slate-300 flex-1">
-                65 questions in up to 130 minutes. Simulate the official exam experience with time control and detailed performance.
+                {t('dashboard:modes.full_quiz.description')}
               </p>
               <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
-                START &rarr;
+                {t('common:buttons.start_arrow')}
               </span>
             </div>
           </motion.button>
@@ -437,13 +439,13 @@ export const Painel: React.FC<PainelProps> = ({
                 className="text-xl font-bold"
                 style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
               >
-                BY DOMAINS
+                {t('dashboard:modes.by_domains.title')}
               </div>
               <p className="vt323-text text-lg text-slate-300 flex-1">
-                Focus on AWS official exam domains and track your progress by knowledge area.
+                {t('dashboard:modes.by_domains.description')}
               </p>
               <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
-                START &rarr;
+                {t('common:buttons.start_arrow')}
               </span>
             </div>
           </motion.button>
@@ -461,13 +463,13 @@ export const Painel: React.FC<PainelProps> = ({
                 className="text-xl font-bold"
                 style={{ fontFamily: 'Press Start 2P, cursive', color: themeColors.primary }}
               >
-                REVIEW MODE
+                {t('dashboard:modes.review_mode.title')}
               </div>
               <p className="vt323-text text-lg text-slate-300 flex-1">
-                Review at your pace, without time limit. Ideal for analyzing explanations and consolidating learning.
+                {t('dashboard:modes.review_mode.description')}
               </p>
               <span className="vt323-text text-base font-bold uppercase" style={{ color: themeColors.secondary }}>
-                START &rarr;
+                {t('common:buttons.start_arrow')}
               </span>
             </div>
           </motion.button>
@@ -506,9 +508,9 @@ export const Painel: React.FC<PainelProps> = ({
 
       <footer className="border-t-2 border-[#00FFFF]/30 py-8 px-4 bg-[#0a0a12]/90">
         <div className="max-w-7xl mx-auto text-center vt323-text text-slate-400 text-lg">
-          <p>© 2025 CLOUD.VERSE · Fabricio Felix</p>
+          <p>{t('common:footer.copyright')}</p>
           <p className="mt-3 text-base text-slate-500">
-            This platform is not affiliated with Amazon Web Services.
+            {t('common:footer.disclaimer')}
           </p>
         </div>
       </footer>

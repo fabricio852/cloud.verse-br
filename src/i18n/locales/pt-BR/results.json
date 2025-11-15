@@ -1,0 +1,37 @@
+{
+  "loading": {
+    "calculating": "Calculando pontuação AWS padrão..."
+  },
+  "congratulations": {
+    "title": "Parabéns!",
+    "message": "Você está pronto para a certificação {{cert}}!",
+    "aws_score": "PONTUAÇÃO AWS",
+    "score_display": "{{score}}/1000",
+    "percentage": "{{percentage}}%",
+    "passed": "✓ Aprovado",
+    "failed": "✗ Reprovado (mínimo 70%)",
+    "disclaimer": "Pontuação estimada com base nas respostas corretas. Não é uma pontuação oficial da AWS.",
+    "note_pass": "Você atingiu a pontuação mínima!",
+    "note_fail": "Continue estudando para alcançar 70%."
+  },
+  "performance": {
+    "title": "Acertos por domínio",
+    "domain_performance": "Desempenho por domínio"
+  },
+  "summary": {
+    "title": "Resumo do Quiz",
+    "total_correct": "Total de corretas: {{correct}} de {{total}}",
+    "total_percentage": "Percentual total: {{percentage}}%",
+    "time_spent": "Tempo gasto: {{time}}"
+  },
+  "actions": {
+    "back": "Voltar",
+    "exit": "Sair",
+    "retry": "Tentar novamente",
+    "next_quiz": "Próximo Quiz"
+  },
+  "domain_breakdown": {
+    "title": "Desempenho por Domínio",
+    "correct_of_total": "{{correct}} de {{total}} corretas"
+  }
+}

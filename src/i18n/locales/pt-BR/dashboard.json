@@ -1,0 +1,34 @@
+{
+  "header": {
+    "title": "ESCOLHA SEU TREINAMENTO",
+    "subtitle": "Selecione um modo de prática para a certificação {{cert}}"
+  },
+  "modes": {
+    "quick_quiz": {
+      "title": "QUIZ RÁPIDO",
+      "icon": "🚀",
+      "description": "35 questões com seleção aleatória do banco completo. Ideal para treinamento diário e reforçar conceitos-chave."
+    },
+    "full_quiz": {
+      "title": "QUIZ COMPLETO",
+      "icon": "🎯",
+      "description": "65 questões em até 130 minutos. Simule a experiência do exame oficial com controle de tempo e desempenho detalhado."
+    },
+    "by_domains": {
+      "title": "POR DOMÍNIOS",
+      "icon": "🏗️",
+      "description": "Foque nos domínios oficiais do exame AWS e acompanhe seu progresso por área de conhecimento."
+    },
+    "review_mode": {
+      "title": "MODO REVISÃO",
+      "icon": "📚",
+      "description": "Revise no seu ritmo, sem limite de tempo. Ideal para analisar explicações e consolidar o aprendizado."
+    }
+  },
+  "buttons": {
+    "start_quick": "Começar →",
+    "start_full": "Começar →",
+    "start_domains": "Começar →",
+    "start_review": "Começar →"
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Question, Plano } from '../../types';
 import { DomainTag } from '../common/DomainTag';
 import { Button, GhostButton } from '../ui/Button';
@@ -35,6 +36,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
     onMark,
     navAfterBack = false,
 }) => {
+    const { t } = useTranslation(['quiz', 'common']);
     const isMultiSelect = questao.requiredSelections > 1 || questao.answerKey.length > 1;
 
     const [escolha, setEscolha] = useState<string[]>(initialAnswer ?? []);
@@ -100,7 +102,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
     return (
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
             <div className="flex items-center justify-between mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total questions: {total}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{t('quiz:question_viewer.total_questions', { total })}</div>
             </div>
             <div className="mb-2">
                 <DomainTag domain={questao.domain} />
@@ -114,8 +116,8 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
             <div className="space-y-2">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                     {isMultiSelect
-                        ? `Select ${questao.requiredSelections} alternatives.`
-                        : 'Select one alternative.'}
+                        ? t('quiz:question_viewer.select_alternatives', { count: questao.requiredSelections })
+                        : t('quiz:question_viewer.select_one')}
                 </div>
                 {Object.entries(questao.options).map(([key, value]) => {
                     if (!value) return null;
@@ -162,15 +164,15 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                 {isMultiSelect && !enviado && questao.requiredSelections > 1 && (
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                         {selectionReady
-                            ? 'Ready! You selected the required number of alternatives.'
-                            : `Select ${questao.requiredSelections - escolha.length} remaining alternative(s).`}
+                            ? t('quiz:question_viewer.selection_complete')
+                            : t('quiz:question_viewer.remaining_alternatives', { count: questao.requiredSelections - escolha.length })}
                     </div>
                 )}
             </div>
             <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    {onPrev && <GhostButton onClick={onPrev}>Back</GhostButton>}
-                    <Checkbox label="Mark for review" checked={isMarked} onChange={handleMarkChange} />
+                    {onPrev && <GhostButton onClick={onPrev}>{t('common:buttons.back')}</GhostButton>}
+                    <Checkbox label={t('quiz:question_viewer.mark_review')} checked={isMarked} onChange={handleMarkChange} />
                 </div>
                 <div>
                     {!enviado ? (
@@ -181,16 +183,16 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                     onProxima();
                                 }}
                             >
-                                Next
+                                {t('common:buttons.next')}
                             </Button>
                         ) : (
                             <Button onClick={submit} disabled={!selectionReady}>
-                                Answer
+                                {t('common:buttons.answer')}
                             </Button>
                         )
                     ) : (
                         <Button onClick={onProxima} disabled={navAfterBack && isLastQuestion}>
-                            {navAfterBack && isLastQuestion ? 'Finish in header' : 'Next'}
+                            {navAfterBack && isLastQuestion ? t('quiz:header.finish') : t('common:buttons.next')}
                         </Button>
                     )}
                 </div>
@@ -199,16 +201,16 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                 <>
                     <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200">
                         <div>
-                            <span className="font-semibold">Your answer:</span>{' '}
-                            {escolha.length ? formatAnswers(escolha) : 'No alternative selected'}
+                            <span className="font-semibold">{t('quiz:question_viewer.your_answer')}</span>{' '}
+                            {escolha.length ? formatAnswers(escolha) : t('quiz:question_viewer.no_alternative_selected')}
                         </div>
                         <div>
-                            <span className="font-semibold">Correct answer:</span>{' '}
+                            <span className="font-semibold">{t('quiz:question_viewer.correct_answer')}</span>{' '}
                             {formatAnswers(questao.answerKey)}
                         </div>
                         {isMultiSelect && (
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                This item requires {questao.requiredSelections} correct alternatives.
+                                {t('quiz:question_viewer.requires_correct_alternatives', { count: questao.requiredSelections })}
                             </div>
                         )}
                     </div>
@@ -217,7 +219,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                             className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-700 text-sm text-gray-800 dark:text-gray-300"
                             style={{ borderRadius: 10 }}
                         >
-                            <div className="font-semibold mb-1">Explanation:</div>
+                            <div className="font-semibold mb-1">{t('quiz:question_viewer.explanation')}</div>
                             <div>{questao.explanation_basic}</div>
                         </div>
                     ) : (
@@ -226,7 +228,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                 className="mt-4 p-3 border-2 border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200 text-sm"
                                 style={{ borderRadius: 10 }}
                             >
-                                <div className="font-semibold mb-1">Explanation (correct):</div>
+                                <div className="font-semibold mb-1">{t('quiz:question_viewer.explanation_correct')}</div>
                                 <div dangerouslySetInnerHTML={{ __html: linkAWS(questao.explanation_detailed) }} />
                             </div>
                             {questao.incorrect && (
@@ -235,7 +237,7 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
                                     style={{ borderRadius: 10 }}
                                 >
                                     <div className="font-semibold text-red-700 dark:text-red-400 mb-1">
-                                        Why the others are incorrect
+                                        {t('quiz:question_viewer.why_incorrect')}
                                     </div>
                                     <ul className="list-disc pl-5">
                                         {Object.entries(questao.incorrect)

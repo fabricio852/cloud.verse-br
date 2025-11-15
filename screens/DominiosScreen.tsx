@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GhostButton } from '../components/ui/Button';
 import { Logo } from '../components/common/Logo';
 import { StatPill } from '../components/common/StatPill';
@@ -37,6 +38,7 @@ const CERT_DOMAINS: Record<string, Array<{ key: Domain; pct: number }>> = {
 };
 
 export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBackToLanding, onIniciar }) => {
+    const { t } = useTranslation(['domains', 'common']);
     const { selectedCertId } = useCertificationStore();
     const [qtd, setQtd] = useState(20);
 
@@ -70,22 +72,22 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                         <Logo onClick={onBackToLanding} />
                     </div>
                     <div className="flex items-center gap-2">
-                        <StatPill label="Total" value={`${qtd}`} />
+                        <StatPill label={t('domains:performance.label')} value={`${qtd}`} />
                         {onBackToLanding && (
                             <button
                                 onClick={onBackToLanding}
                                 className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             >
-                                Back
+                                {t('domains:header.back')}
                             </button>
                         )}
-                        <GhostButton onClick={onVoltar}>Back to Dashboard</GhostButton>
-                        <button type="button" onClick={() => onIniciar({ qtd, dom })} className={cn("px-4 py-2 bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white font-semibold", R.md)}>Start</button>
+                        <GhostButton onClick={onVoltar}>{t('domains:header.back_to_dashboard')}</GhostButton>
+                        <button type="button" onClick={() => onIniciar({ qtd, dom })} className={cn("px-4 py-2 bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white font-semibold", R.md)}>{t('domains:actions.start')}</button>
                     </div>
                 </div>
             </header>
             <main className="max-w-4xl mx-auto px-4 py-8">
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Practice by Domains</h2>
+                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">{t('domains:header.title')}</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                     {domains.map(d => (
                         <label key={d.key} className={cn("border bg-white dark:bg-gray-800 dark:border-gray-700 p-4 flex items-start gap-3", R.lg)}>
@@ -97,13 +99,13 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                             />
                             <div>
                                 <div className="font-medium text-gray-900 dark:text-gray-100">{DOMAIN_LABELS[d.key]}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">{selectedCertId} ~ {d.pct}%</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{t('domains:performance.format', { cert: selectedCertId, percentage: d.pct })}</div>
                             </div>
                         </label>
                     ))}
                 </div>
                 <div className="mt-6 flex items-center gap-3" data-tour="dominios-quantity">
-                    <label className="text-sm text-gray-700 dark:text-gray-300">Number of questions</label>
+                    <label className="text-sm text-gray-700 dark:text-gray-300">{t('domains:quantity.label')}</label>
                     <input
                         type="number"
                         value={qtd}
@@ -115,7 +117,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                         }}
                         className="w-24 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1"
                     />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">No mandatory proportions</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('domains:quantity.no_mandatory_proportions')}</div>
                 </div>
             </main>
         </div>

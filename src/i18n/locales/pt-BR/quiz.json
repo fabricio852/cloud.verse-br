@@ -1,0 +1,53 @@
+{
+  "header": {
+    "progress": "Progresso: {{current}}/{{total}}",
+    "time": "Tempo: {{time}}",
+    "correct": "Corretas: {{count}}",
+    "finish": "Finalizar",
+    "back": "Voltar",
+    "exit": "Sair",
+    "menu": "Menu"
+  },
+  "question_viewer": {
+    "total_questions": "Total de questões: {{total}}",
+    "select_alternatives": "Selecione {{count}} alternativas.",
+    "select_one": "Selecione uma alternativa.",
+    "selection_complete": "Pronto! Você selecionou o número necessário de alternativas.",
+    "remaining_alternatives": "Selecione {{count}} alternativa(s) restante(s).",
+    "your_answer": "Sua resposta: {{answers}}",
+    "no_alternative_selected": "Nenhuma alternativa selecionada",
+    "correct_answer": "Resposta correta: {{answers}}",
+    "requires_correct_alternatives": "Esta questão requer {{count}} alternativa(s) correta(s).",
+    "explanation": "Explicação:",
+    "explanation_correct": "Explicação (correto):",
+    "why_incorrect": "Por que as outras estão incorretas",
+    "mark_review": "Marcar para revisão",
+    "marked": "Marcado para revisão"
+  },
+  "navigation_legend": {
+    "answered": "Respondido",
+    "marked": "Marcado",
+    "pending": "Pendente",
+    "expand_grid": "Expandir grade",
+    "collapse_grid": "Recolher grade"
+  },
+  "loading": {
+    "loading_questions": "Carregando questões...",
+    "check_connection": "Se demorar muito, verifique sua conexão de internet."
+  },
+  "finish_modal": {
+    "title": "Finalizar Quiz?",
+    "answered_count": "Você respondeu {{answered}} de {{total}} questões.",
+    "marked_count_one": "Você marcou {{count}} questão para revisão.",
+    "marked_count_other": "Você marcou {{count}} questões para revisão.",
+    "unanswered_count_one": "{{count}} questão sem resposta.",
+    "unanswered_count_other": "{{count}} questões sem resposta.",
+    "confirm": "Tem certeza de que deseja finalizar? Suas respostas serão avaliadas.",
+    "reminder_marked": "⚠️ Você ainda tem questões marcadas para revisão",
+    "cancel": "Continuar",
+    "confirm_finish": "Sim, finalizar"
+  },
+  "completed": {
+    "calculating": "Calculando pontuação AWS padrão..."
+  }
+}

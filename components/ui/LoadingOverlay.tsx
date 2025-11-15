@@ -6,11 +6,11 @@ interface LoadingOverlayProps {
 }
 
 const LOADING_MESSAGES = [
-    "Burning the midnight oil...",
-    "Getting the ball rolling...",
-    "Dotting the i's and crossing the t's...",
-    "Breaking the ice...",
-    "Cutting to the chase..."
+    "Enchendo a cachola...",
+    "Ligando os motores...",
+    "Afinando os detalhes...",
+    "Preparando sua prática...",
+    "Preparado?"
 ];
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message }) => {

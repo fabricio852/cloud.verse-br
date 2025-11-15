@@ -1,0 +1,44 @@
+{
+  "hero": {
+    "title": "DOMINE AWS",
+    "typewriter_1": "Prepare-se para o SAA-C03...",
+    "typewriter_2": "Aumente suas habilidades em cloud...",
+    "typewriter_3": "Mergulhe em IA Generativa (AIF-C01)...",
+    "typewriter_4": "Oportunidade para todos.",
+    "badge": "100% GRATUITO • SEM PAYWALL",
+    "cta": "Começar →"
+  },
+  "certifications": {
+    "section_title": "ESCOLHA SUA CERTIFICAÇÃO",
+    "section_subtitle": "Selecione uma certificação AWS e comece a praticar",
+    "loading": "Carregando certificações...",
+    "no_certifications": "Nenhuma certificação encontrada. Verifique sua conexão.",
+    "clf_c02": {
+      "badge": "FUNDACIONAL",
+      "title": "AWS Certified Cloud Practitioner",
+      "description": "O ponto de partida. Domine os fundamentos da nuvem AWS, modelos de responsabilidade compartilhada, segurança básica e precificação."
+    },
+    "saa_c03": {
+      "badge": "ASSOCIADO",
+      "title": "AWS Certified Solutions Architect - Associate",
+      "description": "O padrão da indústria. Aprenda a projetar arquiteturas resilientes, de alto desempenho, seguras e otimizadas em custo."
+    },
+    "aif_c01": {
+      "badge": "NOVO • FUNDACIONAL",
+      "title": "AWS Certified AI Practitioner",
+      "description": "O futuro é agora. Mergulhe em IA Generativa, Machine Learning e uso ético de IA na plataforma AWS."
+    }
+  },
+  "creator": {
+    "name": "FABRICIO FELIX",
+    "title": "2x AWS Certified · Fundador da Plataforma",
+    "bio": "Construí esta plataforma sozinho com um objetivo claro: dar a todos a chance de se certificar na AWS sem pagar nada. Este projeto é mantido totalmente com doações, quando você contribui, ajuda a manter os servidores online, a financiar novas questões e possibilita que pessoas com menos recursos continuem estudando de graça. Seu apoio não apenas mantém um site — abre oportunidades e ajuda a abrir portas na carreira de outra pessoa.",
+    "linkedin_button": "LINKEDIN",
+    "support_button": "Apoiar no Ko-fi",
+    "support_alt": "Suporte Ko-fi"
+  },
+  "pageviews": {
+    "loading": "CARREGANDO VISUALIZAÇÕES...",
+    "total": "Total de visualizações"
+  }
+}

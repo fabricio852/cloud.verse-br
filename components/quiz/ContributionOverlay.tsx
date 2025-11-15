@@ -1,14 +1,11 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface ContributionOverlayProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const contributionMessages = [
-  "Your contribution keeps everything free. Supporting on Ko-fi helps cover infrastructure costs and keeps the door open for those who cannot pay. Thank you for strengthening the community!",
-];
 
 const avatarUrl = "/profile.png";
 const kofiImgUrl = new URL('../../support_me_on_kofi_beige.png', import.meta.url).href;
@@ -18,9 +15,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [message] = React.useState(() => {
-    return contributionMessages[Math.floor(Math.random() * contributionMessages.length)];
-  });
+  const { t } = useTranslation(['tour']);
 
   useEffect(() => {
     if (isOpen) {
@@ -74,7 +69,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                         </div>
                       </div>
                       <h3 className="text-xl font-semibold text-white">
-                        Support free education
+                        {t('tour:contribution.title')}
                       </h3>
                     </div>
                     <button
@@ -91,7 +86,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                 {/* Content */}
                 <div className="p-6 space-y-6">
                   <p className="text-gray-300 leading-relaxed text-base">
-                    {message}
+                    {t('tour:contribution.message')}
                   </p>
 
                   {/* Ko-fi Button */}
@@ -140,12 +135,12 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     onClick={onClose}
                     className="w-full py-3 px-6 border border-white/10 text-white rounded-xl hover:bg-white/5 transition-colors"
                   >
-                    Continue studying
+                    {t('tour:contribution.continue_button')}
                   </button>
 
                   {/* Footer note */}
                   <p className="text-xs text-gray-500 text-center">
-                    This platform will remain free. Your contribution covers costs and allows me to continuously improve it.
+                    {t('tour:contribution.footer_note')}
                   </p>
                 </div>
               </div>

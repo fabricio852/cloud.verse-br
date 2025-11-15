@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ResultSummary, Domain } from '../types';
 import { GhostButton } from '../components/ui/Button';
 import { DonutChart } from '../components/charts/DonutChart';
@@ -18,6 +19,7 @@ interface ResultScreenProps {
 }
 
 export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onVoltar, theme = 'light', toggleTheme }) => {
+    const { t } = useTranslation(['results', 'common']);
     const { selectedCertId } = useCertificationStore();
     const [loading, setLoading] = useState(true);
 
@@ -34,8 +36,15 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
 
     // Obter domínios baseado na certificação
     const domains = useMemo(() => {
-        const byDomain = summary?.byDomainCorrect || {};
-        return Object.keys(byDomain) as Domain[];
+        // Show all domains present in totals or corrects to avoid hiding
+        // domains where the user had zero correct answers.
+        const totals = summary?.byDomainTotal || {};
+        const corrects = summary?.byDomainCorrect || {};
+        const keys = new Set<string>([
+            ...Object.keys(totals),
+            ...Object.keys(corrects),
+        ]);
+        return Array.from(keys) as Domain[];
     }, [summary]);
 
     const chartData = domains.map(k => ({
@@ -80,43 +89,43 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
                             onClick={onBack}
                             className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         >
-                            Back
+                            {t('results:actions.back')}
                         </button>
                         {toggleTheme && (
                             <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                 {theme === 'light' ? <MoonIcon /> : <SunIcon />}
                             </button>
                         )}
-                        {onVoltar && <GhostButton onClick={onVoltar}>Exit</GhostButton>}
+                        {onVoltar && <GhostButton onClick={onVoltar}>{t('results:actions.exit')}</GhostButton>}
                     </div>
                 </div>
                 {loading ? (
-                    <div className="grid place-items-center py-12"><div className="w-10 h-10 rounded-full border-4 border-purple-800 border-t-transparent animate-spin" /><div className="mt-4 text-gray-600 dark:text-gray-400">Calculating AWS standard score...</div></div>
+                    <div className="grid place-items-center py-12"><div className="w-10 h-10 rounded-full border-4 border-purple-800 border-t-transparent animate-spin" /><div className="mt-4 text-gray-600 dark:text-gray-400">{t('results:loading.calculating')}</div></div>
                 ) : (
                     <div className="space-y-6">
                         {pass && (
                             <div className="text-center mb-4">
-                                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">Congratulations!</div>
-                                <p className="text-lg text-gray-700 dark:text-gray-300">You are prepared for the {selectedCertId} certification!</p>
+                                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{t('results:congratulations.title')}</div>
+                                <p className="text-lg text-gray-700 dark:text-gray-300">{t('results:congratulations.message', { cert: selectedCertId })}</p>
                             </div>
                         )}
                         <div className="text-center">
                             <div className={cn("inline-block px-5 py-4 border-2", pass ? "border-green-600 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-300" : "border-red-600 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-300")} style={{ borderRadius: 14 }}>
-                                <div className="text-xs font-semibold uppercase tracking-wider">AWS SCORE</div>
+                                <div className="text-xs font-semibold uppercase tracking-wider">{t('results:congratulations.aws_score')}</div>
                                 <div className="mt-1 font-extrabold tracking-tight tabular-nums"><span className="text-5xl">{score}</span><span className="mx-1 text-5xl">/</span><span className="text-5xl">1000</span></div>
-                                <div className="mt-3 text-2xl font-bold">{percentage}%</div>
+                                <div className="mt-3 text-2xl font-bold">{t('results:congratulations.percentage', { percentage })}</div>
                             </div>
-                            {pass ? (<div className="mt-3 text-lg font-bold text-green-700 dark:text-green-400">✓ Approved</div>) : (<div className="mt-3 text-lg font-bold text-red-700 dark:text-red-400">✗ Failed (minimum 70%)</div>)}
-                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Estimated score based on correct answers. Not an official AWS score.</div>
+                            {pass ? (<div className="mt-3 text-lg font-bold text-green-700 dark:text-green-400">{t('results:congratulations.passed')}</div>) : (<div className="mt-3 text-lg font-bold text-red-700 dark:text-red-400">{t('results:congratulations.failed')}</div>)}
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('results:congratulations.disclaimer')}</div>
                         </div>
                         <div className="border dark:border-gray-700 p-4" style={{ borderRadius: 12 }}>
-                            <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">Correct answers by domain</div>
+                            <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">{t('results:performance.title')}</div>
                             <div className="w-full flex items-center justify-center py-4"><DonutChart data={chartData} size={240} thickness={28} /></div>
                             <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
                                 {chartData.map(e => (<span key={e.key} className="inline-flex items-center gap-2 font-medium text-gray-800 dark:text-gray-300"><span className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: DONUT_COLORS[e.key] }} /><span>{DOMAIN_LABELS[e.key]}</span><span className="text-gray-500 dark:text-gray-400">({e.total ? Math.round((e.value / e.total) * 100) : 0}%)</span></span>))}
                             </div>
                         </div>
-                        <div className="text-center text-gray-700 dark:text-gray-300">Total correct: <b>{correct}</b> of <b>{total}</b></div>
+                        <div className="text-center text-gray-700 dark:text-gray-300">{t('results:summary.total_correct', { correct, total })}</div>
                     </div>
                 )}
             </div>

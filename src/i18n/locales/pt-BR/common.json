@@ -1,0 +1,74 @@
+{
+  "header": {
+    "online_now": "Online agora: {{count}}",
+    "menu": "Menu",
+    "close": "Fechar"
+  },
+  "sidebar": {
+    "certifications": "CERTIFICAÇÕES",
+    "linkedin": "LINKEDIN",
+    "support": "☕ APOIAR",
+    "close": "FECHAR"
+  },
+  "buttons": {
+    "start": "Começar",
+    "start_arrow": "Começar →",
+    "back": "Voltar",
+    "exit": "Sair",
+    "next": "Próxima",
+    "previous": "Anterior",
+    "finish": "Finalizar",
+    "answer": "Responder",
+    "continue": "Continuar",
+    "close": "Fechar"
+  },
+  "footer": {
+    "copyright": "© 2025 CLOUD.VERSE · Fabricio Felix",
+    "disclaimer": "Esta plataforma não é afiliada com a Amazon Web Services.",
+    "linkedin_button": "LINKEDIN",
+    "support_button": "APOIAR"
+  },
+  "common_labels": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "question": "Questão",
+    "questions": "Questões",
+    "question_one": "questão",
+    "question_other": "questões",
+    "answer": "Resposta",
+    "answers": "Respostas",
+    "correct": "Correto",
+    "incorrect": "Incorreto",
+    "explanation": "Explicação",
+    "domain": "Domínio",
+    "domains": "Domínios",
+    "score": "Pontuação",
+    "percentage": "Percentual",
+    "total": "Total",
+    "approved": "Aprovado",
+    "failed": "Reprovado"
+  },
+  "navigation": {
+    "back_to_dashboard": "Voltar ao Painel",
+    "back_to_landing": "Voltar à Página Inicial",
+    "go_back": "Voltar"
+  },
+  "loading_states": {
+    "loading_content": "Carregando conteúdo...",
+    "loading_questions": "Carregando questões...",
+    "loading_pageviews": "Carregando visualizações...",
+    "check_connection": "Se demorar muito, verifique sua conexão de internet."
+  },
+  "errors": {
+    "no_questions_available": "Nenhuma questão disponível",
+    "no_questions_for_cert": "Não temos questões cadastradas para esta certificação ainda",
+    "working_to_add_content": "Estamos trabalhando para adicionar conteúdo em breve...",
+    "no_certification_selected": "Nenhuma certificação selecionada",
+    "no_certifications_found": "Nenhuma certificação encontrada. Verifique sua conexão."
+  },
+  "tips": {
+    "contribute_questions": "💡 Dica: Se você tem questões para importar..."
+  }
+}

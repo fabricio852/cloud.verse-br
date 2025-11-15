@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
@@ -49,6 +50,7 @@ const CERT_COLORS: Record<string, { border: string; borderHover: string; text: s
 const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.meta.url).href;
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+  const { t } = useTranslation(['landing', 'common']);
   const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
   const { totalVisits, loading } = useTotalVisits(5000);
   const [minHold, setMinHold] = useState(true);
@@ -68,10 +70,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   // Efeito de digitação EXACTO conforme solicitado (mantido literalmente)
   useEffect(() => {
         const phrases = [
-            "Gear up for SAA-C03...",
-            "Level up your cloud skills...",
-            "Dive into Generative AI (AIF-C01)...",
-            "Opportunity for everyone."
+            t('landing:hero.typewriter_1'),
+            t('landing:hero.typewriter_2'),
+            t('landing:hero.typewriter_3'),
+            t('landing:hero.typewriter_4')
         ];
         let phraseIndex = 0;
         let charIndex = 0;
@@ -422,8 +424,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           <div className="max-w-6xl mx-auto text-center">
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
               {/* Glitch title */}
-              <h1 className="glitch mb-4" data-text="MASTER AWS">
-                MASTER AWS
+              <h1 className="glitch mb-4" data-text={t('landing:hero.title')}>
+                {t('landing:hero.title')}
               </h1>
 
               {/* Typewriter text (exato, com id) - logo abaixo do título */}
@@ -443,7 +445,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     fontSize: '1.875rem',
                   }}
                 >
-                  100% FREE • NO PAYWALL
+                  {t('landing:hero.badge')}
                 </span>
               </div>
 
@@ -470,10 +472,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                 className="text-3xl md:text-4xl font-bold tracking-tight text-[#FF9900] mb-3"
                 style={{ fontFamily: 'Press Start 2P, cursive', textShadow: '0 0 10px rgba(255,153,0,0.5)' }}
               >
-                CHOOSE YOUR EXAM
+                {t('landing:certifications.section_title')}
               </h2>
               <p className="vt323-text text-slate-300 text-xl max-w-3xl mx-auto">
-                Select an AWS certification and start practicing now
+                {t('landing:certifications.section_subtitle')}
               </p>
             </motion.div>
 
@@ -485,7 +487,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             >
               {isLoading && (
                 <div className="col-span-full border-2 border-[#00FFFF] bg-[#0a0a12]/90 px-6 py-10 text-center vt323-text text-slate-300 text-xl">
-                  Loading certifications...
+                  {t('landing:certifications.loading')}
                 </div>
               )}
 
@@ -501,16 +503,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
                   if (cert.id === 'CLF-C02') {
                     icon = 'fas fa-cloud';
-                    badgeText = 'FOUNDATIONAL';
-                    descriptionText = 'The starting point. Master the fundamentals of AWS cloud, shared responsibility models, basic security, and pricing.';
+                    badgeText = t('landing:certifications.clf_c02.badge');
+                    descriptionText = t('landing:certifications.clf_c02.description');
                   } else if (cert.id === 'SAA-C03') {
                     icon = 'fas fa-network-wired';
-                    badgeText = 'ASSOCIATE';
-                    descriptionText = 'The industry gold standard. Learn to design resilient, high-performance, secure, and cost-optimized architectures.';
+                    badgeText = t('landing:certifications.saa_c03.badge');
+                    descriptionText = t('landing:certifications.saa_c03.description');
                   } else if (cert.id === 'AIF-C01') {
                     icon = 'fas fa-microchip';
-                    badgeText = 'NEW • FOUNDATIONAL';
-                    descriptionText = 'The future is now. Dive into Generative AI, Machine Learning, and ethical AI use on the AWS platform.';
+                    badgeText = t('landing:certifications.aif_c01.badge');
+                    descriptionText = t('landing:certifications.aif_c01.description');
                   }
 
                   const isHovered = hoveredCertId === cert.id;
@@ -559,7 +561,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
                       {/* Start Button */}
                       <span className="vt323-text text-base font-bold uppercase text-center transition-all duration-200" style={{ color: colors.text }}>
-                        START →
+                        {t('landing:hero.cta')}
                       </span>
                     </button>
                   );
@@ -567,7 +569,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
               {!isLoading && certifications.length === 0 && (
                 <div className="col-span-full border-2 border-[#00FFFF] bg-[#0a0a12]/90 px-6 py-10 text-center vt323-text text-slate-300 text-xl">
-                  No certifications found. Check your connection.
+                  {t('landing:certifications.no_certifications')}
                 </div>
               )}
             </motion.div>
@@ -606,13 +608,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     className="text-2xl md:text-3xl font-bold text-[#FF9900] mb-2 tracking-tight"
                     style={{ fontFamily: 'Press Start 2P, cursive', textShadow: '0 0 10px rgba(255,153,0,0.5)' }}
                   >
-                    FABRICIO FELIX
+                    {t('landing:creator.name')}
                   </h3>
                   <p className="vt323-text text-lg uppercase tracking-widest text-[#00FFFF] mb-6">
-                    2x AWS Certified · Platform Founder
+                    {t('landing:creator.title')}
                   </p>
                   <p className="vt323-text text-slate-200 mb-6 leading-relaxed text-lg">
-                    I'm a Brazilian solo developer who built this platform with one clear goal: give people a fair shot at AWS certification without a paywall. Every practice exam here is free because I believe cloud skills should be accessible, not a luxury. This project runs entirely on donations, so when you chip in you help keep the servers online, fund new questions, and make it possible for people with fewer resources to keep studying for free. Your support doesn't just back a website — it pays opportunity forward and helps open doors for someone else's career.
+                    {t('landing:creator.bio')}
                   </p>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                     <motion.a
@@ -622,7 +624,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       whileTap={{ scale: 0.95 }}
                       className="inline-block px-6 py-3 border-2 border-[#00FFFF] bg-transparent text-[#00FFFF] vt323-text text-lg font-bold uppercase transition-all duration-200 hover:bg-[#00FFFF] hover:text-[#0a0a12]"
                     >
-                      LINKEDIN
+                      {t('landing:creator.linkedin_button')}
                     </motion.a>
                     {/* Ko-fi badge button linking directly to your Ko-fi page */}
                     <a
@@ -630,8 +632,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="relative inline-flex items-center justify-center rounded-3xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
-                      aria-label="Support on Ko-fi"
-                      title="Support on Ko-fi"
+                      aria-label={t('landing:creator.support_button')}
+                      title={t('landing:creator.support_button')}
                     >
                       <div
                         className="kofi-glow-ring absolute -inset-2 -z-10 rounded-[28px]"
@@ -641,7 +643,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                         }}
                         aria-hidden="true"
                       />
-                      <img src={kofiBadgeUrl} alt="Ko-fi" className="kofi-badge-highlight h-14 md:h-16 w-auto" loading="lazy" />
+                      <img src={kofiBadgeUrl} alt={t('landing:creator.support_button')} className="kofi-badge-highlight h-14 md:h-16 w-auto" loading="lazy" />
                     </a>
                   </div>
                 </div>
@@ -669,7 +671,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   animate={{ opacity: [0.55, 1, 0.55] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
                 >
-                  LOADING PAGEVIEWS...
+                  {t('landing:pageviews.loading')}
                 </motion.span>
               ) : (
                 <motion.span
@@ -689,9 +691,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
       <footer className="border-t-2 border-[#00FFFF]/30 py-8 px-4 bg-[#0a0a12]/90">
         <div className="max-w-7xl mx-auto text-center vt323-text text-slate-400 text-lg">
-          <p>© 2025 CLOUD.VERSE · Fabricio Felix</p>
+          <p>{t('common:footer.copyright')}</p>
           <p className="mt-3 text-base text-slate-500">
-            This platform is not affiliated with Amazon Web Services.
+            {t('common:footer.disclaimer')}
           </p>
         </div>
       </footer>

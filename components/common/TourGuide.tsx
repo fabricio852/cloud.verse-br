@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TourProvider, TourStep } from '@reactour/tour';
 import { Mask } from '@reactour/mask';
 import { Popover } from '@reactour/popover';
@@ -112,6 +113,7 @@ const getTourSteps = (tourType: TourType): TourStep[] => {
 };
 
 export const TourGuide: React.FC<TourGuideProps> = ({ children, isOpen, onClose, tourType = 'quiz-rapido' }) => {
+  const { t } = useTranslation(['tour']);
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getTourSteps(tourType);
 
@@ -136,9 +138,9 @@ export const TourGuide: React.FC<TourGuideProps> = ({ children, isOpen, onClose,
       showCloseButton
       showNavigation
       showBadge
-      badgeContent={({ currentStep, steps }) => `${currentStep + 1} de ${steps.length}`}
-      prevButton={currentStep > 0 ? 'Anterior' : null}
-      nextButton={currentStep < steps.length - 1 ? 'Próximo' : 'Finalizar'}
+      badgeContent={({ currentStep, steps }) => t('tour:navigation.current', { current: currentStep + 1, total: steps.length })}
+      prevButton={currentStep > 0 ? t('tour:navigation.previous') : null}
+      nextButton={currentStep < steps.length - 1 ? t('tour:navigation.next') : t('tour:navigation.finish')}
     >
       {children}
     </TourProvider>

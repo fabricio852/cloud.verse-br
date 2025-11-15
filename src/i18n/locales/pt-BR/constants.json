@@ -1,0 +1,70 @@
+{
+  "domains": {
+    "saa_c03": {
+      "design_secure_architectures": "Arquitetura Segura",
+      "design_resilient_architectures": "Arquitetura Resiliente",
+      "design_high_performance_architectures": "Arquitetura de Alto Desempenho",
+      "design_cost_optimized_architectures": "Otimização de Custos"
+    },
+    "clf_c02": {
+      "cloud_concepts": "Conceitos de Cloud",
+      "security_and_compliance": "Segurança e Conformidade",
+      "cloud_technology_and_services": "Tecnologia e Serviços",
+      "billing_and_pricing": "Faturamento e Precificação",
+      "technology_and_services": "Tecnologia e Serviços"
+    },
+    "aif_c01": {
+      "responsible_ai": "IA Responsável",
+      "ai_services": "Serviços de IA",
+      "ai_fundamentals": "Fundamentos de IA",
+      "ml_development": "Desenvolvimento de ML"
+    }
+  },
+  "flashcards": {
+    "card_1": {
+      "question": "O que é o Amazon S3?",
+      "answer": "Amazon Simple Storage Service (S3) é um serviço de armazenamento de objetos que oferece escalabilidade, disponibilidade de dados, segurança e desempenho."
+    },
+    "card_2": {
+      "question": "O que é o Amazon EC2?",
+      "answer": "Amazon Elastic Compute Cloud (EC2) fornece capacidade de computação segura e redimensionável na nuvem."
+    },
+    "card_3": {
+      "question": "O que é o Amazon RDS?",
+      "answer": "Amazon Relational Database Service (RDS) facilita a configuração, operação e dimensionamento de um banco de dados relacional na nuvem."
+    },
+    "card_4": {
+      "question": "O que é o AWS Lambda?",
+      "answer": "AWS Lambda permite executar código sem provisionar ou gerenciar servidores, pagando apenas pelo tempo de computação consumido."
+    },
+    "card_5": {
+      "question": "O que é o Amazon VPC?",
+      "answer": "Amazon Virtual Private Cloud (VPC) permite lançar recursos da AWS em uma rede virtual isolada que você define."
+    },
+    "card_6": {
+      "question": "O que é o AWS IAM?",
+      "answer": "AWS Identity and Access Management (IAM) permite gerenciar com segurança o acesso aos serviços e recursos da AWS."
+    },
+    "card_7": {
+      "question": "O que é o Amazon CloudFront?",
+      "answer": "Amazon CloudFront é um serviço de rede de entrega de conteúdo (CDN) que entrega dados com baixa latência e altas velocidades de transferência."
+    },
+    "card_8": {
+      "question": "O que é o AWS CloudTrail?",
+      "answer": "AWS CloudTrail permite auditar, monitorar e registrar atividades e eventos em sua conta da AWS."
+    },
+    "card_9": {
+      "question": "O que é o Amazon CloudWatch?",
+      "answer": "Amazon CloudWatch fornece visibilidade dos seus recursos, aplicativos e serviços em execução na AWS."
+    },
+    "card_10": {
+      "question": "O que é o AWS Auto Scaling?",
+      "answer": "AWS Auto Scaling permite dimensionar automaticamente seus recursos para manter o desempenho desejado com o melhor custo."
+    }
+  },
+  "certification_names": {
+    "saa_c03": "AWS Certified Solutions Architect - Associate",
+    "clf_c02": "AWS Certified Cloud Practitioner",
+    "aif_c01": "AWS Certified AI Practitioner"
+  }
+}

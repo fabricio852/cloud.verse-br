@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 
 interface EmptyQuestionsProps {
@@ -12,6 +13,8 @@ export const EmptyQuestions: React.FC<EmptyQuestionsProps> = ({
   certificationName,
   onBack
 }) => {
+  const { t } = useTranslation(['common']);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="max-w-md w-full text-center">
@@ -34,32 +37,30 @@ export const EmptyQuestions: React.FC<EmptyQuestionsProps> = ({
 
         {/* Title */}
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-          Nenhuma questão disponível
+          {t('common:errors.no_questions_available')}
         </h2>
 
         {/* Message */}
         <p className="text-gray-600 dark:text-gray-400 mb-2">
-          Ainda não temos questões cadastradas para a certificação{' '}
+          {t('common:errors.no_questions_for_cert')}{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
             {certificationName || certificationId}
           </span>.
         </p>
 
         <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
-          Estamos trabalhando para adicionar conteúdo em breve.
-          Por enquanto, tente outra certificação disponível.
+          {t('common:errors.working_to_add_content')}
         </p>
 
         {/* Action Button */}
         <Button onClick={onBack} className="w-full sm:w-auto">
-          Voltar ao Painel
+          {t('common:navigation.back_to_dashboard')}
         </Button>
 
         {/* Additional Info */}
         <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <p className="text-sm text-blue-800 dark:text-blue-300">
-            💡 <strong>Dica:</strong> Se você tem questões para importar,
-            entre em contato com o administrador do sistema.
+            {t('common:tips.contribute_questions')}
           </p>
         </div>
       </div>

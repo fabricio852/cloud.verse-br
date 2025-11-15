@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { GhostButton } from '../components/ui/Button';
 import { QuestionViewer } from '../components/quiz/QuestionViewer';
@@ -40,6 +41,7 @@ const convertQuestion = (dbQ: DBQuestion): Question => {
 };
 
 export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, plano, theme = 'light' }) => {
+    const { t } = useTranslation(['common', 'quiz']);
     const { selectedCertId } = useCertificationStore();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,10 +109,10 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
                                 onClick={onVoltar}
                                 className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             >
-                                Back
+                                {t('common:buttons.back')}
                             </button>
                         )}
-                        <GhostButton onClick={onBack}>Exit</GhostButton>
+                        <GhostButton onClick={onBack}>{t('common:buttons.exit')}</GhostButton>
                     </div>
                 </div>
             </header>
@@ -119,21 +121,21 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
                             <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-600 dark:text-gray-400">Loading questions...</p>
+                            <p className="text-gray-600 dark:text-gray-400">{t('common:loading_states.loading_questions')}</p>
                         </div>
                     </div>
                 ) : !selectedCertId ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">No certification selected</p>
-                            <p className="text-gray-500 dark:text-gray-500 text-sm">Go back and select a certification</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">{t('common:errors.no_certification_selected')}</p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm">{t('common:navigation.go_back')}</p>
                         </div>
                     </div>
                 ) : questions.length === 0 ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">No questions found</p>
-                            <p className="text-gray-500 dark:text-gray-500 text-sm">Certification: {selectedCertId}</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">{t('common:errors.no_questions_available')}</p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm">{selectedCertId}</p>
                         </div>
                     </div>
                 ) : (
@@ -156,8 +158,8 @@ export const ReviewScreen: React.FC<ReviewScreenProps> = ({ onBack, onVoltar, pl
                                     })}
                                 </div>
                                 <div className="flex items-center gap-4 text-xs dark:text-gray-400">
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" />Answered</div>
-                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" />Marked</div>
+                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full" />{t('quiz:navigation_legend.answered')}</div>
+                                    <div className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" />{t('quiz:navigation_legend.marked')}</div>
                                 </div>
                             </div>
                         </div>
