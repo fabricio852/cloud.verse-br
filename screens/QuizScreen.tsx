@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionViewer } from '../components/quiz/QuestionViewer';
 import { Logo } from '../components/common/Logo';
+import { LanguageToggle } from '../components/LanguageToggle';
 import { Button, GhostButton } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { MoonIcon, SunIcon } from '../components/common/Icons';
@@ -428,6 +429,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                         {t('quiz:header.back')}
                                     </button>
                                 )}
+                                <LanguageToggle />
                                 {toggleTheme && (
                                     <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
