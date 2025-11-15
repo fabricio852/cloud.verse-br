@@ -12,6 +12,7 @@ import { Q_BANK } from '../constants';
 import { fmtTime, weightedAccuracy } from '../utils';
 import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useContributionReminder } from '../hooks/useContributionReminder';
+import { useLanguageAwareQuiz } from '../hooks/useLanguageAwareQuiz';
 import { useCertificationStore } from '../store/certificationStore';
 import { useLanguageStore } from '../stores/languageStore';
 import { trackEvent } from '../services/analytics';
@@ -58,18 +59,29 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             radial-gradient(130% 135% at 50% 110%, ${toRgba(certTheme.accent, 0.22)} 0%, transparent 68%)
         `,
     };
-    const [i, setI] = useState(0);
-    const [resps, setResps] = useState<(string[] | null)[]>([]);
-    const [marked, setMarked] = useState<{ [key: number]: boolean }>({});
+    // Hook que gerencia respostas por ID (independente de índice/idioma)
+    const {
+        currentIndex: i,
+        currentQuestion: questao,
+        currentAnswer,
+        isCurrentMarked: isCurrentQuestionMarked,
+        recordAnswer: recordAnswerById,
+        toggleMark: toggleMarkById,
+        goToNext: goToNextQuestion,
+        goToPrev: goToPrevQuestion,
+        jumpToIndex,
+        getQuestionStatus,
+        answeredCount,
+        markedCount,
+        getDomainStats,
+    } = useLanguageAwareQuiz(questions && questions.length > 0 ? questions : Q_BANK);
+
     const [showConfirm, setShowConfirm] = useState(false);
-    const [byDomCorrect, setByDomCorrect] = useState<DomainStats>({});
-    const [byDomTotal, setByDomTotal] = useState<DomainStats>({});
     const [secsLeft, setSecsLeft] = useState(durationSec);
     const [isGridCollapsed, setIsGridCollapsed] = useState(false);
 
     const quizBank = questions && questions.length > 0 ? questions : Q_BANK;
     const quizSize = tamanho || quizBank.length;
-    const questao = quizBank.length > 0 ? quizBank[i % quizBank.length] : null;
 
     const normalizeSelection = (selection: string[] | null | undefined) =>
         selection && selection.length ? selection.slice().sort().join('|') : '';
@@ -203,81 +215,19 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     }, [timed]);
 
     const enviar = async (answer: string[]) => {
-
         if (!questao) return;
 
-
-
-        const prevAnswer = resps[i];
-
+        const prevAnswer = currentAnswer;
         const isFirstTimeAnswered = !prevAnswer || prevAnswer.length === 0;
-
         const wasCorrect = answersEqual(prevAnswer, questao.answerKey);
-
         const isNowCorrect = answersEqual(answer, questao.answerKey);
 
+        // Registra resposta no hook (mapeia por ID)
+        recordAnswerById(answer);
 
-
-        const newResps = [...resps];
-
-        newResps[i] = answer;
-
-        setResps(newResps);
-
-
-
+        // Incrementar contador de questoes para o lembrete de contribuicao (apenas primeira vez)
         if (isFirstTimeAnswered) {
-
-            // Incrementar contador de questoes para o lembrete de contribuicao
-
             incrementQuestions();
-
-
-
-            setByDomTotal(prev => ({
-
-                ...prev,
-
-                [questao.domain]: (prev[questao.domain] || 0) + 1
-
-            }));
-
-            if (isNowCorrect) {
-
-                setByDomCorrect(prev => ({
-
-                    ...prev,
-
-                    [questao.domain]: (prev[questao.domain] || 0) + 1
-
-                }));
-
-            }
-
-        } else {
-
-            if (wasCorrect && !isNowCorrect) {
-
-                setByDomCorrect(prev => ({
-
-                    ...prev,
-
-                    [questao.domain]: Math.max(0, (prev[questao.domain] || 1) - 1)
-
-                }));
-
-            } else if (!wasCorrect && isNowCorrect) {
-
-                setByDomCorrect(prev => ({
-
-                    ...prev,
-
-                    [questao.domain]: (prev[questao.domain] || 0) + 1
-
-                }));
-
-            }
-
         }
 
 
@@ -288,16 +238,17 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
 
     };
 
-    
     const proxima = () => {
         if (i + 1 < quizSize) {
-            setI(i + 1);
+            goToNextQuestion();
         } else if (!navAfterBack) {
             finalize();
         }
     };
-    
-    const goPrev = () => { if (i > 0) setI(i - 1); };
+
+    const goPrev = () => {
+        goToPrevQuestion();
+    };
 
     // Proteção: não renderizar se não houver questões
     if (!quizBank || quizBank.length === 0 || !questao) {
@@ -318,19 +269,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         );
     }
 
-    const correctCount = resps.filter((answer, idx) => {
-
-        const question = quizBank[idx % quizBank.length];
-
-        if (!question) return false;
-
-        return answersEqual(answer, question.answerKey);
-
-    }).length;
     const timePct = timed && durationSec ? Math.max(0, Math.min(100, Math.round((secsLeft / durationSec) * 100))) : 0;
-
-    const answeredCount = resps.filter(r => Array.isArray(r) && r.length > 0).length;
-    const markedCount = Object.values(marked).filter(m => m).length;
     const unansweredCount = quizSize - answeredCount;
 
     let modalText = t('quiz:finish_modal.answered_count', { answered: answeredCount, total: quizSize });
@@ -369,22 +308,20 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             {!isGridCollapsed && (
                 <div className="flex flex-wrap gap-2">
                     {Array.from({ length: quizSize }).map((_, index) => {
-                        const responseEntry = resps[index];
-                        const hasResponse = Array.isArray(responseEntry) && responseEntry.length > 0;
-                        const isMarked = marked[index];
+                        const status = getQuestionStatus(index);
                         const isActive = i === index;
 
                         let buttonClass = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-                        if (isMarked) { // Marked takes precedence over response
+                        if (status === 'marked') {
                             buttonClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-                        } else if (hasResponse) {
+                        } else if (status === 'answered') {
                             buttonClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
                         }
 
                         return (
                             <button
                                 key={index}
-                                onClick={() => { console.log(`[Quiz] Navegar para questão`, index + 1); setI(index); }}
+                                onClick={() => jumpToIndex(index)}
                                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-gray-800' : ''}`}
                             >{index + 1}</button>
                         );
@@ -497,10 +434,10 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                 onProxima={proxima}
                                 level={level}
                                 onPrev={i > 0 ? goPrev : undefined}
-                                initialAnswer={resps[i] || []}
+                                initialAnswer={currentAnswer || []}
                                 plano={plano}
-                                isMarked={!!marked[i]}
-                                onMark={() => setMarked(prev => ({ ...prev, [i]: !prev[i] }))}
+                                isMarked={isCurrentQuestionMarked}
+                                onMark={toggleMarkById}
                                 navAfterBack={navAfterBack}
                             />
                          </div>
@@ -514,10 +451,10 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                         onProxima={proxima}
                         level={level}
                         onPrev={undefined}
-                        initialAnswer={resps[i] || []}
+                        initialAnswer={currentAnswer || []}
                         plano={plano}
-                        isMarked={!!marked[i]}
-                        onMark={() => setMarked(prev => ({ ...prev, [i]: !prev[i] }))}
+                        isMarked={isCurrentQuestionMarked}
+                        onMark={toggleMarkById}
                         navAfterBack={navAfterBack}
                     />
                 )}
