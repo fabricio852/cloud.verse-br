@@ -310,8 +310,8 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     modalText += ' ' + t('quiz:finish_modal.confirm');
 
     const Grid = () => (
-        <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3 pt-4">
+            <div className="flex items-center justify-between mb-4">
                 {!isGridCollapsed && (
                     <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" /><span className="font-medium">{t('quiz:navigation_legend.answered')}</span></div>
