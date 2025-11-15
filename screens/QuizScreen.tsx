@@ -334,7 +334,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     </svg>
                 </button>
             </div>
-            {!isGridCollapsed && (
+            <div style={{ maxHeight: isGridCollapsed ? '0px' : '500px', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out' }}>
                 <div className="flex flex-wrap gap-1.5">
                     {Array.from({ length: quizSize }).map((_, index) => {
                         const status = getQuestionStatus(index);
@@ -357,7 +357,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                         );
                     })}
                 </div>
-            )}
+            </div>
         </div>
     );
 
