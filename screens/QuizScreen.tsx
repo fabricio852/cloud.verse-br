@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionViewer } from '../components/quiz/QuestionViewer';
 import { Logo } from '../components/common/Logo';
-import { LanguageToggle } from '../components/LanguageToggle';
 import { Button, GhostButton } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { MoonIcon, SunIcon } from '../components/common/Icons';
@@ -14,6 +13,7 @@ import { fmtTime, weightedAccuracy } from '../utils';
 import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useContributionReminder } from '../hooks/useContributionReminder';
 import { useCertificationStore } from '../store/certificationStore';
+import { useLanguageStore } from '../stores/languageStore';
 import { trackEvent } from '../services/analytics';
 
 const toRgba = (hex: string, alpha = 1) => {
@@ -420,7 +420,13 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                 <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
                                 {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
                                 {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
-                                <LanguageToggle />
+                                <button
+                                  onClick={() => useLanguageStore.getState().toggleLanguage()}
+                                  className="text-2xl hover:opacity-70 transition-opacity"
+                                  title={`Switch language`}
+                                >
+                                  {useLanguageStore.getState().language === 'en' ? '🇺🇸' : '🇧🇷'}
+                                </button>
                                 {toggleTheme && (
                                     <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
