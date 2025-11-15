@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { DonationModal } from './DonationModal';
-import { SupportButton } from './SupportButton';
+import { ThemedDonationModal } from './ThemedDonationModal';
+import { ThemedSupportButton } from './ThemedSupportButton';
 
 interface DonationFloatingButtonProps {
   pixKey: string;
@@ -20,19 +20,21 @@ export const DonationFloatingButton: React.FC<DonationFloatingButtonProps> = ({
   return (
     <>
       <div className={desktopOnly ? 'hidden lg:block' : 'block'}>
-        <SupportButton
+        <ThemedSupportButton
           onClick={() => setIsOpen(true)}
           variant="floating"
+          theme="landing"
           showPulse={true}
         />
       </div>
 
-      <DonationModal
+      <ThemedDonationModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         pixKey={pixKey}
         pixReceiverName={pixReceiverName}
         pixReceiverCity={pixReceiverCity}
+        theme="landing"
       />
     </>
   );

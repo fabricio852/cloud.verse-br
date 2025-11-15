@@ -10,7 +10,7 @@ import { DOMAIN_LABELS, DONUT_COLORS } from '../constants';
 import { cn } from '../utils';
 import { useCertificationStore } from '../store/certificationStore';
 import { DomainTag } from '../components/common/DomainTag';
-import { DonationModal } from '../components/donation/DonationModal';
+import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
 
 interface ResultScreenProps {
     summary: ResultSummary | null;
@@ -238,12 +238,13 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
             </div>
 
             {/* PIX Donation Modal - shown after successful completion */}
-            <DonationModal
+            <ThemedDonationModal
                 isOpen={showDonationModal}
                 onClose={() => setShowDonationModal(false)}
                 pixKey="00000000000" // TODO: Configure with actual PIX key
                 pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
                 pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+                theme="landing"
                 onDonationComplete={(amount) => {
                     // Optional: Track donation completion
                     console.log(`Doação de R$ ${amount} realizada via PIX`);
