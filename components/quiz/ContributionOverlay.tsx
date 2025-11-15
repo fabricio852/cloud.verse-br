@@ -9,7 +9,7 @@ interface ContributionOverlayProps {
   onClose: () => void;
 }
 
-const avatarUrl = "/profile.png";
+const avatarUrl = "/profile.jpeg";
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,

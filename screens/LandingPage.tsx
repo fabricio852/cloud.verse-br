@@ -580,7 +580,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   <div className="w-32 h-32 border-4 border-[#00FFFF] p-1 shadow-[0_0_20px_rgba(0,255,255,0.5)]">
                     <div className="w-full h-full bg-black/70 flex items-center justify-center overflow-hidden">
                       <img
-                        src="/profile.png"
+                        src="/profile.jpeg"
                         alt="Fabrício Félix"
                         className="w-full h-full object-cover"
                         onError={(e) => {
