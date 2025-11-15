@@ -483,9 +483,9 @@ export const Painel: React.FC<PainelProps> = ({
           <motion.button
             onClick={() => setDonationModalOpen(true)}
             whileTap={{ scale: 0.95 }}
-            className="support-btn-shake inline-flex items-center gap-2 px-6 py-3 border-2 border-[#FF9900] bg-[#FF9900]/10 text-[#FF9900] vt323-text text-lg font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-[#0a0a12] hover:shadow-[0_0_20px_rgba(255,153,0,0.6)]"
+            className="support-btn-shake inline-flex items-center gap-3 px-10 py-5 border-2 border-[#FF9900] bg-[#FF9900]/10 text-[#FF9900] vt323-text text-2xl font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-[#0a0a12] hover:shadow-[0_0_20px_rgba(255,153,0,0.6)]"
           >
-            <span className="text-xl">♥</span>
+            <span className="text-3xl">♥</span>
             Apoiar com PIX
           </motion.button>
         </motion.div>
