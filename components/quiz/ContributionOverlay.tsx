@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { SupportButton } from '../donation/SupportButton';
+import { DonationModal } from '../donation/DonationModal';
 
 interface ContributionOverlayProps {
   isOpen: boolean;
@@ -8,14 +10,13 @@ interface ContributionOverlayProps {
 }
 
 const avatarUrl = "/profile.png";
-const kofiImgUrl = new URL('../../support_me_on_kofi_beige.png', import.meta.url).href;
-const kofiBadgeFallback = new URL('../../support_me_on_kofi_badge_beige.png', import.meta.url).href;
 
 export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
   isOpen,
   onClose,
 }) => {
   const { t } = useTranslation(['tour']);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -89,39 +90,13 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     {t('tour:contribution.message')}
                   </p>
 
-                  {/* Ko-fi Button */}
-                  <a
-                    href="https://ko-fi.com/fabriciocosta"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full transition-all duration-200 transform hover:scale-105"
-                    style={{
-                      filter: 'drop-shadow(0 0 20px rgba(255, 193, 7, 0.4))',
-                    }}
-                  >
-                    <img
-                      src={kofiImgUrl}
-                      alt="Support me on Ko-fi"
-                      className="w-full h-auto"
-                      style={{
-                        maxWidth: '100%',
-                        display: 'block',
-                      }}
-                      onError={(e) => {
-                        const el = e.currentTarget as HTMLImageElement & { _fallbackStep?: number };
-                        el._fallbackStep = (el._fallbackStep || 0) + 1;
-                        if (el._fallbackStep === 1) {
-                          // Try bundled badge fallback
-                          el.src = kofiBadgeFallback;
-                        } else if (el._fallbackStep === 2) {
-                          // Try Ko-fi CDN as last resort
-                          el.src = 'https://storage.ko-fi.com/cdn/kofi2.png';
-                        } else {
-                          el.style.display = 'none';
-                        }
-                      }}
+                  {/* Support Button - PIX */}
+                  <div className="w-full flex justify-center">
+                    <SupportButton
+                      onClick={() => setDonationModalOpen(true)}
+                      variant="inline"
                     />
-                  </a>
+                  </div>
 
                   {/* Divider */}
                   <div className="flex items-center gap-3">
@@ -146,6 +121,15 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
               </div>
             </motion.div>
           </div>
+
+          {/* Donation Modal */}
+          <DonationModal
+            isOpen={donationModalOpen}
+            onClose={() => setDonationModalOpen(false)}
+            pixKey="00000000000" // TODO: Configure with actual PIX key
+            pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
+            pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+          />
         </>
       )}
     </AnimatePresence>

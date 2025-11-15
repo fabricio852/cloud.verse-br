@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
+import { SupportButton } from "../components/donation/SupportButton";
+import { DonationModal } from "../components/donation/DonationModal";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -46,10 +48,8 @@ const CERT_COLORS: Record<string, { border: string; borderHover: string; text: s
   },
 };
 
-// Ko-fi badge asset (same used in exam mode panel)
-const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.meta.url).href;
-
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const { t } = useTranslation(['landing', 'common']);
   const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
   const { totalVisits, loading } = useTotalVisits(5000);
@@ -395,16 +395,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           opacity: 0.4;
         }
 
-        /* Ko-fi animations (same as exam mode) */
-        .kofi-badge-highlight { animation: kofi-badge-pulse 8s ease-in-out infinite; will-change: transform, filter; }
-        @keyframes kofi-badge-pulse {
-          0%, 70%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 18px 45px rgba(255, 153, 0, 0)); }
-          74% { transform: scale(1.12) rotate(-1.5deg); filter: drop-shadow(0 25px 60px rgba(255, 153, 0, 0.45)); }
-          78% { transform: scale(1.18) rotate(1deg); filter: drop-shadow(0 28px 70px rgba(255, 153, 0, 0.55)); }
-          82% { transform: scale(1.08) rotate(-0.4deg); filter: drop-shadow(0 22px 55px rgba(255, 153, 0, 0.4)); }
-        }
-        .kofi-glow-ring { animation: kofi-glow-spin 9s linear infinite; filter: blur(30px); opacity: 0.9; }
-        @keyframes kofi-glow-spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
       `}</style>
 
       {/* CRT Overlay */}
@@ -626,25 +616,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     >
                       {t('landing:creator.linkedin_button')}
                     </motion.a>
-                    {/* Ko-fi badge button linking directly to your Ko-fi page */}
-                    <a
-                      href="https://ko-fi.com/fabriciocosta"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative inline-flex items-center justify-center rounded-3xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
-                      aria-label={t('landing:creator.support_button')}
-                      title={t('landing:creator.support_button')}
-                    >
-                      <div
-                        className="kofi-glow-ring absolute -inset-2 -z-10 rounded-[28px]"
-                        style={{
-                          background:
-                            'conic-gradient(from 0deg, rgba(0, 255, 255, 0.85) 0%, rgba(255, 153, 0, 0.9) 35%, rgba(0, 255, 255, 0.9) 70%, rgba(255, 153, 0, 0.85) 100%)',
-                        }}
-                        aria-hidden="true"
-                      />
-                      <img src={kofiBadgeUrl} alt={t('landing:creator.support_button')} className="kofi-badge-highlight h-14 md:h-16 w-auto" loading="lazy" />
-                    </a>
+                    {/* Support button - PIX donations */}
+                    <SupportButton
+                      onClick={() => setIsDonationModalOpen(true)}
+                      variant="inline"
+                    />
                   </div>
                 </div>
               </div>
@@ -697,6 +673,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           </p>
         </div>
       </footer>
+
+      {/* Donation Modal */}
+      <DonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
+        pixKey="00000000000" // TODO: Configure with actual PIX key
+        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
+        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+      />
     </div>
   );
 };

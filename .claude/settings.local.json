@@ -48,7 +48,8 @@
       "Bash(git log:*)",
       "Bash(tsx scripts/generate-insert-br.ts:*)",
       "Bash(scripts/insert-br-questions.sql)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Skill(frontend-design:frontend-design)"
     ],
     "deny": [],
     "ask": []

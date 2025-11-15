@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
-import { KofiWidget, KofiWidgetHandle } from '../components/quiz/KofiWidget';
 import { DonationFloatingButton } from '../components/donation/DonationFloatingButton';
+import { SupportButton } from '../components/donation/SupportButton';
+import { DonationModal } from '../components/donation/DonationModal';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
 
 interface PainelProps {
@@ -31,8 +32,6 @@ const toRgba = (hex: string, alpha = 1) => {
 
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
-
-const kofiBadgeUrl = new URL('../support_me_on_kofi_badge_beige.png', import.meta.url).href;
 
 // Cores únicas para todos os exames
 const THEME_COLORS = {
@@ -63,7 +62,7 @@ export const Painel: React.FC<PainelProps> = ({
   const channel = selectedCertId ? `presence:cert:${selectedCertId}` : 'presence:site';
   const { online } = useOnlinePresence(channel);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const kofiWidgetRef = useRef<KofiWidgetHandle>(null);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
   void totalQuestoes;
   void theme;
   void toggleTheme;
@@ -483,27 +482,10 @@ export const Painel: React.FC<PainelProps> = ({
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex justify-center"
         >
-          <button
-            type="button"
-            onClick={() => kofiWidgetRef.current?.open()}
-            className="relative inline-flex items-center justify-center rounded-3xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
-            aria-label="Support on Ko-fi"
-            title="Support on Ko-fi"
-          >
-            <div
-              className="kofi-glow-ring absolute -inset-3 -z-10 rounded-[32px]"
-              style={{
-                background: 'conic-gradient(from 0deg, rgba(0, 255, 255, 0.85) 0%, rgba(255, 153, 0, 0.9) 35%, rgba(0, 255, 255, 0.9) 70%, rgba(255, 153, 0, 0.85) 100%)',
-              }}
-              aria-hidden="true"
-            />
-            <img
-              src={kofiBadgeUrl}
-              alt="Ko-fi"
-              className="kofi-badge-highlight h-28 w-auto"
-              loading="lazy"
-            />
-          </button>
+          <SupportButton
+            onClick={() => setDonationModalOpen(true)}
+            variant="inline"
+          />
         </motion.div>
       </main>
 
@@ -516,14 +498,21 @@ export const Painel: React.FC<PainelProps> = ({
         </div>
       </footer>
 
-      <KofiWidget ref={kofiWidgetRef} desktopOnly showFloatingButton={false} className="pointer-events-auto" />
-
       {/* Donation Floating Button */}
       <DonationFloatingButton
         pixKey="00000000000" // TODO: Configure with actual PIX key
         pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
         pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
         desktopOnly={false}
+      />
+
+      {/* Donation Modal */}
+      <DonationModal
+        isOpen={donationModalOpen}
+        onClose={() => setDonationModalOpen(false)}
+        pixKey="00000000000" // TODO: Configure with actual PIX key
+        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
+        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
       />
     </div>
   );
