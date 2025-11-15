@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
 import { DonationFloatingButton } from '../components/donation/DonationFloatingButton';
-import { SupportButton } from '../components/donation/SupportButton';
-import { DonationModal } from '../components/donation/DonationModal';
+import { ThemedSupportButton } from '../components/donation/ThemedSupportButton';
+import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
 
 interface PainelProps {
@@ -482,9 +482,10 @@ export const Painel: React.FC<PainelProps> = ({
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex justify-center"
         >
-          <SupportButton
+          <ThemedSupportButton
             onClick={() => setDonationModalOpen(true)}
             variant="inline"
+            theme="default"
           />
         </motion.div>
       </main>
@@ -507,12 +508,13 @@ export const Painel: React.FC<PainelProps> = ({
       />
 
       {/* Donation Modal */}
-      <DonationModal
+      <ThemedDonationModal
         isOpen={donationModalOpen}
         onClose={() => setDonationModalOpen(false)}
         pixKey="00000000000" // TODO: Configure with actual PIX key
         pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
         pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+        theme="default"
       />
     </div>
   );

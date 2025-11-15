@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { SupportButton } from '../donation/SupportButton';
-import { DonationModal } from '../donation/DonationModal';
+import { ThemedSupportButton } from '../donation/ThemedSupportButton';
+import { ThemedDonationModal } from '../donation/ThemedDonationModal';
 
 interface ContributionOverlayProps {
   isOpen: boolean;
@@ -92,9 +92,10 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
 
                   {/* Support Button - PIX */}
                   <div className="w-full flex justify-center">
-                    <SupportButton
+                    <ThemedSupportButton
                       onClick={() => setDonationModalOpen(true)}
                       variant="inline"
+                      theme="default"
                     />
                   </div>
 
@@ -123,12 +124,13 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
           </div>
 
           {/* Donation Modal */}
-          <DonationModal
+          <ThemedDonationModal
             isOpen={donationModalOpen}
             onClose={() => setDonationModalOpen(false)}
             pixKey="00000000000" // TODO: Configure with actual PIX key
             pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
             pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+            theme="default"
           />
         </>
       )}
