@@ -416,23 +416,22 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                             <div className="hidden sm:block">
                                 <Logo onClick={onVoltar} />
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                                <div data-tour="quiz-progress">{t('quiz:header.progress', { current: i + 1, total: quizSize })}</div>
-                                {timed && <div className="hidden sm:block" data-tour="quiz-timer">{t('quiz:header.time', { time: fmtTime(secsLeft) })}</div>}
-                                <div data-tour="quiz-score">{t('quiz:header.correct', { count: correctCount })}</div>
+                            <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
+                                <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
+                                {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
                                 {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
+                                <LanguageToggle />
+                                {toggleTheme && (
+                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+                                        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                                    </button>
+                                )}
                                 {onVoltar && (
                                     <button
                                         onClick={onVoltar}
                                         className="hidden sm:block rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                                     >
                                         {t('quiz:header.back')}
-                                    </button>
-                                )}
-                                <LanguageToggle />
-                                {toggleTheme && (
-                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
-                                        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
                                     </button>
                                 )}
                                 <GhostButton onClick={onExit}>{t('quiz:header.exit')}</GhostButton>
