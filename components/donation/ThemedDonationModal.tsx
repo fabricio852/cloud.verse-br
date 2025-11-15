@@ -131,10 +131,10 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
         >
           <div>
             <h2 className="text-xl font-bold" style={{ color: styles.textColor }}>
-              Apoie nosso trabalho
+              Apoie a educação gratuita
             </h2>
             <p style={{ color: styles.secondaryColor }} className="text-sm">
-              Via PIX
+              Sua contribuição mantém este serviço chegando até você
             </p>
           </div>
           <button
@@ -199,7 +199,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                 }}
               >
                 <p className="text-xs" style={{ color: styles.textColor }}>
-                  ℹ️ PIX é instantâneo. Sua doação nos ajuda a manter este conteúdo gratuito!
+                  Sua contribuição mantém tudo gratuito e permite que este serviço chegue até você e outras pessoas. Obrigado por continuar a corrente!
                 </p>
               </div>
             </>

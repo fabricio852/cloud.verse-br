@@ -1,21 +1,21 @@
 {
   "quick_quiz": {
-    "title": "🚀 Quiz Rápido",
+    "title": "🌀 Quiz Rápido",
     "description": "Perfeito para uma prática rápida! 35 questões selecionadas aleatoriamente do nosso banco de 650+ questões.",
     "free_note": "Gratuito: Disponível para todos os usuários"
   },
   "full_quiz": {
-    "title": "🎯 Quiz Completo",
+    "title": "🧠 Quiz Completo",
     "description": "Simulação oficial do exame SAA-C03! 65 questões com proporções reais e tempo limite de 130 minutos.",
     "pro_note": "PRO: Explicações detalhadas e navegação completa"
   },
   "by_domains": {
-    "title": "🏗️ Prática por Domínios",
+    "title": "📚 Prática por Domínios",
     "description": "Foque nos domínios que mais precisa praticar! Escolha entre Arquitetura Segura, Resiliente, Alto Desempenho ou Custo Otimizado.",
     "pro_note": "PRO: Personalize quantidade e domínios"
   },
   "review_mode": {
-    "title": "📚 Modo Revisão",
+    "title": "🔁 Modo Revisão",
     "description": "Estude no seu ritmo! Navegue por todas as questões, veja explicações detalhadas e marque suas favoritas para revisar depois.",
     "pro_note": "PRO: Acesso completo ao banco de questões"
   },
@@ -30,9 +30,10 @@
   },
   "contribution": {
     "title": "Apoie a educação gratuita",
-    "message": "Sua contribuição mantém tudo gratuito. Apoiar no Ko-fi ajuda a cobrir custos de infraestrutura e mantém a porta aberta para quem não pode pagar. Obrigado por fortalecer a comunidade!",
+    "message": "Sua contribuição mantém tudo gratuito e permite que este serviço chegue até você e outras pessoas. Apoiar no Ko-fi ajuda a cobrir custos de infraestrutura e manter a porta aberta para quem não pode pagar. Obrigado por continuar essa corrente!",
     "support_button": "Apoiar no Ko-fi",
     "continue_button": "Continuar estudando",
     "footer_note": "Esta plataforma permanecerá gratuita. Sua contribuição cobre custos e me permite melhorá-la continuamente."
   }
 }
+

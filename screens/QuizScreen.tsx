@@ -335,7 +335,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 </button>
             </div>
             <div style={{ maxHeight: isGridCollapsed ? '0px' : '600px', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out', position: 'relative', zIndex: 1 }}>
-                <div className="flex flex-wrap gap-1.5 pb-3" style={{ marginTop: '-6px', paddingTop: '6px' }}>
+                <div className="flex flex-wrap gap-1.5 pb-3 pt-2">
                     {Array.from({ length: quizSize }).map((_, index) => {
                         const status = getQuestionStatus(index);
                         const isActive = i === index;
@@ -454,10 +454,6 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     />
                 )}
 
-                {/* Ko-fi Widget positioned below answer cards (mobile only) */}
-                <div className="flex justify-center mt-6 mb-8 md:hidden">
-                    <KofiWidget showFloatingButton={true} inline={true} className="" />
-                </div>
             </main>
 
             <Modal open={showConfirm} onClose={() => setShowConfirm(false)} title={t('quiz:finish_modal.title')}>
@@ -488,10 +484,6 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                 onClose={closeReminder}
             />
 
-            {/* Ko-fi Widget fixed position (desktop only) */}
-            <div className="hidden md:block">
-                <KofiWidget showFloatingButton={true} className="" />
-            </div>
         </div>
     </div>
     );
