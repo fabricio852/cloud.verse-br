@@ -419,17 +419,42 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                             <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
                                 <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
                                 {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
-                                <button
-                                  onClick={() => useLanguageStore.getState().toggleLanguage()}
-                                  className="flex items-center hover:opacity-70 transition-opacity"
-                                  title={`Switch language`}
-                                >
-                                  <img
-                                    src={useLanguageStore.getState().language === 'en' ? '/flag-us.png' : '/flag-br.png'}
-                                    alt={useLanguageStore.getState().language === 'en' ? 'English' : 'Portuguese'}
-                                    className="h-6 w-auto rounded-sm"
-                                  />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      const store = useLanguageStore.getState();
+                                      if (store.language !== 'en') {
+                                        store.setLanguage('en');
+                                      }
+                                    }}
+                                    className={`flex items-center justify-center hover:opacity-70 transition-opacity rounded-sm overflow-hidden border ${useLanguageStore.getState().language === 'en' ? 'border-blue-500 border-2' : 'border-gray-300 dark:border-gray-600'}`}
+                                    title="English"
+                                    style={{ aspectRatio: '16/10', width: '36px' }}
+                                  >
+                                    <img
+                                      src="/flag-us.png"
+                                      alt="English"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const store = useLanguageStore.getState();
+                                      if (store.language !== 'pt-BR') {
+                                        store.setLanguage('pt-BR');
+                                      }
+                                    }}
+                                    className={`flex items-center justify-center hover:opacity-70 transition-opacity rounded-sm overflow-hidden border ${useLanguageStore.getState().language === 'pt-BR' ? 'border-green-500 border-2' : 'border-gray-300 dark:border-gray-600'}`}
+                                    title="Português"
+                                    style={{ aspectRatio: '16/10', width: '36px' }}
+                                  >
+                                    <img
+                                      src="/flag-br.png"
+                                      alt="Português"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                </div>
                                 {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
                                 {toggleTheme && (
                                     <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
