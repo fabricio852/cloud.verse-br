@@ -10,6 +10,86 @@ type Question = Database['public']['Tables']['questions']['Row'];
 type QuizAttempt = Database['public']['Tables']['quiz_attempts']['Row'];
 type UserAnswer = Database['public']['Tables']['user_answers']['Row'];
 
+// Mapeamento de certifications para arquivos JSON
+const BR_QUESTIONS_FILES: Record<string, string> = {
+  'SAA-C03': '/data/saa-questions-br.json',
+  'CLF-C02': '/data/clf-questions-br.json',
+  'AIF-C01': '/data/aif-questions-br.json',
+};
+
+/**
+ * Carrega questões em PT-BR de arquivo JSON local como fallback
+ * Usado quando as questões não estão disponíveis no banco de dados
+ */
+async function loadBRQuestionsFromJSON(certificationId: string): Promise<Question[]> {
+  const filePath = BR_QUESTIONS_FILES[certificationId];
+  if (!filePath) {
+    throw new Error(`Certificação desconhecida: ${certificationId}`);
+  }
+
+  try {
+    const response = await fetch(filePath);
+    if (!response.ok) {
+      throw new Error(`Não foi possível carregar ${filePath}: ${response.statusText}`);
+    }
+
+    const rawQuestions = await response.json();
+
+    // Mapeia questões do arquivo JSON para o formato esperado pela app
+    // Adiciona sufixo -br aos IDs para manter consistência com banco de dados
+    const brQuestions: Question[] = rawQuestions.map((q: any) => ({
+      id: `${q.id}-br`,
+      certification_id: certificationId,
+      domain: q.domain,
+      difficulty: q.difficulty,
+      tier: q.tier || 'FREE',
+      active: q.active !== false,
+      question_text: q.question_text,
+      option_a: q.option_a,
+      option_b: q.option_b,
+      option_c: q.option_c,
+      option_d: q.option_d,
+      option_e: q.option_e,
+      correct_answers: q.correct_answers,
+      required_selection_count: q.required_selection_count || 1,
+      explanation_detailed: q.explanation_detailed,
+      explanation_basic: q.explanation_basic,
+      incorrect_explanations: q.incorrect_explanations,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    return brQuestions;
+  } catch (err) {
+    console.error('[questionsService] Erro ao carregar questões BR do JSON:', err);
+    throw err;
+  }
+}
+
+/**
+ * Aplica filtros client-side às questões carregadas do JSON
+ */
+function applyFiltersToQuestions(questions: Question[], filters: QuizFilters): Question[] {
+  let filtered = [...questions];
+
+  // Filtro de domínios
+  if (filters.domains && filters.domains.length > 0) {
+    filtered = filtered.filter(q => filters.domains!.includes(q.domain));
+  }
+
+  // Filtro de dificuldade
+  if (filters.difficulty && filters.difficulty.length > 0) {
+    filtered = filtered.filter(q => filters.difficulty!.includes(q.difficulty as 'easy' | 'medium' | 'hard'));
+  }
+
+  // Filtro de tier (FREE vs PRO)
+  if (filters.tier && filters.tier !== 'ALL') {
+    filtered = filtered.filter(q => q.tier === filters.tier);
+  }
+
+  return filtered;
+}
+
 export interface QuizFilters {
   certificationId: string;
   domains?: string[];
@@ -27,48 +107,72 @@ export interface QuizFilters {
  * Busca questões do banco com filtros
  */
 export async function fetchQuestions(filters: QuizFilters): Promise<Question[]> {
-  let query = supabase
-    .from('questions')
-    .select('*')
-    .eq('certification_id', filters.certificationId)
-    .eq('active', true);
+  const buildQuery = (lang?: 'en' | 'pt-BR') => {
+    let query = supabase
+      .from('questions')
+      .select('*')
+      .eq('certification_id', filters.certificationId)
+      .eq('active', true);
 
-  // Filtro de domínios
-  if (filters.domains && filters.domains.length > 0) {
-    query = query.in('domain', filters.domains);
-  }
+    // Filtro de domínios
+    if (filters.domains && filters.domains.length > 0) {
+      query = query.in('domain', filters.domains);
+    }
 
-  // Filtro de dificuldade
-  if (filters.difficulty && filters.difficulty.length > 0) {
-    query = query.in('difficulty', filters.difficulty);
-  }
+    // Filtro de dificuldade
+    if (filters.difficulty && filters.difficulty.length > 0) {
+      query = query.in('difficulty', filters.difficulty);
+    }
 
-  // Filtro de tier (FREE vs PRO)
-  if (filters.tier && filters.tier !== 'ALL') {
-    query = query.eq('tier', filters.tier);
-  }
+    // Filtro de tier (FREE vs PRO)
+    if (filters.tier && filters.tier !== 'ALL') {
+      query = query.eq('tier', filters.tier);
+    }
 
-  // Filtro de idioma (EN vs PT-BR)
-  if (filters.language) {
-    if (filters.language === 'pt-BR') {
-      // Questões em português terminam com -br
-      query = query.ilike('id', '%-br');
+    // Filtro de idioma (EN vs PT-BR) via sufixo -br
+    if (lang) {
+      if (lang === 'pt-BR') {
+        query = query.ilike('id', '%-br');
+      } else {
+        query = query.not('id', 'ilike', '%-br');
+      }
+    }
+
+    // Limite de questões
+    if (filters.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if ((filters.seed || filters.shuffle === false) && !filters.excludeAnswered) {
+      query = query.order('id', { ascending: true });
+    }
+
+    return query;
+  };
+
+  // Primeira tentativa com o idioma solicitado
+  let { data, error } = await buildQuery(filters.language);
+
+  // Fallback para PT-BR: tenta buscar sem sufixo -br ou carrega do arquivo local
+  if (!error && filters.language === 'pt-BR' && (!data || data.length === 0)) {
+    // Primeiro tenta buscar sem filtro de idioma (questões que não têm versão PT-BR)
+    const { data: noLangData, error: noLangError } = await buildQuery(undefined);
+    if (!noLangError && noLangData && noLangData.length > 0) {
+      data = noLangData;
     } else {
-      // Questões em inglês NÃO terminam com -br
-      query = query.not('id', 'ilike', '%-br');
+      // Se ainda não houver dados, carrega do arquivo JSON local como último recurso
+      try {
+        let brQuestions = await loadBRQuestionsFromJSON(filters.certificationId);
+        if (brQuestions && brQuestions.length > 0) {
+          // Aplica filtros cliente-side às questões carregadas do JSON
+          brQuestions = applyFiltersToQuestions(brQuestions, filters);
+          data = brQuestions;
+        }
+      } catch (err) {
+        console.warn('[questionsService] Não foi possível carregar questões PT-BR do arquivo local:', err);
+      }
     }
   }
-
-  // Limite de questões
-  if (filters.limit) {
-    query = query.limit(filters.limit);
-  }
-
-  if ((filters.seed || filters.shuffle === false) && !filters.excludeAnswered) {
-    query = query.order('id', { ascending: true });
-  }
-
-  const { data, error } = await query;
 
   if (error) {
     console.error('[questionsService] Erro ao buscar questões:', error);
