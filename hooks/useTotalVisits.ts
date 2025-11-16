@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../services/supabaseClient'
+import { supabase, supabaseMissingEnv } from '../services/supabaseClient'
+import { getLocale } from '../services/analytics'
 
 export function useTotalVisits(pollMs = 30000) {
   const [count, setCount] = useState<bigint | number>(0)
@@ -7,10 +8,21 @@ export function useTotalVisits(pollMs = 30000) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchCount = async () => {
+    if (supabaseMissingEnv) {
+      setCount(0)
+      setLoading(false)
+      return
+    }
+
     try {
-      const { data, error } = await supabase.rpc('total_visits')
+      const locale = getLocale()
+      const { count, error } = await supabase
+        .from('pageviews')
+        .select('*', { count: 'exact', head: true })
+        .eq('locale', locale)
+
       if (error) throw error
-      setCount((data as any) ?? 0)
+      setCount(count ?? 0)
       setError(null)
     } catch (e: any) {
       setError(e?.message || 'Failed to load visits')

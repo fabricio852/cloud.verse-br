@@ -2,13 +2,14 @@
  * Serviço para gerenciar questões do quiz
  */
 
-import { supabase } from './supabaseClient';
 import type { Database } from '../types/database';
 import { seededShuffle, shuffle, getBaseQuestionId } from '../utils';
+import { supabase } from './supabaseClient';
+import saaQuestionsBR from '../data/saa-questions-br.json' assert { type: 'json' };
+import clfQuestionsBR from '../data/clf-questions-br.json' assert { type: 'json' };
+import aifQuestionsBR from '../data/aif-questions-br.json' assert { type: 'json' };
 
 type Question = Database['public']['Tables']['questions']['Row'];
-type QuizAttempt = Database['public']['Tables']['quiz_attempts']['Row'];
-type UserAnswer = Database['public']['Tables']['user_answers']['Row'];
 
 // Mapeamento de certifications para arquivos JSON
 const BR_QUESTIONS_FILES: Record<string, string> = {
@@ -22,49 +23,66 @@ const BR_QUESTIONS_FILES: Record<string, string> = {
  * Usado quando as questões não estão disponíveis no banco de dados
  */
 async function loadBRQuestionsFromJSON(certificationId: string): Promise<Question[]> {
-  const filePath = BR_QUESTIONS_FILES[certificationId];
-  if (!filePath) {
-    throw new Error(`Certificação desconhecida: ${certificationId}`);
-  }
+  // Primeiro tenta usar dados importados no bundle (funciona em dev e build)
+  let rawQuestions: any[] | null = null;
+  if (certificationId === 'SAA-C03') rawQuestions = saaQuestionsBR as any[];
+  if (certificationId === 'CLF-C02') rawQuestions = clfQuestionsBR as any[];
+  if (certificationId === 'AIF-C01') rawQuestions = aifQuestionsBR as any[];
 
-  try {
+  // Se não houver no bundle, tenta fetch do arquivo na pasta data (apenas build)
+  if (!rawQuestions) {
+    const filePath = BR_QUESTIONS_FILES[certificationId];
+    if (!filePath) {
+      throw new Error(`Certificação desconhecida: ${certificationId}`);
+    }
+
     const response = await fetch(filePath);
     if (!response.ok) {
       throw new Error(`Não foi possível carregar ${filePath}: ${response.statusText}`);
     }
 
-    const rawQuestions = await response.json();
+    rawQuestions = await response.json();
+  }
+
+  if (!rawQuestions) {
+    throw new Error(`Não foi possível carregar questões BR para ${certificationId}`);
+  }
 
     // Mapeia questões do arquivo JSON para o formato esperado pela app
     // Adiciona sufixo -br aos IDs para manter consistência com banco de dados
-    const brQuestions: Question[] = rawQuestions.map((q: any) => ({
-      id: `${q.id}-br`,
-      certification_id: certificationId,
-      domain: q.domain,
-      difficulty: q.difficulty,
-      tier: q.tier || 'FREE',
-      active: q.active !== false,
-      question_text: q.question_text,
-      option_a: q.option_a,
-      option_b: q.option_b,
-      option_c: q.option_c,
-      option_d: q.option_d,
-      option_e: q.option_e,
-      correct_answers: q.correct_answers,
-      required_selection_count: q.required_selection_count || 1,
-      explanation_detailed: q.explanation_detailed,
-      explanation_basic: q.explanation_basic,
-      incorrect_explanations: q.incorrect_explanations,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
+  const brQuestions: Question[] = rawQuestions.map((q: any) => ({
+    id: q.id.endsWith('-br') ? q.id : `${q.id}-br`,
+    certification_id: certificationId,
+    domain: q.domain,
+    difficulty: q.difficulty,
+    tier: q.tier || 'FREE',
+    active: q.active !== false,
+    question_text: q.question_text,
+    option_a: q.option_a,
+    option_b: q.option_b,
+    option_c: q.option_c,
+    option_d: q.option_d,
+    option_e: q.option_e,
+    correct_answers: q.correct_answers,
+    required_selection_count: q.required_selection_count || 1,
+    explanation_detailed: q.explanation_detailed,
+    explanation_basic: q.explanation_basic,
+    incorrect_explanations: q.incorrect_explanations,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }));
 
-    return brQuestions;
-  } catch (err) {
-    console.error('[questionsService] Erro ao carregar questões BR do JSON:', err);
-    throw err;
-  }
+  return brQuestions;
 }
+
+const DOMAIN_MAP: Record<string, Record<string, string>> = {
+  'SAA-C03': {
+    SECURE: 'DESIGN_SECURE_APPLICATIONS_ARCHITECTURES',
+    RESILIENT: 'DESIGN_RESILIENT_ARCHITECTURES',
+    PERFORMANCE: 'DESIGN_HIGH_PERFORMING_ARCHITECTURES',
+    COST: 'DESIGN_COST_OPTIMIZED_ARCHITECTURES',
+  },
+};
 
 /**
  * Aplica filtros client-side às questões carregadas do JSON
@@ -74,7 +92,14 @@ function applyFiltersToQuestions(questions: Question[], filters: QuizFilters): Q
 
   // Filtro de domínios
   if (filters.domains && filters.domains.length > 0) {
-    filtered = filtered.filter(q => filters.domains!.includes(q.domain));
+    const map = DOMAIN_MAP[filters.certificationId] || {};
+    const desired = new Set(
+      filters.domains.flatMap((d) => {
+        const mapped = map[d];
+        return mapped ? [d, mapped] : [d];
+      })
+    );
+    filtered = filtered.filter(q => desired.has(q.domain));
   }
 
   // Filtro de dificuldade
@@ -100,87 +125,18 @@ export interface QuizFilters {
   shuffle?: boolean;
   seed?: string;
   take?: number;
-  language?: 'en' | 'pt-BR';
 }
 
 /**
- * Busca questões do banco com filtros
+ * Busca questões em PT-BR usando apenas os JSONs locais.
+ * Ignora Supabase e qualquer fallback para inglês.
  */
 export async function fetchQuestions(filters: QuizFilters): Promise<Question[]> {
-  const buildQuery = (lang?: 'en' | 'pt-BR') => {
-    let query = supabase
-      .from('questions')
-      .select('*')
-      .eq('certification_id', filters.certificationId)
-      .eq('active', true);
+  const brQuestionsRaw = await loadBRQuestionsFromJSON(filters.certificationId);
+  const onlyBr = brQuestionsRaw.filter((q) => q.id.toLowerCase().endsWith('-br'));
+  const filtered = applyFiltersToQuestions(onlyBr, filters);
 
-    // Filtro de domínios
-    if (filters.domains && filters.domains.length > 0) {
-      query = query.in('domain', filters.domains);
-    }
-
-    // Filtro de dificuldade
-    if (filters.difficulty && filters.difficulty.length > 0) {
-      query = query.in('difficulty', filters.difficulty);
-    }
-
-    // Filtro de tier (FREE vs PRO)
-    if (filters.tier && filters.tier !== 'ALL') {
-      query = query.eq('tier', filters.tier);
-    }
-
-    // Filtro de idioma (EN vs PT-BR) via sufixo -br
-    if (lang) {
-      if (lang === 'pt-BR') {
-        query = query.ilike('id', '%-br');
-      } else {
-        query = query.not('id', 'ilike', '%-br');
-      }
-    }
-
-    // Limite de questões
-    if (filters.limit) {
-      query = query.limit(filters.limit);
-    }
-
-    if ((filters.seed || filters.shuffle === false) && !filters.excludeAnswered) {
-      query = query.order('id', { ascending: true });
-    }
-
-    return query;
-  };
-
-  // Primeira tentativa com o idioma solicitado
-  let { data, error } = await buildQuery(filters.language);
-
-  // Fallback para PT-BR: tenta buscar sem sufixo -br ou carrega do arquivo local
-  if (!error && filters.language === 'pt-BR' && (!data || data.length === 0)) {
-    // Primeiro tenta buscar sem filtro de idioma (questões que não têm versão PT-BR)
-    const { data: noLangData, error: noLangError } = await buildQuery(undefined);
-    if (!noLangError && noLangData && noLangData.length > 0) {
-      data = noLangData;
-    } else {
-      // Se ainda não houver dados, carrega do arquivo JSON local como último recurso
-      try {
-        let brQuestions = await loadBRQuestionsFromJSON(filters.certificationId);
-        if (brQuestions && brQuestions.length > 0) {
-          // Aplica filtros cliente-side às questões carregadas do JSON
-          brQuestions = applyFiltersToQuestions(brQuestions, filters);
-          data = brQuestions;
-        }
-      } catch (err) {
-        console.warn('[questionsService] Não foi possível carregar questões PT-BR do arquivo local:', err);
-      }
-    }
-  }
-
-  if (error) {
-    console.error('[questionsService] Erro ao buscar questões:', error);
-    throw error;
-  }
-
-  // Ordena de forma determin�stica pelo ID base para que a posi��o seja consistente entre idiomas
-  let results = (data || []).sort((a, b) => {
+  let results = filtered.sort((a, b) => {
     const baseA = getBaseQuestionId(a.id);
     const baseB = getBaseQuestionId(b.id);
     if (baseA === baseB) return a.id.localeCompare(b.id);

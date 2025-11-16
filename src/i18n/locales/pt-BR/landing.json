@@ -14,17 +14,17 @@
     "loading": "Carregando certificações...",
     "no_certifications": "Nenhuma certificação encontrada. Verifique sua conexão.",
     "clf_c02": {
-      "badge": "FUNDACIONAL",
+      "badge": "FOUNDATIONAL",
       "title": "AWS Certified Cloud Practitioner",
       "description": "O ponto de partida. Domine os fundamentos da nuvem AWS, modelos de responsabilidade compartilhada, segurança básica e precificação."
     },
     "saa_c03": {
-      "badge": "ASSOCIADO",
+      "badge": "ASSOCIATE",
       "title": "AWS Certified Solutions Architect - Associate",
       "description": "O padrão da indústria. Aprenda a projetar arquiteturas resilientes, de alto desempenho, seguras e otimizadas em custo."
     },
     "aif_c01": {
-      "badge": "NOVO • FUNDACIONAL",
+      "badge": "NEW • FOUNDATIONAL",
       "title": "AWS Certified AI Practitioner",
       "description": "O futuro é agora. Mergulhe em IA Generativa, Machine Learning e uso ético de IA na plataforma AWS."
     }
@@ -42,3 +42,5 @@
     "total": "Total de visualizações"
   }
 }
+
+

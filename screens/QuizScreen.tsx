@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionViewer } from '../components/quiz/QuestionViewer';
 import { Logo } from '../components/common/Logo';
@@ -10,12 +10,10 @@ import { KofiWidget } from '../components/quiz/KofiWidget';
 import { Question, Plano, ResultSummary, DomainStats } from '../types';
 import { Q_BANK } from '../constants';
 import { fmtTime, weightedAccuracy, getBaseQuestionId, cn } from '../utils';
-import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useContributionReminder } from '../hooks/useContributionReminder';
-import { useLanguageAwareQuiz } from '../hooks/useLanguageAwareQuiz';
+import { useQuizAttempt } from '../hooks/useQuizAttempt';
 import { useCertificationStore } from '../store/certificationStore';
 import { trackEvent } from '../services/analytics';
-import { LanguageToggle } from '../components/LanguageToggle';
 
 const toRgba = (hex: string, alpha = 1) => {
     const sanitized = hex.replace('#', '');
@@ -60,22 +58,19 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         `,
     };
     // Hook que gerencia respostas por ID (independente de índice/idioma)
-    const {
-        currentIndex: i,
-        currentQuestion: questao,
-        currentAnswer,
-        isCurrentMarked: isCurrentQuestionMarked,
-        recordAnswer: recordAnswerById,
-        toggleMark: toggleMarkById,
-        goToNext: goToNextQuestion,
-        goToPrev: goToPrevQuestion,
-        jumpToIndex,
-        getQuestionStatus,
-        answeredCount,
-        markedCount,
-        getDomainStats,
-        getAllResponses,
-    } = useLanguageAwareQuiz(questions && questions.length > 0 ? questions : Q_BANK);
+  const [i, setI] = useState(0);
+  const questao = questions && questions.length > 0 ? questions[i] : null;
+  const [currentAnswer, setCurrentAnswer] = useState<string[] | null>(null);
+  const [markedByIndex, setMarkedByIndex] = useState<Record<number, boolean>>({});
+  const [answersById, setAnswersById] = useState<Record<string, string[]>>({});
+
+  const answeredByIndex = useMemo(() => {
+    const result: Record<number, string[] | null> = {};
+    if (currentAnswer) {
+      result[i] = currentAnswer;
+    }
+    return result;
+  }, [currentAnswer, i]);
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [secsLeft, setSecsLeft] = useState(durationSec);
@@ -116,6 +111,86 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         questionsBeforeReminder: 15,
         minTimeBetweenReminders: 1000 * 60 * 60 * 24, // 24 horas
     });
+
+    const getSavedAnswerForIndex = (index: number) => {
+        const q = quizBank[index];
+        if (!q) return null;
+        const baseId = getBaseQuestionId(q.id);
+        const saved = answersById[baseId];
+        return saved ? [...saved] : null;
+    };
+
+    const recordAnswerById = (answer: string[]) => {
+        if (!questao) return;
+        const baseId = getBaseQuestionId(questao.id);
+        setAnswersById((prev) => ({ ...prev, [baseId]: [...answer] }));
+        setCurrentAnswer(answer);
+    };
+
+    const getAllResponses = () =>
+        quizBank.map((q) => {
+            const baseId = getBaseQuestionId(q.id);
+            return {
+                questionId: q.id,
+                answer: answersById[baseId] || [],
+            };
+        });
+
+    const getDomainStats = (): { correct: DomainStats; total: DomainStats } => {
+        const correct: DomainStats = {};
+        const total: DomainStats = {};
+
+        quizBank.forEach((q) => {
+            const baseId = getBaseQuestionId(q.id);
+            const userAnswer = answersById[baseId] || [];
+            const isCorrect = answersEqual(userAnswer, q.answerKey);
+
+            total[q.domain] = (total[q.domain] || 0) + 1;
+            if (isCorrect) {
+                correct[q.domain] = (correct[q.domain] || 0) + 1;
+            } else if (!(q.domain in correct)) {
+                correct[q.domain] = 0;
+            }
+        });
+
+        return { correct, total };
+    };
+
+    const getQuestionStatus = (index: number) => {
+        if (markedByIndex[index]) return 'marked';
+        const saved = getSavedAnswerForIndex(index);
+        if (saved && saved.length > 0) return 'answered';
+        return 'pending';
+    };
+
+    const goToNextQuestion = () => {
+        const nextIndex = Math.min(i + 1, quizSize - 1);
+        setI(nextIndex);
+        setCurrentAnswer(getSavedAnswerForIndex(nextIndex));
+    };
+
+    const goToPrevQuestion = () => {
+        const prevIndex = Math.max(i - 1, 0);
+        setI(prevIndex);
+        setCurrentAnswer(getSavedAnswerForIndex(prevIndex));
+    };
+
+    const jumpToIndex = (index: number) => {
+        const target = Math.max(0, Math.min(index, quizSize - 1));
+        setI(target);
+        setCurrentAnswer(getSavedAnswerForIndex(target));
+    };
+
+    const toggleMarkById = (marked: boolean) => {
+        setMarkedByIndex((prev) => ({ ...prev, [i]: marked }));
+    };
+
+    const isCurrentQuestionMarked = !!markedByIndex[i];
+    const markedCount = Object.values(markedByIndex).filter(Boolean).length;
+    const answeredCount = quizBank.reduce((acc, q) => {
+        const saved = answersById[getBaseQuestionId(q.id)] || [];
+        return saved.length > 0 ? acc + 1 : acc;
+    }, 0);
 
     // Iniciar quiz attempt ao montar componente (se houver questões)
     useEffect(() => {
@@ -383,13 +458,12 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                             <div className="hidden sm:block">
                                 <Logo onClick={onVoltar} />
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
-                                <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
-                                {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
-                                <LanguageToggle />
-                                {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
-                                {toggleTheme && (
-                                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
+                                    <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
+                                    {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
+                                    {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
+                                    {toggleTheme && (
+                                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
                                     </button>
                                 )}

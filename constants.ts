@@ -7,23 +7,27 @@ export const R = { sm:"rounded-md", md:"rounded-lg", lg:"rounded-xl", xl:"rounde
 
 export const DOMAIN_LABELS: Record<string, string> = {
     // SAA-C03
-    SECURE: 'Secure Architecture',
-    RESILIENT: 'Resilient Architecture',
-    PERFORMANCE: 'High-Performance Architecture',
-    COST: 'Cost-Optimized Architecture',
+    SECURE: 'Arquitetura Segura',
+    RESILIENT: 'Arquitetura Resiliente',
+    PERFORMANCE: 'Alto Desempenho',
+    COST: 'Custo Otimizado',
+    DESIGN_SECURE_APPLICATIONS_ARCHITECTURES: 'Arquiteturas Seguras',
+    DESIGN_RESILIENT_ARCHITECTURES: 'Arquiteturas Resilientes',
+    DESIGN_COST_OPTIMIZED_ARCHITECTURES: 'Arquiteturas Otimizadas em Custo',
+    DESIGN_HIGH_PERFORMING_ARCHITECTURES: 'Arquiteturas de Alto Desempenho',
 
     // CLF-C02
-    CLOUD_CONCEPTS: 'Cloud Concepts',
-    CLOUD_TECHNOLOGY_SERVICES: 'Cloud Technology and Services',
-    SECURITY_COMPLIANCE: 'Security and Compliance',
-    TECHNOLOGY: 'Technology',
-    BILLING_PRICING: 'Billing and Pricing',
+    CLOUD_CONCEPTS: 'Conceitos de Nuvem',
+    CLOUD_TECHNOLOGY_SERVICES: 'Tecnologia e Serviços de Nuvem',
+    SECURITY_COMPLIANCE: 'Segurança e Conformidade',
+    TECHNOLOGY: 'Tecnologia',
+    BILLING_PRICING: 'Cobrança e Precificação',
 
     // AIF-C01
-    RESPONSIBLE_AI: 'Responsible AI',
-    AI_SERVICES: 'AI Services',
-    AI_FUNDAMENTALS: 'AI Fundamentals',
-    ML_DEVELOPMENT: 'ML Development'
+    RESPONSIBLE_AI: 'IA Responsável',
+    AI_SERVICES: 'Serviços de IA',
+    AI_FUNDAMENTALS: 'Fundamentos de IA',
+    ML_DEVELOPMENT: 'Desenvolvimento de ML'
 };
 
 export const DOMAIN_WEIGHTS: { [key in Domain]: number } = {

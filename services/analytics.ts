@@ -1,7 +1,15 @@
-import { supabase } from './supabaseClient'
+import { supabase, supabaseMissingEnv } from './supabaseClient'
 
 const ANON_KEY = 'cv_anon_id'
 const SESSION_KEY = 'cv_session_id'
+
+export function getLocale(): string {
+  try {
+    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/en')) return 'en'
+    if (typeof navigator !== 'undefined' && navigator.language) return navigator.language
+  } catch {}
+  return 'pt-BR'
+}
 
 function uuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -54,6 +62,7 @@ async function getUserId(): Promise<string | null> {
 }
 
 export async function ensureSession(): Promise<string | null> {
+  if (supabaseMissingEnv) return null
   try {
     const cached = localStorage.getItem(SESSION_KEY)
     if (cached) return cached
@@ -67,6 +76,7 @@ export async function ensureSession(): Promise<string | null> {
   const userAgent = navigator.userAgent
   const initialPath = window.location.pathname + window.location.search
   const userId = await getUserId()
+  const locale = getLocale()
 
   const sid = uuid()
   const { error } = await supabase
@@ -79,6 +89,7 @@ export async function ensureSession(): Promise<string | null> {
       referrer,
       utm,
       user_agent: userAgent,
+      locale,
     })
 
   if (error) {
@@ -99,16 +110,19 @@ function getSessionId(): string | null {
 }
 
 export async function trackPageview(path?: string) {
+  if (supabaseMissingEnv) return
   const sessionId = getSessionId() || (await ensureSession())
   const p = path || (window.location.pathname + window.location.search)
   const referrer = document.referrer || null
   const utm = parseUtm()
+  const locale = getLocale()
 
   const { error } = await supabase.from('pageviews').insert({
     session_id: sessionId || null,
     path: p,
     referrer,
     utm,
+    locale,
   })
 
   if (!error) {
@@ -125,6 +139,7 @@ export async function trackPageview(path?: string) {
 }
 
 export async function trackEvent(name: string, props?: Record<string, any>) {
+  if (supabaseMissingEnv) return
   const sessionId = getSessionId() || (await ensureSession())
   const userId = await getUserId()
   await supabase.from('events').insert({
@@ -144,6 +159,13 @@ export interface PresenceHandle {
  * Minimal presence: join a shared channel and expose online count
  */
 export function initPresence(onChange: (count: number) => void, channelName: string = 'presence:site'): PresenceHandle {
+  if (supabaseMissingEnv) {
+    onChange(0)
+    return {
+      getCount: () => 0,
+      cleanup: () => {}
+    }
+  }
   const anon = getAnonId()
   const channel = supabase.channel(channelName, {
     config: { presence: { key: anon } },

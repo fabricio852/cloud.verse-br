@@ -40,8 +40,6 @@ export default function App() {
         limit: 100,
         enabled: rota === 'quiz-rapido',
         seed: weeklySeed,
-        preloadBoth: true,
-        anchorLanguage: 'en',
     });
 
     const { questions: questionsCompleto, loading: loadingCompleto } = useQuestions({
@@ -50,8 +48,6 @@ export default function App() {
         limit: 65,
         enabled: rota === 'quiz-completo',
         seed: weeklySeed,
-        preloadBoth: true,
-        anchorLanguage: 'en',
     });
 
     const { questions: questionsDominios, loading: loadingDominios } = useQuestions({
@@ -61,8 +57,6 @@ export default function App() {
         limit: domCfg?.qtd,
         enabled: rota === 'quiz-dominios' && !!domCfg,
         seed: weeklySeed,
-        preloadBoth: true,
-        anchorLanguage: 'en',
     });
 
 const total = 650;
