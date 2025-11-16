@@ -50,7 +50,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     plano, tamanho, onSair, level = 'basic', timed = false, durationSec = 0, navAfterBack = false, questions, onExit, onVoltar, diagramUrl, theme = 'light', toggleTheme, quizType = 'practice'
 }) => {
     const { t } = useTranslation(['quiz', 'common']);
-    const { getTheme } = useCertificationStore();
+    const { getTheme, selectedCertId } = useCertificationStore();
     const certTheme = getTheme();
     const backgroundStyle = {
         background: `
@@ -99,7 +99,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         finishAttempt,
         isSaving,
     } = useQuizAttempt({
-        certificationId: 'CLF-C02',
+        certificationId: selectedCertId || 'SAA-C03',
         quizType,
         totalQuestions: quizSize,
         timeLimit: timed ? durationSec : undefined,
@@ -323,7 +323,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     onClick={() => setIsGridCollapsed(!isGridCollapsed)}
                     className="ml-auto p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400"
                     aria-label={isGridCollapsed ? t('quiz:navigation_legend.expand_grid') : t('quiz:navigation_legend.collapse_grid')}
-                    title={isGridCollapsed ? 'Expandir grade' : 'Colapsar grade'}
+                    title={isGridCollapsed ? t('quiz:navigation_legend.expand_grid') : t('quiz:navigation_legend.collapse_grid')}
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         {isGridCollapsed ? (
@@ -352,7 +352,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                 key={index}
                                 onClick={() => jumpToIndex(index)}
                                 className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${buttonClass} ${isActive ? 'ring-2 ring-purple-500 ring-offset-1 dark:ring-offset-gray-800 scale-110' : ''}`}
-                                title={`Questão ${index + 1}`}
+                                title={t('quiz:question_number', { number: index + 1 })}
                             >{index + 1}</button>
                         );
                     })}
