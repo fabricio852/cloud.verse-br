@@ -310,7 +310,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     modalText += ' ' + t('quiz:finish_modal.confirm');
 
     const Grid = () => (
-        <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3">
+        <div className="relative z-20 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3">
             <div className="flex items-center justify-between mb-4">
                 {!isGridCollapsed && (
                     <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
@@ -334,7 +334,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     </svg>
                 </button>
             </div>
-            <div style={{ maxHeight: isGridCollapsed ? '0px' : '600px', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out', position: 'relative', zIndex: 1 }}>
+            <div style={{ maxHeight: isGridCollapsed ? '0px' : 'auto', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out', position: 'relative', zIndex: 20 }}>
                 <div className="flex flex-wrap gap-1.5 pb-3 pt-2">
                     {Array.from({ length: quizSize }).map((_, index) => {
                         const status = getQuestionStatus(index);
