@@ -49,7 +49,17 @@
       "Bash(tsx scripts/generate-insert-br.ts:*)",
       "Bash(scripts/insert-br-questions.sql)",
       "Bash(npm install:*)",
-      "Skill(frontend-design:frontend-design)"
+      "Skill(frontend-design:frontend-design)",
+      "Bash(cd:*)",
+      "Bash(cat:*)",
+      "Bash(powershell -Command \"Get-Content ''''dist/assets/index-oYp82VGc.js'''' | Select-String -Pattern ''''Fabricio|Joao|paulo'''' -Context 2,2\")",
+      "Bash(powershell -Command \"Get-ChildItem -Recurse -Filter ''*.tsx'' -Path components/donation | ForEach-Object { Write-Host ''=== '' $_Name '' ===''; (Get-Content $_FullName) -join [Environment]::NewLine | Select-String -Pattern ''pixKey|pixReceiverName|pixReceiverCity|getPixEnvConfig'' -Context 1,1 }\")",
+      "Bash(powershell -Command:*)",
+      "Bash(git grep:*)",
+      "Bash(npm run import-br:saa:*)",
+      "Bash(dir \"c:\\Users\\foc25\\Downloads\\nuvem-mestra---aws-trainer - Copia\\dist\\data\")",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
