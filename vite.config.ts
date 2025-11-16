@@ -12,7 +12,10 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'import.meta.env.VITE_PIX_KEY': JSON.stringify(env.VITE_PIX_KEY),
+        'import.meta.env.VITE_PIX_RECEIVER_NAME': JSON.stringify(env.VITE_PIX_RECEIVER_NAME),
+        'import.meta.env.VITE_PIX_RECEIVER_CITY': JSON.stringify(env.VITE_PIX_RECEIVER_CITY),
       },
       resolve: {
         alias: {

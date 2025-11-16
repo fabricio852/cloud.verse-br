@@ -3,6 +3,19 @@
  * Suporta PIX estático com chave (CPF, email, telefone ou aleatória)
  */
 
+import { payload } from 'pix-payload';
+
+/**
+ * Remove acentos e caracteres especiais de uma string
+ * Necessário para gerar códigos PIX válidos
+ */
+const removerAcentos = (texto: string): string => {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase();
+};
+
 export interface PixConfig {
   chave: string; // CPF, email, telefone ou UUID
   nomeRecebedor: string;
@@ -15,6 +28,37 @@ export interface PixPayload {
   chaveFormatada: string;
   descricao: string;
 }
+
+/**
+ * Lê configuração de PIX a partir das variáveis de ambiente do Vite.
+ * Se não estiverem configuradas, usa valores de placeholder e emite um warning no console.
+ */
+export const getPixEnvConfig = (): PixConfig => {
+  const chave = import.meta.env.VITE_PIX_KEY || '00000000000';
+  const nomeRecebedor = import.meta.env.VITE_PIX_RECEIVER_NAME || 'Fabricio Felix Ourem Costa';
+  const cidadeRecebedor = import.meta.env.VITE_PIX_RECEIVER_CITY || 'Sao Joao de Meriti';
+
+  if (chave === '00000000000') {
+    // Ajuda de debug para lembrar de configurar a chave real
+    console.warn(
+      '[PIX] VITE_PIX_KEY não configurada. Usando chave placeholder "00000000000".'
+    );
+  }
+
+  // Debug: Verificar se as variáveis estão sendo carregadas corretamente
+  console.log(
+    '[PIX] Config loaded - Receiver:',
+    nomeRecebedor,
+    'City:',
+    cidadeRecebedor
+  );
+
+  return {
+    chave,
+    nomeRecebedor,
+    cidadeRecebedor,
+  };
+};
 
 /**
  * Gera a string EMV para QR Code PIX
@@ -36,39 +80,17 @@ export const gerarPixEmv = (config: PixConfig): string => {
     throw new Error('Chave PIX, nome e cidade são obrigatórios');
   }
 
-  // Template EMV (BR Code format)
-  // Nota: Esta é uma versão simplificada. Para produção, use biblioteca qr-pix
-  const templates: Record<string, string> = {
-    // Formato: ID_Formatação_Chave_Nível_Entidade
-    '00': '01', // Versão EMV
-    '01': '12', // Identificador de guia de tamanho único
-    '26': '', // Dados do participante da transação
-    '28': '', // Dados do PIX
-    '29': '01', // Merchant Account Information (MAI)
-    '31': '', // Dado de categoria de estabelecimento
-    '52': '0000', // Categoria comercial
-    '53': '986', // Código de moeda (BRL = 986)
-    '54': (valor ? valor.toFixed(2) : '0').replace('.', ''), // Valor da transação
-    '58': 'BR', // País
-    '59': nomeRecebedor.substring(0, 25), // Nome beneficiário
-    '60': cidadeRecebedor.substring(0, 15), // Cidade
-    '61': '', // CEP
-    '62': '', // Campo adicional
-  };
-
-  // Para produção, use a biblioteca 'qr-pix':
-  // npm install qr-pix
-  // const { generateQrCode } = require('qr-pix');
-  // return generateQrCode({ key: chave, name: nomeRecebedor, city: cidadeRecebedor });
-
-  // Versão mock para desenvolvimento
-  return JSON.stringify({
-    version: '1',
+  // Usa biblioteca pix-payload para gerar BR Code EMV válido
+  // Remove acentos para garantir compatibilidade com validadores
+  const pixPayload = payload({
+    name: removerAcentos(nomeRecebedor),
+    city: removerAcentos(cidadeRecebedor),
     key: chave,
-    name: nomeRecebedor,
-    city: cidadeRecebedor,
-    amount: valor || 0,
+    amount: valor || undefined,
   });
+
+  // Retorna o payload EMV (BR Code) pronto para gerar QR Code
+  return pixPayload;
 };
 
 /**
