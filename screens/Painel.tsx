@@ -5,6 +5,7 @@ import { Logo } from '../components/common/Logo';
 import { useCertificationStore } from '../store/certificationStore';
 import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
+import { getPixEnvConfig } from '../utils/pixUtils';
 
 interface PainelProps {
   totalQuestoes: number;
@@ -61,6 +62,7 @@ export const Painel: React.FC<PainelProps> = ({
   const { online } = useOnlinePresence(channel);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const { chave: pixKey, nomeRecebedor: pixReceiverName, cidadeRecebedor: pixReceiverCity } = getPixEnvConfig();
   void totalQuestoes;
   void theme;
   void toggleTheme;
@@ -316,16 +318,18 @@ export const Painel: React.FC<PainelProps> = ({
                     {t('common:sidebar.linkedin')}
                   </a>
 
-                  {/* Ko-fi Button */}
-                  <a
-                    href="https://ko-fi.com/fabriciocosta"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  {/* PIX Support Button (replaces Ko-fi) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDonationModalOpen(true);
+                      setSidebarOpen(false);
+                    }}
                     className="block w-full px-4 py-3 border-2 border-[#FF9900] bg-transparent text-[#FF9900] text-center font-bold uppercase transition-all duration-200 hover:bg-[#FF9900] hover:text-black hover:scale-105"
                     style={{ fontFamily: 'Press Start 2P, cursive', fontSize: '10px', letterSpacing: '0.05em' }}
                   >
                     {t('common:sidebar.support')}
-                  </a>
+                  </button>
                 </div>
 
                 <button
@@ -527,9 +531,9 @@ export const Painel: React.FC<PainelProps> = ({
       <ThemedDonationModal
         isOpen={donationModalOpen}
         onClose={() => setDonationModalOpen(false)}
-        pixKey="00000000000" // TODO: Configure with actual PIX key
-        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
-        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+        pixKey={pixKey}
+        pixReceiverName={pixReceiverName}
+        pixReceiverCity={pixReceiverCity}
         theme="landing"
       />
     </div>

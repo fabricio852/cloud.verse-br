@@ -5,6 +5,7 @@ import { Logo } from "../components/common/Logo";
 import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
 import { ThemedDonationModal } from "../components/donation/ThemedDonationModal";
+import { getPixEnvConfig } from "../utils/pixUtils";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -53,6 +54,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   const { certifications, fetchCertifications, selectCertification, isLoading } = useCertificationStore();
   const { totalVisits, loading } = useTotalVisits(5000);
   const [minHold, setMinHold] = useState(true);
+  const { chave: pixKey, nomeRecebedor: pixReceiverName, cidadeRecebedor: pixReceiverCity } = getPixEnvConfig();
 
   // Keep the loading label visible for ~3s to avoid a too-quick flash
   useEffect(() => {
@@ -703,9 +705,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
       <ThemedDonationModal
         isOpen={isDonationModalOpen}
         onClose={() => setIsDonationModalOpen(false)}
-        pixKey="00000000000" // TODO: Configure with actual PIX key
-        pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
-        pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
+        pixKey={pixKey}
+        pixReceiverName={pixReceiverName}
+        pixReceiverCity={pixReceiverCity}
         theme="landing"
       />
     </div>
