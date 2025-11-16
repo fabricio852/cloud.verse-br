@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import {
-  formatarChavePix,
   formatarValorReal,
   VALORES_SUGESTAO_PIX,
   getMensagemDoacaoPersonalizada,
   gerarDoacaoEvent,
+  gerarPixEmv,
 } from '../../utils/pixUtils';
 import { generatePixQRCode } from '../../utils/qrCodeGenerator';
 
@@ -28,6 +28,7 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
 }) => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [pixBrCode, setPixBrCode] = useState<string>('');
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isGeneratingQR, setIsGeneratingQR] = useState(true);
 
@@ -41,17 +42,18 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
   const generateQRCode = async () => {
     setIsGeneratingQR(true);
     try {
-      // Para PIX estático, usamos a chave diretamente como payload
-      // Nota: Uma implementação real usaria BR Code (ISO 20022)
-      const pixPayload = JSON.stringify({
-        version: '1',
-        key: pixKey,
-        name: pixReceiverName,
-        city: pixReceiverCity,
+      // Generate PIX BR Code (EMV format) without amount for static PIX
+      const brCode = gerarPixEmv({
+        chave: pixKey,
+        nomeRecebedor: pixReceiverName,
+        cidadeRecebedor: pixReceiverCity,
+        // No valor specified - static PIX allows user to enter amount manually
       });
 
-      const qrCode = await generatePixQRCode(pixPayload);
+      // Generate QR code from BR Code
+      const qrCode = await generatePixQRCode(brCode);
       setQrCodeDataUrl(qrCode);
+      setPixBrCode(brCode);
     } catch (error) {
       console.error('Erro ao gerar QR Code:', error);
       // Mostra um placeholder em caso de erro
@@ -63,11 +65,12 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
 
   const handleCopyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(pixKey);
+      // Copy the PIX BR Code (not the raw key)
+      await navigator.clipboard.writeText(pixBrCode);
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
     } catch (error) {
-      console.error('Erro ao copiar chave PIX:', error);
+      console.error('Erro ao copiar código PIX:', error);
     }
   };
 
@@ -94,7 +97,6 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const formattedKey = formatarChavePix(pixKey);
   const thankYouMessage = selectedAmount ? getMensagemDoacaoPersonalizada(selectedAmount) : null;
 
   return (
@@ -142,23 +144,33 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
                 </p>
               </div>
 
-              {/* PIX Key Section */}
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-2">
-                <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                  Ou copie a chave PIX
+              {/* PIX BR Code Copy Section */}
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  Ou copie o código PIX Copia e Cola
                 </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-white dark:bg-gray-700 px-3 py-2 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-100 break-all">
-                    {formattedKey}
+                {/* Display BR Code */}
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                  <code className="text-xs font-mono text-gray-800 dark:text-gray-100 break-all block">
+                    {pixBrCode || 'Gerando código...'}
                   </code>
-                  <button
-                    onClick={handleCopyToClipboard}
-                    className="bg-green-500 hover:bg-green-600 text-white rounded-lg p-2 transition flex-shrink-0"
-                    title={copiedToClipboard ? 'Copiado!' : 'Copiar chave PIX'}
-                  >
-                    {copiedToClipboard ? <Check size={18} /> : <Copy size={18} />}
-                  </button>
                 </div>
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 transition flex items-center justify-center gap-2 font-semibold"
+                >
+                  {copiedToClipboard ? (
+                    <>
+                      <Check size={18} />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={18} />
+                      Copiar código PIX
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Donation Amount Buttons */}
@@ -187,7 +199,7 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
               {/* Info Text */}
               <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  ℹ️ PIX é instantâneo. Sua doação nos ajuda a manter este conteúdo gratuito para toda a comunidade!
+                  ℹ️ Contribuições fizeram este serviço chegar até você gratuitamente. Se puder, fortaleça essa corrente
                 </p>
               </div>
             </>

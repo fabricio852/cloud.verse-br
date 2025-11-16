@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { generatePixQRCode } from '../../utils/qrCodeGenerator';
-import { formatarValorReal, gerarDoacaoEvent } from '../../utils/pixUtils';
+import { formatarValorReal, gerarDoacaoEvent, gerarPixEmv } from '../../utils/pixUtils';
 
 interface ThemedDonationModalProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
 }) => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [pixBrCode, setPixBrCode] = useState<string>('');
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 
@@ -66,17 +67,24 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
     setSelectedAmount(amount);
     setIsGeneratingQR(true);
     try {
-      const pixPayload = JSON.stringify({
-        version: '1',
-        key: pixKey,
-        name: pixReceiverName,
-        city: pixReceiverCity,
-        amount: amount,
+      // Generate PIX BR Code (EMV format) with embedded amount
+      const brCode = gerarPixEmv({
+        chave: pixKey,
+        nomeRecebedor: pixReceiverName,
+        cidadeRecebedor: pixReceiverCity,
+        valor: amount,
       });
 
-      const qrCode = await generatePixQRCode(pixPayload);
-      setQrCodeDataUrl(qrCode);
+      console.log('PIX BR Code gerado:', brCode.substring(0, 50) + '...');
 
+      // Generate QR code from BR Code
+      const qrCode = await generatePixQRCode(brCode);
+      console.log('QR Code data URL gerado:', qrCode.substring(0, 50) + '...');
+
+      setQrCodeDataUrl(qrCode);
+      setPixBrCode(brCode);
+
+      // Track donation event
       const event = gerarDoacaoEvent(amount, 'pix');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('donation', { detail: event }));
@@ -94,17 +102,19 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
 
   const handleCopyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(pixKey);
+      // Copy the PIX BR Code (not the raw key)
+      await navigator.clipboard.writeText(pixBrCode);
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
     } catch (error) {
-      console.error('Erro ao copiar chave PIX:', error);
+      console.error('Erro ao copiar código PIX:', error);
     }
   };
 
   const handleClose = () => {
     setSelectedAmount(null);
     setQrCodeDataUrl('');
+    setPixBrCode('');
     setIsGeneratingQR(false);
     onClose();
   };
@@ -199,7 +209,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                 }}
               >
                 <p className="text-xs" style={{ color: styles.textColor }}>
-                  Sua contribuição mantém tudo gratuito e permite que este serviço chegue até você e outras pessoas. Obrigado por continuar a corrente!
+                  Contribuições fizeram este serviço chegar até você gratuitamente. Se puder, fortaleça essa corrente
                 </p>
               </div>
             </>
@@ -207,13 +217,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
             <>
               {/* QR Code Display */}
               <div className="flex flex-col items-center space-y-4">
-                <div
-                  className="rounded-xl p-4 w-full max-w-xs"
-                  style={{
-                    backgroundColor: styles.accentBg,
-                    borderColor: styles.borderColor,
-                  }}
-                >
+                <div className="rounded-xl p-4 w-full max-w-xs bg-white">
                   {isGeneratingQR ? (
                     <div className="w-full aspect-square flex items-center justify-center">
                       <div className="flex flex-col items-center gap-2">
@@ -229,12 +233,20 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                         </p>
                       </div>
                     </div>
-                  ) : (
+                  ) : qrCodeDataUrl ? (
                     <img
                       src={qrCodeDataUrl}
                       alt="QR Code PIX"
                       className="w-full h-auto rounded-lg"
+                      onError={(e) => {
+                        console.error('Error loading QR code image');
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
+                  ) : (
+                    <div className="w-full aspect-square flex items-center justify-center">
+                      <p className="text-xs text-gray-500">QR Code não disponível</p>
+                    </div>
                   )}
                 </div>
                 <p className="text-xs" style={{ color: styles.secondaryColor }}>
@@ -242,43 +254,53 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                 </p>
               </div>
 
-              {/* PIX Key Section */}
+              {/* PIX BR Code Copy Section */}
               <div
-                className="rounded-xl p-4 space-y-2"
+                className="rounded-xl p-4 space-y-3"
                 style={{ backgroundColor: styles.accentBg }}
               >
                 <p
-                  className="text-xs font-semibold uppercase"
-                  style={{ color: styles.textColor }}
+                  className="text-xs text-center"
+                  style={{ color: styles.secondaryColor }}
                 >
-                  Ou copie a chave PIX
+                  Ou copie o código PIX Copia e Cola
                 </p>
-                <div className="flex items-center gap-2">
+                {/* Display BR Code */}
+                <div
+                  className="rounded-lg p-3 border"
+                  style={{
+                    backgroundColor: styles.backgroundColor,
+                    borderColor: styles.borderColor,
+                  }}
+                >
                   <code
-                    className="flex-1 px-3 py-2 rounded-lg text-sm font-mono break-all border"
-                    style={{
-                      backgroundColor: styles.backgroundColor,
-                      borderColor: styles.borderColor,
-                      color: styles.textColor,
-                    }}
+                    className="text-xs font-mono break-all block"
+                    style={{ color: styles.textColor }}
                   >
-                    {pixKey}
+                    {pixBrCode || 'Gerando código...'}
                   </code>
-                  <button
-                    onClick={handleCopyToClipboard}
-                    className="rounded-lg p-2 transition flex-shrink-0 border-2"
-                    style={{
-                      borderColor: styles.buttonBorder,
-                      color: styles.textColor,
-                      backgroundColor: copiedToClipboard
-                        ? styles.accentBg
-                        : 'transparent',
-                    }}
-                    title={copiedToClipboard ? 'Copiado!' : 'Copiar chave PIX'}
-                  >
-                    {copiedToClipboard ? <Check size={18} /> : <Copy size={18} />}
-                  </button>
                 </div>
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="w-full rounded-lg py-3 px-4 transition flex items-center justify-center gap-2 font-semibold border-2"
+                  style={{
+                    borderColor: styles.buttonBorder,
+                    color: styles.textColor,
+                    backgroundColor: copiedToClipboard ? styles.accentBg : 'transparent',
+                  }}
+                >
+                  {copiedToClipboard ? (
+                    <>
+                      <Check size={18} />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={18} />
+                      Copiar código PIX
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Back Button */}
@@ -286,6 +308,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                 onClick={() => {
                   setSelectedAmount(null);
                   setQrCodeDataUrl('');
+                  setPixBrCode('');
                 }}
                 className="w-full text-center text-sm transition py-2 border-b"
                 style={{

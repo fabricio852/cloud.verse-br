@@ -11,6 +11,7 @@ import { cn } from '../utils';
 import { useCertificationStore } from '../store/certificationStore';
 import { DomainTag } from '../components/common/DomainTag';
 import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
+import { getPixEnvConfig } from '../utils/pixUtils';
 
 interface ResultScreenProps {
     summary: ResultSummary | null;
@@ -26,6 +27,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
     const [loading, setLoading] = useState(true);
     const [showDonationModal, setShowDonationModal] = useState(false);
     const [donationShownTime, setDonationShownTime] = useState<number | null>(null);
+    const { chave: pixKey, nomeRecebedor: pixReceiverName, cidadeRecebedor: pixReceiverCity } = getPixEnvConfig();
 
     useEffect(() => {
         const t = setTimeout(() => setLoading(false), 1200);
@@ -241,8 +243,8 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
             <ThemedDonationModal
                 isOpen={showDonationModal}
                 onClose={() => setShowDonationModal(false)}
-                pixKey="00000000000" // TODO: Configure with actual PIX key
-                pixReceiverName="Cloud Verse" // TODO: Configure with actual receiver name
+                pixKey={pixKey}
+                pixReceiverName={pixReceiverName}
                 pixReceiverCity="São Paulo" // TODO: Configure with actual receiver city
                 theme="landing"
                 onDonationComplete={(amount) => {
