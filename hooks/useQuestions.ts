@@ -90,7 +90,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
   const language = useLanguageStore((state) => state.language);
 
   const {
-    certificationId = 'CLF-C02',
+    certificationId = 'SAA-C03',
     domains,
     tier = 'ALL',
     limit,
@@ -215,7 +215,7 @@ export function useQuestions(options: UseQuestionsOptions = {}) {
     };
 
     loadQuestions();
-  }, [depsKey, language, enabled, preloadBoth, anchorLanguage, bilingualCache, lastKey]);
+  }, [depsKey, language, enabled, preloadBoth, anchorLanguage]);
 
   return { questions, loading, error };
 }
