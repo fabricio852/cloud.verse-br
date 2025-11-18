@@ -132,9 +132,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
             this.size = Math.random() * 3 + 1;
-            this.speedY = Math.random() * 0.5 + 0.2; 
+            this.speedY = Math.random() * 0.3 + 0.1;
             this.color = Math.random() > 0.8 ? '#FF9900' : (Math.random() > 0.5 ? '#00FFFF' : '#333');
-            this.opacity = Math.random() * 0.5 + 0.1;
+            this.opacity = Math.random() * 0.4 + 0.1;
         }
         update() {
             this.y -= this.speedY;
@@ -153,7 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
     function initParticles() {
         particles = [];
-        let count = (width * height) / 9000;
+        let count = (width * height) / 14000;
         for(let i=0; i<count; i++) particles.push(new Particle());
     }
 
@@ -190,7 +190,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   return (
     <div className="min-h-screen bg-[#0a0a12] text-slate-100 relative overflow-hidden">
       <style>{`
-        /* CRT Overlay */
+        /* CRT Overlay (mais sutil) */
         .crt-overlay {
           position: fixed;
           top: 0;
@@ -201,12 +201,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           z-index: 9999;
           background: repeating-linear-gradient(
             0deg,
-            rgba(0, 0, 0, 0.15),
-            rgba(0, 0, 0, 0.15) 1px,
+            rgba(0, 0, 0, 0.08),
+            rgba(0, 0, 0, 0.08) 1px,
             transparent 1px,
-            transparent 2px
+            transparent 3px
           );
-          animation: scanline 8s linear infinite;
         }
 
         @keyframes scanline {
@@ -214,7 +213,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           100% { transform: translateY(100%); }
         }
 
-        /* Glitch effect */
+        /* Glitch effect (suavizado) */
         .glitch {
           position: relative;
           font-family: 'Press Start 2P', cursive;
@@ -223,92 +222,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           color: #00FFFF;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          animation: glitch-skew 2s infinite;
-        }
-
-        .glitch::before,
-        .glitch::after {
-          content: attr(data-text);
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-        }
-
-        .glitch::before {
-          left: 2px;
-          text-shadow: -2px 0 #FF9900;
-          clip: rect(44px, 450px, 56px, 0);
-          animation: glitch-anim 3s infinite linear alternate-reverse;
-        }
-
-        .glitch::after {
-          left: -2px;
-          text-shadow: -2px 0 #00FFFF, 2px 2px #FF9900;
-          animation: glitch-anim2 2s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim {
-          0% { clip: rect(10px, 9999px, 31px, 0); transform: skew(0.3deg); }
-          5% { clip: rect(70px, 9999px, 71px, 0); transform: skew(0.5deg); }
-          10% { clip: rect(60px, 9999px, 85px, 0); transform: skew(0.2deg); }
-          15% { clip: rect(80px, 9999px, 20px, 0); transform: skew(0.4deg); }
-          20% { clip: rect(40px, 9999px, 50px, 0); transform: skew(0.1deg); }
-          25% { clip: rect(30px, 9999px, 90px, 0); transform: skew(0.6deg); }
-          30% { clip: rect(10px, 9999px, 60px, 0); transform: skew(0.3deg); }
-          35% { clip: rect(90px, 9999px, 30px, 0); transform: skew(0.2deg); }
-          40% { clip: rect(50px, 9999px, 70px, 0); transform: skew(0.4deg); }
-          45% { clip: rect(20px, 9999px, 80px, 0); transform: skew(0.5deg); }
-          50% { clip: rect(70px, 9999px, 40px, 0); transform: skew(0.1deg); }
-          55% { clip: rect(35px, 9999px, 65px, 0); transform: skew(0.3deg); }
-          60% { clip: rect(85px, 9999px, 25px, 0); transform: skew(0.4deg); }
-          65% { clip: rect(45px, 9999px, 75px, 0); transform: skew(0.2deg); }
-          70% { clip: rect(15px, 9999px, 55px, 0); transform: skew(0.5deg); }
-          75% { clip: rect(65px, 9999px, 35px, 0); transform: skew(0.1deg); }
-          80% { clip: rect(25px, 9999px, 95px, 0); transform: skew(0.3deg); }
-          85% { clip: rect(75px, 9999px, 15px, 0); transform: skew(0.4deg); }
-          90% { clip: rect(55px, 9999px, 45px, 0); transform: skew(0.2deg); }
-          95% { clip: rect(5px, 9999px, 85px, 0); transform: skew(0.6deg); }
-          100% { clip: rect(95px, 9999px, 5px, 0); transform: skew(0.1deg); }
-        }
-
-        @keyframes glitch-anim2 {
-          0% { clip: rect(65px, 9999px, 100px, 0); transform: skew(0.5deg); }
-          5% { clip: rect(30px, 9999px, 35px, 0); transform: skew(0.2deg); }
-          10% { clip: rect(90px, 9999px, 25px, 0); transform: skew(0.4deg); }
-          15% { clip: rect(20px, 9999px, 80px, 0); transform: skew(0.1deg); }
-          20% { clip: rect(75px, 9999px, 50px, 0); transform: skew(0.6deg); }
-          25% { clip: rect(40px, 9999px, 70px, 0); transform: skew(0.3deg); }
-          30% { clip: rect(85px, 9999px, 15px, 0); transform: skew(0.2deg); }
-          35% { clip: rect(10px, 9999px, 95px, 0); transform: skew(0.5deg); }
-          40% { clip: rect(55px, 9999px, 60px, 0); transform: skew(0.4deg); }
-          45% { clip: rect(25px, 9999px, 45px, 0); transform: skew(0.1deg); }
-          50% { clip: rect(70px, 9999px, 30px, 0); transform: skew(0.3deg); }
-          55% { clip: rect(50px, 9999px, 75px, 0); transform: skew(0.2deg); }
-          60% { clip: rect(15px, 9999px, 55px, 0); transform: skew(0.5deg); }
-          65% { clip: rect(80px, 9999px, 20px, 0); transform: skew(0.4deg); }
-          70% { clip: rect(35px, 9999px, 85px, 0); transform: skew(0.1deg); }
-          75% { clip: rect(95px, 9999px, 10px, 0); transform: skew(0.6deg); }
-          80% { clip: rect(45px, 9999px, 65px, 0); transform: skew(0.3deg); }
-          85% { clip: rect(5px, 9999px, 90px, 0); transform: skew(0.2deg); }
-          90% { clip: rect(60px, 9999px, 40px, 0); transform: skew(0.4deg); }
-          95% { clip: rect(100px, 9999px, 5px, 0); transform: skew(0.5deg); }
-          100% { clip: rect(20px, 9999px, 75px, 0); transform: skew(0.1deg); }
-        }
-
-        @keyframes glitch-skew {
-          0% { transform: skew(0deg); }
-          10% { transform: skew(-2deg); }
-          20% { transform: skew(2deg); }
-          30% { transform: skew(0deg); }
-          40% { transform: skew(1deg); }
-          50% { transform: skew(-1deg); }
-          60% { transform: skew(0deg); }
-          70% { transform: skew(-3deg); }
-          80% { transform: skew(3deg); }
-          90% { transform: skew(0deg); }
-          100% { transform: skew(0deg); }
+          text-shadow:
+            0 0 10px rgba(0, 255, 255, 0.35),
+            0 0 18px rgba(0, 0, 0, 0.7);
         }
 
         @media (max-width: 768px) {
@@ -331,14 +247,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           50% { opacity: 0; }
         }
 
-        /* Blinking tag */
+        /* Blinking tag (mais suave) */
         .blink-tag {
-          animation: blink-animation 1.5s ease-in-out infinite;
+          animation: blink-animation 3s ease-in-out infinite;
         }
 
         @keyframes blink-animation {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
+          0%, 100% { opacity: 0.9; }
+          50% { opacity: 0.5; }
         }
 
         /* Pixel button */
@@ -393,25 +309,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           width: 100%;
           height: 100%;
           pointer-events: none;
-          opacity: 0.4;
+          opacity: 0.2;
         }
 
-        /* Support button shake animation */
+        /* Support button shake animation (mais discreta) */
         @keyframes support-shake {
           0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          10% { transform: translate(-2px, -1px) rotate(-1deg); }
-          20% { transform: translate(2px, 1px) rotate(1deg); }
-          30% { transform: translate(-2px, 1px) rotate(-1deg); }
-          40% { transform: translate(2px, -1px) rotate(1deg); }
-          50% { transform: translate(-1px, 2px) rotate(-0.5deg); }
-          60% { transform: translate(1px, -2px) rotate(0.5deg); }
-          70% { transform: translate(-1px, -1px) rotate(-0.5deg); }
-          80% { transform: translate(1px, 1px) rotate(0.5deg); }
-          90% { transform: translate(-1px, 0px) rotate(0deg); }
+          10% { transform: translate(-1px, -0.5px) rotate(-0.5deg); }
+          20% { transform: translate(1px, 0.5px) rotate(0.5deg); }
+          30% { transform: translate(-1px, 0.5px) rotate(-0.5deg); }
+          40% { transform: translate(1px, -0.5px) rotate(0.5deg); }
+          50% { transform: translate(-0.5px, 1px) rotate(-0.25deg); }
+          60% { transform: translate(0.5px, -1px) rotate(0.25deg); }
+          70% { transform: translate(-0.5px, -0.5px) rotate(-0.25deg); }
+          80% { transform: translate(0.5px, 0.5px) rotate(0.25deg); }
+          90% { transform: translate(-0.5px, 0px) rotate(0deg); }
         }
 
         .support-btn-shake {
-          animation: support-shake 3s ease-in-out 2s infinite;
+          animation: support-shake 6s ease-in-out 4s infinite;
         }
 
         .support-btn-shake:hover {
@@ -605,7 +521,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       <img
                         src="/profile.jpeg"
                         alt="Fabrício Félix"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.parentElement!.innerHTML =
@@ -713,3 +629,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
     </div>
   );
 };
+
