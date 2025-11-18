@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import {
   createQuizAttempt,
@@ -26,6 +26,13 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
   const [isSaving, setIsSaving] = useState(false);
   const questionTimers = useRef<Map<number, number>>(new Map());
   const attemptStartTime = useRef<number>(Date.now());
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   /**
    * Inicia uma nova tentativa de quiz
@@ -51,7 +58,9 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
       });
 
       if (attempt) {
-        setAttemptId(attempt.id);
+        if (isMounted.current) {
+          setAttemptId(attempt.id);
+        }
         attemptStartTime.current = Date.now();
         console.log('[useQuizAttempt] Tentativa criada:', attempt.id);
         return attempt.id;
@@ -95,7 +104,9 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
     try {
-      setIsSaving(true);
+      if (isMounted.current) {
+        setIsSaving(true);
+      }
 
       await saveUserAnswer({
         attemptId,
@@ -109,7 +120,9 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
     } catch (error) {
       console.error('[useQuizAttempt] Erro ao salvar resposta:', error);
     } finally {
-      setIsSaving(false);
+      if (isMounted.current) {
+        setIsSaving(false);
+      }
     }
   }, [attemptId, user, options.questions]);
 
@@ -133,7 +146,9 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
     const score = 100 + Math.round(accuracy * 900);
 
     try {
-      setIsSaving(true);
+      if (isMounted.current) {
+        setIsSaving(true);
+      }
 
       const success = await completeQuizAttempt({
         attemptId,
@@ -173,7 +188,9 @@ export function useQuizAttempt(options: UseQuizAttemptOptions) {
       console.error('[useQuizAttempt] Erro ao finalizar tentativa:', error);
       return false;
     } finally {
-      setIsSaving(false);
+      if (isMounted.current) {
+        setIsSaving(false);
+      }
     }
   }, [attemptId, user, options.totalQuestions]);
 

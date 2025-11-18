@@ -27,6 +27,11 @@ export default function App() {
     const [domCfg, setDomCfg] = useState<DomainConfig | null>(null);
 
     const weeklySeed = getWeeklySeed({ certificationId });
+    // Semente única por sessão para embaralhar perguntas em cada tentativa
+    const sessionSeed = React.useMemo(
+        () => `${weeklySeed}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        [weeklySeed]
+    );
 
     // Inicializa sessão de analytics (pageviews são registrados no efeito de rota)
     useEffect(() => {
@@ -39,7 +44,8 @@ export default function App() {
         tier: 'ALL',
         limit: 100,
         enabled: rota === 'quiz-rapido',
-        seed: weeklySeed,
+        seed: sessionSeed,
+        shuffle: true,
     });
 
     const { questions: questionsCompleto, loading: loadingCompleto } = useQuestions({
@@ -47,7 +53,8 @@ export default function App() {
         tier: 'ALL',
         limit: 65,
         enabled: rota === 'quiz-completo',
-        seed: weeklySeed,
+        seed: sessionSeed,
+        shuffle: true,
     });
 
     const { questions: questionsDominios, loading: loadingDominios } = useQuestions({
@@ -56,7 +63,8 @@ export default function App() {
         tier: 'ALL',
         limit: domCfg?.qtd,
         enabled: rota === 'quiz-dominios' && !!domCfg,
-        seed: weeklySeed,
+        seed: sessionSeed,
+        shuffle: true,
     });
 
 const total = 650;
@@ -123,7 +131,7 @@ const start = (fn: () => void) => {
                             tamanho={35}
                             level="detailed"
                             onSair={handleQuizExit}
-                            onExit={() => setRota('landing')}
+                            onExit={() => setRota('painel')}
                             onVoltar={() => setRota('painel')}
                             timed
                             durationSec={40 * 60}
@@ -153,7 +161,7 @@ const start = (fn: () => void) => {
                             durationSec={130 * 60}
                             navAfterBack
                             onSair={handleQuizExit}
-                            onExit={() => setRota('landing')}
+                            onExit={() => setRota('painel')}
                             onVoltar={() => setRota('painel')}
                             theme={theme}
                             questions={questionsCompleto}
@@ -178,7 +186,7 @@ const start = (fn: () => void) => {
                             level="detailed"
                             navAfterBack
                             onSair={handleQuizExit}
-                            onExit={() => setRota('landing')}
+                            onExit={() => setRota('painel')}
                             onVoltar={() => setRota('painel')}
                             theme={theme}
                             questions={questionsDominios}

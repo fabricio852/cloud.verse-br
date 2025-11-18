@@ -79,10 +79,17 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     const quizBank = questions && questions.length > 0 ? questions : Q_BANK;
     const quizSize = tamanho || quizBank.length;
 
+    const normalizeArray = (arr: string[] | null | undefined) =>
+        arr && arr.length
+            ? arr
+                .map((a) => a.trim().toUpperCase())
+                .filter(Boolean)
+                .sort()
+            : [];
     const normalizeSelection = (selection: string[] | null | undefined) =>
-        selection && selection.length ? selection.slice().sort().join('|') : '';
+        normalizeArray(selection).join('|');
     const normalizeAnswerKey = (answers: string[]) =>
-        answers.slice().sort().join('|');
+        normalizeArray(answers).join('|');
     const answersEqual = (selection: string[] | null | undefined, correctAnswers: string[]) =>
         normalizeSelection(selection) === normalizeAnswerKey(correctAnswers);
 
@@ -123,8 +130,9 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     const recordAnswerById = (answer: string[]) => {
         if (!questao) return;
         const baseId = getBaseQuestionId(questao.id);
-        setAnswersById((prev) => ({ ...prev, [baseId]: [...answer] }));
-        setCurrentAnswer(answer);
+        const normalized = normalizeArray(answer);
+        setAnswersById((prev) => ({ ...prev, [baseId]: normalized }));
+        setCurrentAnswer(normalized);
     };
 
     const getAllResponses = () =>
@@ -219,82 +227,118 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         return () => clearTimeout(timer);
     }, [forceShowReminder]);
 
-    const finalize = async () => {
+    const finalize = () => {
         console.log('[QuizScreen] finalize() chamado');
 
-        // Estatísticas por domínio e respostas completas
-        const { correct: byDomCorrect, total: byDomTotal } = getDomainStats();
-        const responses = getAllResponses();
-        const responseMap = responses.reduce<Record<string, string[]>>((acc, r) => {
-            acc[getBaseQuestionId(r.questionId)] = r.answer || [];
-            return acc;
-        }, {});
-
-        // Calcular acertos totais
-        const correct = Object.values(byDomCorrect).reduce((a, b) => a + b, 0);
-        console.log('[QuizScreen] correct:', correct, 'total:', quizSize);
-        console.log('[QuizScreen] byDomainCorrect:', byDomCorrect);
-        console.log('[QuizScreen] byDomainTotal:', byDomTotal);
-
-        const wAcc = weightedAccuracy(byDomCorrect, byDomTotal);
-        console.log('[QuizScreen] weightedAccuracy:', wAcc);
-
-        const calculatedScore = 100 + Math.round(wAcc * 900);
-        console.log('[QuizScreen] calculated score:', calculatedScore);
-
-        // Relatório de revisões (acertos/erros)
-        const reviews = quizBank.map((q) => {
-            const baseId = getBaseQuestionId(q.id);
-            const userAnswer = responseMap[baseId] || [];
-            const isCorrect = answersEqual(userAnswer, q.answerKey);
-            return {
-                questionId: q.id,
-                baseId,
-                domain: q.domain,
-                stem: q.stem,
-                options: q.options,
-                correctAnswer: q.answerKey,
-                userAnswer,
-                isCorrect,
-            };
-        });
-
-        const summary: ResultSummary = {
-            correct,
+        // Garantir que sempre teremos um resumo para renderizar, mesmo se algo falhar
+        let safeSummary: ResultSummary = {
+            correct: 0,
             total: quizSize,
-            score: calculatedScore,
-            byDomainCorrect,
-            byDomainTotal,
-            reviews,
+            score: 100,
+            byDomainCorrect: {},
+            byDomainTotal: {},
+            reviews: [],
         };
-        console.log('[QuizScreen] summary:', summary);
 
         try {
-            // Salvar tentativa no Supabase
-            console.log('[QuizScreen] Salvando no Supabase...');
-            await finishAttempt(correct, {
-                byDomainCorrect,
-                byDomainTotal,
+            // Inclui a última resposta selecionada (mesmo sem clicar em "Enviar")
+            // Calcula acertos/erros e domínios em uma única passada
+            const byDomainCorrect: DomainStats = {};
+            const byDomainTotal: DomainStats = {};
+            const reviews = quizBank.map((q) => {
+                const baseId = getBaseQuestionId(q.id);
+                const userAnswer = answersById[baseId] || [];
+                const isCorrect = answersEqual(userAnswer, q.answerKey);
+
+                if (q.domain) {
+                    byDomainTotal[q.domain] = (byDomainTotal[q.domain] || 0) + 1;
+                    if (isCorrect) {
+                        byDomainCorrect[q.domain] = (byDomainCorrect[q.domain] || 0) + 1;
+                    } else if (!(q.domain in byDomainCorrect)) {
+                        byDomainCorrect[q.domain] = 0;
+                    }
+                }
+
+                return {
+                    questionId: q.id,
+                    baseId,
+                    domain: q.domain,
+                    stem: q.stem,
+                    options: q.options,
+                    correctAnswer: q.answerKey,
+                    userAnswer,
+                    isCorrect,
+                };
             });
-            console.log('[QuizScreen] Salvo com sucesso!');
-            // Analytics: quiz finished
-            trackEvent('quiz_finished', {
-                quizType,
+
+            // Calcular acertos totais
+            const correct = Object.values(byDomainCorrect).reduce((a, b) => a + b, 0);
+            console.log('[QuizScreen] correct:', correct, 'total:', quizSize);
+            console.log('[QuizScreen] byDomainCorrect:', byDomainCorrect);
+            console.log('[QuizScreen] byDomainTotal:', byDomainTotal);
+
+            const wAcc = weightedAccuracy(byDomainCorrect, byDomainTotal);
+            console.log('[QuizScreen] weightedAccuracy:', wAcc);
+
+            const calculatedScore = 100 + Math.round(wAcc * 900);
+            console.log('[QuizScreen] calculated score:', calculatedScore);
+
+            safeSummary = {
                 correct,
                 total: quizSize,
                 score: calculatedScore,
-            }).catch(() => {});
+                byDomainCorrect,
+                byDomainTotal,
+                reviews,
+            };
+            console.log('[QuizScreen] summary:', safeSummary);
         } catch (error) {
-            console.error('[QuizScreen] Erro ao salvar:', error);
-            // Mesmo com erro, seguimos para a tela de resultados
+            console.error('[QuizScreen] Erro ao calcular resumo:', error);
         }
 
-        // Ir direto para tela de resultados
-        console.log('[QuizScreen] Chamando onSair...');
-        // Garantir que o overlay de contribuição seja fechado
+        // Mostra resultado imediatamente; salvamento roda em segundo plano
         closeReminder();
-        onSair(summary);
+        onSair(safeSummary);
         console.log('[QuizScreen] onSair chamado!');
+
+        (async () => {
+            try {
+                // Salvar tentativa no Supabase
+                console.log('[QuizScreen] Salvando no Supabase...');
+                await finishAttempt(safeSummary.correct, {
+                    byDomainCorrect: safeSummary.byDomainCorrect,
+                    byDomainTotal: safeSummary.byDomainTotal,
+                });
+                console.log('[QuizScreen] Salvo com sucesso!');
+                // Analytics: quiz finished
+                trackEvent('quiz_finished', {
+                    quizType,
+                    correct: safeSummary.correct,
+                    total: quizSize,
+                    score: safeSummary.score,
+                }).catch(() => {});
+            } catch (error) {
+                console.error('[QuizScreen] Erro ao salvar:', error);
+            }
+        })();
+    };
+
+    // Guard para garantir que sempre navegue para o resultado
+    const finalizeWithGuard = () => {
+        try {
+            finalize();
+        } catch (error) {
+            console.error('[QuizScreen] finalize falhou, usando fallback:', error);
+            closeReminder();
+            onSair({
+                correct: 0,
+                total: quizSize,
+                score: 100,
+                byDomainCorrect: {},
+                byDomainTotal: {},
+                reviews: [],
+            });
+        }
     };
 
     useEffect(() => {
@@ -345,7 +389,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
         if (i + 1 < quizSize) {
             goToNextQuestion();
         } else if (!navAfterBack) {
-            finalize();
+            finalizeWithGuard();
         }
     };
 
@@ -461,18 +505,10 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                                 <div className="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300">
                                     <div data-tour="quiz-progress" className="text-xs font-semibold">{i + 1}/{quizSize}</div>
                                     {timed && <div className="hidden sm:block text-xs font-semibold" data-tour="quiz-timer">{fmtTime(secsLeft)}</div>}
-                                    {navAfterBack && <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>}
+                                    <Button onClick={() => setShowConfirm(true)} data-tour="quiz-finish">{t('quiz:header.finish')}</Button>
                                     {toggleTheme && (
                                         <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
                                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-                                    </button>
-                                )}
-                                {onVoltar && (
-                                    <button
-                                        onClick={onVoltar}
-                                        className="hidden sm:block rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                                    >
-                                        {t('quiz:header.back')}
                                     </button>
                                 )}
                                 <GhostButton onClick={onExit}>{t('quiz:header.exit')}</GhostButton>
@@ -547,7 +583,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     <Button onClick={() => {
                         console.log('[QuizScreen] Botão "Sim, finalizar" clicado');
                         setShowConfirm(false);
-                        finalize();
+                        finalizeWithGuard();
                     }} className="bg-red-600 hover:bg-red-700">{t('quiz:finish_modal.confirm_finish')}</Button>
                 </div>
             </Modal>

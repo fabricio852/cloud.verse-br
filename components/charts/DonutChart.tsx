@@ -1,11 +1,9 @@
 
 import React, { useState } from 'react';
-// FIX: Imported Domain from `types.ts` instead of `constants.ts`.
 import { DONUT_COLORS } from '../../constants';
-import { Domain } from '../../types';
 
 interface DonutChartProps {
-    data: { key: Domain; value: number }[];
+    data: { key: string; value: number; color?: string }[];
     size?: number;
     thickness?: number;
 }
@@ -25,6 +23,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, size = 240, thickn
                     const val = Math.max(0, d.value || 0);
                     const frac = val / total;
                     const len = frac * c;
+                    const strokeColor = d.color || DONUT_COLORS[d.key as keyof typeof DONUT_COLORS] || '#6366f1';
                     const el = (
                         <circle
                             key={d.key}
@@ -32,7 +31,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, size = 240, thickn
                             cx="0"
                             cy="0"
                             fill="none"
-                            stroke={DONUT_COLORS[d.key]}
+                            stroke={strokeColor}
                             strokeWidth={hoverIdx === idx ? (thickness + 4) : thickness}
                             strokeDasharray={`${len} ${c - len}`}
                             strokeDashoffset={-offset}

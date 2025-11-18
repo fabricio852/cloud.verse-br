@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { getSiteTag } from '../services/analytics'
 
 export function useTotalVisitors(pollMs = 30000) {
   const [count, setCount] = useState<bigint | number>(0)
@@ -8,9 +9,19 @@ export function useTotalVisitors(pollMs = 30000) {
 
   const fetchCount = async () => {
     try {
-      const { data, error } = await supabase.rpc('total_visitors')
+      const site = getSiteTag()
+      let query = supabase
+        .from('sessions')
+        .select('anon_id', { count: 'exact', head: true })
+        .neq('anon_id', null)
+
+      if (site) {
+        query = query.contains('utm', { __site: site })
+      }
+
+      const { count, error } = await query
       if (error) throw error
-      setCount((data as any) ?? 0)
+      setCount(count ?? 0)
       setError(null)
     } catch (e: any) {
       setError(e?.message || 'Failed to load visitors')

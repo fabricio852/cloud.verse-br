@@ -3,6 +3,17 @@ import { supabase, supabaseMissingEnv } from './supabaseClient'
 const ANON_KEY = 'cv_anon_id'
 const SESSION_KEY = 'cv_session_id'
 
+export function getSiteTag(): string | null {
+  try {
+    const envTag = import.meta.env?.VITE_ANALYTICS_SITE
+    if (envTag && typeof envTag === 'string' && envTag.trim()) return envTag.trim()
+    if (typeof window !== 'undefined' && window.location?.host) return window.location.host
+  } catch {
+    // ignore
+  }
+  return null
+}
+
 export function getLocale(): string {
   try {
     if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/en')) return 'en'
@@ -52,6 +63,15 @@ function parseUtm(): Record<string, string> | null {
   }
 }
 
+function getUtmWithSite(): Record<string, string> | null {
+  const utm = parseUtm()
+  const site = getSiteTag()
+  if (site) {
+    return { ...(utm || {}), __site: site }
+  }
+  return utm
+}
+
 async function getUserId(): Promise<string | null> {
   try {
     const { data } = await supabase.auth.getUser()
@@ -72,11 +92,12 @@ export async function ensureSession(): Promise<string | null> {
 
   const anonId = getAnonId()
   const referrer = document.referrer || null
-  const utm = parseUtm()
+  const utm = getUtmWithSite()
   const userAgent = navigator.userAgent
   const initialPath = window.location.pathname + window.location.search
   const userId = await getUserId()
   const locale = getLocale()
+  const site = getSiteTag()
 
   const sid = uuid()
   const { error } = await supabase
@@ -114,7 +135,7 @@ export async function trackPageview(path?: string) {
   const sessionId = getSessionId() || (await ensureSession())
   const p = path || (window.location.pathname + window.location.search)
   const referrer = document.referrer || null
-  const utm = parseUtm()
+  const utm = getUtmWithSite()
   const locale = getLocale()
 
   const { error } = await supabase.from('pageviews').insert({

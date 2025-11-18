@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, supabaseMissingEnv } from '../services/supabaseClient'
-import { getLocale } from '../services/analytics'
+import { getLocale, getSiteTag } from '../services/analytics'
 
 export function useTotalVisits(pollMs = 30000) {
   const [count, setCount] = useState<bigint | number>(0)
@@ -16,10 +16,17 @@ export function useTotalVisits(pollMs = 30000) {
 
     try {
       const locale = getLocale()
-      const { count, error } = await supabase
+      const site = getSiteTag()
+      let query = supabase
         .from('pageviews')
         .select('*', { count: 'exact', head: true })
         .eq('locale', locale)
+
+      if (site) {
+        query = query.contains('utm', { __site: site })
+      }
+
+      const { count, error } = await query
 
       if (error) throw error
       setCount(count ?? 0)

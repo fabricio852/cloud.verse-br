@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { ResultSummary, Domain } from '../types';
 import { GhostButton, Button } from '../components/ui/Button';
 import { DonutChart } from '../components/charts/DonutChart';
-import { MoonIcon, SunIcon } from '../components/common/Icons';
 import { Logo } from '../components/common/Logo';
 import { DOMAIN_LABELS, DONUT_COLORS } from '../constants';
 import { cn } from '../utils';
 import { useCertificationStore } from '../store/certificationStore';
-import { DomainTag } from '../components/common/DomainTag';
 import { ThemedDonationModal } from '../components/donation/ThemedDonationModal';
 import { Modal } from '../components/ui/Modal';
 import { getPixEnvConfig } from '../utils/pixUtils';
+import { ThemedSupportButton } from '../components/donation/ThemedSupportButton';
 
 interface ResultScreenProps {
     summary: ResultSummary | null;
@@ -21,13 +20,7 @@ interface ResultScreenProps {
     toggleTheme?: () => void;
 }
 
-export const ResultScreen: React.FC<ResultScreenProps> = ({
-    summary,
-    onBack,
-    onVoltar,
-    theme = 'light',
-    toggleTheme,
-}) => {
+export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onVoltar }) => {
     const { t } = useTranslation(['results', 'common']);
     const { selectedCertId } = useCertificationStore();
     const [loading, setLoading] = useState(true);
@@ -112,11 +105,6 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         return entries.sort((a, b) => a.pct - b.pct);
     }, [domains, summary]);
 
-    const wrongAnswers = useMemo(() => {
-        if (!summary?.reviews) return [];
-        return summary.reviews.filter((r) => !r.isCorrect);
-    }, [summary]);
-
     const formatAnswers = (arr: string[]) => (arr.length ? arr.join(', ') : '-');
 
     const askToSupportBeforeLeave = (nav: 'back' | 'exit') => {
@@ -176,20 +164,6 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                         <Logo onClick={onVoltar} />
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => askToSupportBeforeLeave('back')}
-                            className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        >
-                            {t('results:actions.back')}
-                        </button>
-                        {toggleTheme && (
-                            <button
-                                onClick={toggleTheme}
-                                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                            >
-                                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-                            </button>
-                        )}
                         {onVoltar && (
                             <GhostButton onClick={() => askToSupportBeforeLeave('exit')}>
                                 {t('results:actions.exit')}
@@ -235,7 +209,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                                     <span className="text-5xl">1000</span>
                                 </div>
                                 <div className="mt-3 text-2xl font-bold">
-                                    {t('results:congratulations.percentage', { percent: percentage })}
+                                    {t('results:congratulations.percentage', { percentage })}
                                 </div>
                             </div>
                         </div>
@@ -252,8 +226,8 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                                 </div>
                                 <DonutChart
                                     data={[
-                                        { name: t('results:charts.correct'), value: correct, color: '#10b981' },
-                                        { name: t('results:charts.wrong'), value: total - correct, color: '#ef4444' },
+                                        { key: 'correct', value: correct, color: '#10b981' },
+                                        { key: 'wrong', value: Math.max(total - correct, 0), color: '#ef4444' },
                                     ]}
                                 />
                             </div>
@@ -267,7 +241,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                                         const totalDomain = item.total;
                                         const value = item.value;
                                         const pct = totalDomain > 0 ? Math.round((value / totalDomain) * 100) : 0;
-                                        const color = DONUT_COLORS[item.key] || '#6366f1';
+                                        const color = DONUT_COLORS[item.key as keyof typeof DONUT_COLORS] || '#6366f1';
                                         return (
                                             <div key={item.key} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
                                                 <div className="flex items-center justify-between">
@@ -291,49 +265,6 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                    {t('results:review.title')}
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {wrongAnswers.length === 0
-                                        ? t('results:review.all_correct')
-                                        : t('results:review.wrong_count', { count: wrongAnswers.length })}
-                                </div>
-                            </div>
-
-                            {wrongAnswers.length === 0 ? (
-                                <div className="text-center text-green-600 dark:text-green-400 font-semibold py-6">
-                                    {t('results:review.all_correct_message')}
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {wrongAnswers.map((w, idx) => (
-                                        <div
-                                            key={w.questionId}
-                                            className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
-                                        >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Q{idx + 1}</div>
-                                                <DomainTag domain={w.domain as Domain} />
-                                            </div>
-                                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{w.stem}</div>
-                                            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                                                <div>
-                                                    <span className="font-semibold text-red-600 dark:text-red-400">Sua resposta: </span>
-                                                    {formatAnswers(w.userAnswer)}
-                                                </div>
-                                                <div>
-                                                    <span className="font-semibold text-green-600 dark:text-green-400">Correta: </span>
-                                                    {formatAnswers(w.correctAnswer)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
                     </div>
                 )}
             </div>
@@ -377,6 +308,27 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                     </div>
                 </div>
             </Modal>
+
+            <div className="mt-8">
+                <div className="relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-r from-[#0f172a] via-[#1f2937] to-[#0b1021] shadow-2xl">
+                    <div className="pointer-events-none absolute inset-0 opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(124,58,237,0.25), transparent 35%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.2), transparent 40%)' }} />
+                    <div className="relative flex flex-col gap-4 px-5 py-6 md:flex-row md:items-center md:justify-between md:px-8">
+                        <div className="space-y-1 text-left md:max-w-2xl">
+                            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-purple-100/80">Apoie o projeto</p>
+                            <h3 className="text-2xl font-bold text-white">O simulado foi útil pra você?</h3>
+                            <p className="text-sm text-purple-50/90">
+                                Considere uma pequena doação para manter este projeto vivo, acessível e sempre atualizado.
+                            </p>
+                        </div>
+                        <ThemedSupportButton
+                            variant="inline"
+                            theme="landing"
+                            onClick={() => setShowDonationModal(true)}
+                            className="drop-shadow-[0_10px_25px_rgba(99,102,241,0.45)]"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

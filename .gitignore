@@ -44,3 +44,6 @@ build/
 
 # IDE
 .history/
+
+# Windows special files
+nul

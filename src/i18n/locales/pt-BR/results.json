@@ -8,11 +8,25 @@
     "aws_score": "PONTUAÇÃO AWS",
     "score_display": "{{score}}/1000",
     "percentage": "{{percentage}}%",
-    "passed": "✓ Aprovado",
-    "failed": "✗ Reprovado (mínimo 70%)",
+    "passed": "✅ Aprovado",
+    "failed": "❌ Reprovado (mínimo 70%)",
     "disclaimer": "Pontuação estimada com base nas respostas corretas. Não é uma pontuação oficial da AWS.",
     "note_pass": "Você atingiu a pontuação mínima!",
     "note_fail": "Continue estudando para alcançar 70%."
+  },
+  "charts": {
+    "overall": "Desempenho geral",
+    "correct": "Corretas",
+    "wrong": "Erradas",
+    "by_domain": "Por domínio"
+  },
+  "review": {
+    "title": "Revisão das questões",
+    "all_correct": "Nenhum erro",
+    "wrong_count": "{{count}} incorreta(s)",
+    "all_correct_message": "Você acertou todas! 🎉",
+    "no_review_data": "Você errou {{count}} questão(ões), mas não foi possível gerar a revisão.",
+    "questions_label": "questões"
   },
   "performance": {
     "title": "Acertos por domínio",
