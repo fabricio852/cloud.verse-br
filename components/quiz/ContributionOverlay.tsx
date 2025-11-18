@@ -114,7 +114,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
               transition={{ type: "spring", duration: 0.5 }}
               className="w-full max-w-md"
             >
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-white/10 overflow-hidden max-h-[80vh] flex flex-col">
                 {/* Header com gradiente */}
                 <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-teal-600/20 px-4 py-3 border-b border-white/10">
                   <div className="flex items-start justify-between">
@@ -147,7 +147,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                 </div>
 
                 {/* Content (compact) */}
-                <div className="px-4 py-4 space-y-4">
+                <div className="px-4 py-4 space-y-4 overflow-y-auto">
                   {selectedAmount === null ? (
                     <>
                       {/* Donation Amount Options */}
@@ -194,8 +194,8 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                   ) : (
                     <>
                       {/* QR Code Display */}
-                      <div className="flex flex-col items-center space-y-4">
-                        <div className="bg-gray-800/50 rounded-xl p-4 w-full max-w-xs">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="bg-gray-800/50 rounded-xl p-3 w-full max-w-xs">
                           {isGeneratingQR ? (
                             <div className="w-full aspect-square flex items-center justify-center">
                               <div className="flex flex-col items-center gap-2">
@@ -211,25 +211,25 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                             />
                           )}
                         </div>
-                        <p className="text-xs text-gray-400 text-center">
+                        <p className="text-[11px] text-gray-400 text-center">
                           Aponte a câmera do seu banco para escanear
                         </p>
                       </div>
 
                       {/* PIX BR Code Copy Section */}
-                      <div className="bg-gray-800/50 rounded-xl p-4 space-y-3">
-                        <p className="text-xs text-gray-400 text-center">
+                      <div className="bg-gray-800/50 rounded-xl p-3 space-y-2">
+                        <p className="text-[11px] text-gray-400 text-center">
                           Ou copie o código PIX Copia e Cola
                         </p>
                         {/* Display BR Code */}
-                        <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700">
+                        <div className="bg-gray-900/50 rounded-lg p-2 border border-gray-700">
                           <code className="text-xs font-mono text-gray-100 break-all block">
                             {pixBrCode || 'Gerando código...'}
                           </code>
                         </div>
                         <button
                           onClick={handleCopyToClipboard}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 transition flex items-center justify-center gap-2 font-semibold"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-2.5 px-4 transition flex items-center justify-center gap-2 font-semibold"
                         >
                           {copiedToClipboard ? (
                             <>
@@ -267,3 +267,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
     </AnimatePresence>
   );
 };
+
+
+
+
