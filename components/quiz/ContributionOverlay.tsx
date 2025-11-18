@@ -195,7 +195,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     <>
                       {/* QR Code Display */}
                       <div className="flex flex-col items-center space-y-3">
-                        <div className="bg-gray-800/50 rounded-xl p-3 w-full max-w-[260px]">
+                        <div className="bg-gray-800/50 rounded-xl p-3 w-full max-w-[180px]">
                           {isGeneratingQR ? (
                             <div className="w-full aspect-square flex items-center justify-center">
                               <div className="flex flex-col items-center gap-2">
