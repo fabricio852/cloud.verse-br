@@ -114,7 +114,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
               transition={{ type: "spring", duration: 0.5 }}
               className="w-full max-w-md"
             >
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-white/10 overflow-hidden max-h-[80vh] flex flex-col">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-white/10 overflow-hidden max-h-[90vh] flex flex-col">
                 {/* Header com gradiente */}
                 <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-teal-600/20 px-4 py-3 border-b border-white/10">
                   <div className="flex items-start justify-between">
@@ -147,7 +147,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                 </div>
 
                 {/* Content (compact) */}
-                <div className="px-4 py-4 space-y-4 overflow-y-auto">
+                <div className="px-4 py-4 space-y-3 overflow-y-auto">
                   {selectedAmount === null ? (
                     <>
                       {/* Donation Amount Options */}
@@ -195,7 +195,7 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                     <>
                       {/* QR Code Display */}
                       <div className="flex flex-col items-center space-y-3">
-                        <div className="bg-gray-800/50 rounded-xl p-3 w-full max-w-xs">
+                        <div className="bg-gray-800/50 rounded-xl p-3 w-full max-w-[260px]">
                           {isGeneratingQR ? (
                             <div className="w-full aspect-square flex items-center justify-center">
                               <div className="flex flex-col items-center gap-2">
