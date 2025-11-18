@@ -207,7 +207,14 @@ const start = (fn: () => void) => {
             );
             case 'dominios': return (
                 <ScreenTransition screenKey="dominios">
-                    <DominiosScreen onVoltar={() => setRota('painel')} onBackToLanding={() => setRota('landing')} onIniciar={(cfg) => { setDomCfg(cfg); start(() => setRota('quiz-dominios')); }} />
+                    <DominiosScreen
+                        onVoltar={() => setRota('painel')}
+                        onBackToLanding={() => setRota('painel')}
+                        onIniciar={(cfg) => {
+                            setDomCfg(cfg);
+                            start(() => setRota('quiz-dominios'));
+                        }}
+                    />
                 </ScreenTransition>
             );
             default: return (

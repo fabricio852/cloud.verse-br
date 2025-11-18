@@ -91,11 +91,11 @@ export const DonationModal: React.FC<DonationModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Header */}
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-white">Apoie a educação gratuita</h2>
-              <p className="text-green-100 text-sm">Sua contribuição mantém este serviço chegando até você</p>
-            </div>
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-white">Apoie a educação gratuita</h2>
+            <p className="text-green-100 text-sm">Sua contribuição mantém este serviço chegando até você</p>
+          </div>
           <button
             onClick={handleClose}
             className="text-white hover:bg-white/20 rounded-full p-2 transition"
@@ -130,13 +130,6 @@ export const DonationModal: React.FC<DonationModalProps> = ({
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Info Text */}
-              <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Contribuições fizeram este serviço chegar até você gratuitamente. Se puder, fortaleça essa corrente
-                </p>
               </div>
             </>
           ) : (

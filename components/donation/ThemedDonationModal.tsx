@@ -59,7 +59,7 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
       buttonBorder: '#10b981',
       buttonHoverBorder: '#059669',
     },
-  };
+  } as const;
 
   const styles = themeStyles[theme];
 
@@ -75,11 +75,8 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
         valor: amount,
       });
 
-      console.log('PIX BR Code gerado:', brCode.substring(0, 50) + '...');
-
       // Generate QR code from BR Code
       const qrCode = await generatePixQRCode(brCode);
-      console.log('QR Code data URL gerado:', qrCode.substring(0, 50) + '...');
 
       setQrCodeDataUrl(qrCode);
       setPixBrCode(brCode);
@@ -198,19 +195,6 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Info Text */}
-              <div
-                className="border rounded-lg p-3"
-                style={{
-                  borderColor: styles.secondaryColor,
-                  backgroundColor: styles.accentBg,
-                }}
-              >
-                <p className="text-xs" style={{ color: styles.textColor }}>
-                  Contribuições fizeram este serviço chegar até você gratuitamente. Se puder, fortaleça essa corrente
-                </p>
               </div>
             </>
           ) : (

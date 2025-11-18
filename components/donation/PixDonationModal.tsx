@@ -57,7 +57,9 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
     } catch (error) {
       console.error('Erro ao gerar QR Code:', error);
       // Mostra um placeholder em caso de erro
-      setQrCodeDataUrl(`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f3f4f6' width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='monospace' font-size='14'%3EQR indisponível%3C/text%3E%3C/svg%3E`);
+      setQrCodeDataUrl(
+        `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f3f4f6' width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='monospace' font-size='14'%3EQR indisponível%3C/text%3E%3C/svg%3E`,
+      );
     } finally {
       setIsGeneratingQR(false);
     }
@@ -132,11 +134,7 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <img
-                      src={qrCodeDataUrl}
-                      alt="QR Code PIX"
-                      className="w-full h-auto rounded-lg"
-                    />
+                    <img src={qrCodeDataUrl} alt="QR Code PIX" className="w-full h-auto rounded-lg" />
                   )}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
@@ -195,22 +193,13 @@ export const PixDonationModal: React.FC<PixDonationModalProps> = ({
                   ))}
                 </div>
               </div>
-
-              {/* Info Text */}
-              <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  ℹ️ Contribuições fizeram este serviço chegar até você gratuitamente. Se puder, fortaleça essa corrente
-                </p>
-              </div>
             </>
           ) : (
             /* Thank You Screen */
             <div className="flex flex-col items-center justify-center py-8 space-y-4">
-              <div className="text-5xl">✨</div>
+              <div className="text-5xl">🙏</div>
               <div className="text-center space-y-2">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white">
-                  {thankYouMessage}
-                </h3>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">{thankYouMessage}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Processando PIX de {formatarValorReal(selectedAmount)}...
                 </p>

@@ -1,9 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GhostButton } from '../components/ui/Button';
 import { Logo } from '../components/common/Logo';
-import { StatPill } from '../components/common/StatPill';
 import { Domain, DomainConfig } from '../types';
 import { R, DOMAIN_LABELS } from '../constants';
 import { cn } from '../utils';
@@ -72,7 +70,6 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                         <Logo onClick={onBackToLanding} />
                     </div>
                     <div className="flex items-center gap-2">
-                        <StatPill label={t('domains:performance.label')} value={`${qtd}`} />
                         {onBackToLanding && (
                             <button
                                 onClick={onBackToLanding}
@@ -81,7 +78,6 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                                 {t('domains:header.back')}
                             </button>
                         )}
-                        <GhostButton onClick={onVoltar}>{t('domains:header.back_to_dashboard')}</GhostButton>
                         <button type="button" onClick={() => onIniciar({ qtd, dom })} className={cn("px-4 py-2 bg-gradient-to-r from-purple-800 to-fuchsia-800 text-white font-semibold", R.md)}>{t('domains:actions.start')}</button>
                     </div>
                 </div>
