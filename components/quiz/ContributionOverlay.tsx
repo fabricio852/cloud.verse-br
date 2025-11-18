@@ -106,17 +106,17 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="w-full max-w-lg"
+              className="w-full max-w-md"
             >
               <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
                 {/* Header com gradiente */}
-                <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-teal-600/20 p-6 border-b border-white/10">
+                <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-teal-600/20 px-4 py-3 border-b border-white/10">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="relative h-12 w-12 rounded-full border border-white/20 p-[2px] shadow-lg shadow-black/30">
@@ -146,12 +146,8 @@ export const ContributionOverlay: React.FC<ContributionOverlayProps> = ({
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6">
-                  <p className="text-gray-300 leading-relaxed text-base">
-                    {t('tour:contribution.message')}
-                  </p>
-
+                {/* Content (compact) */}
+                <div className="px-4 py-4 space-y-4">
                   {selectedAmount === null ? (
                     <>
                       {/* Donation Amount Options */}
