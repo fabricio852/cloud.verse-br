@@ -37,6 +37,7 @@ export interface Question {
         C: string;
         D: string;
         E?: string;
+        F?: string;
     };
     answerKey: string[];
     requiredSelections: number;

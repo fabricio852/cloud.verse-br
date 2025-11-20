@@ -76,6 +76,7 @@ export interface Question {
   option_c: string;
   option_d: string;
   option_e: string | null;
+  option_f: string | null;
   correct_answer: string;
   correct_answers?: string[] | null;
   required_selection_count?: number | null;

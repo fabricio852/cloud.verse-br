@@ -41,6 +41,11 @@ function convertDBQuestionToAppFormat(dbQuestion: DBQuestion): Question {
     options.E = optionE;
   }
 
+  const optionF = (dbQuestion as any).option_f ?? (dbQuestion as any).option_6;
+  if (optionF) {
+    options.F = optionF;
+  }
+
   return {
     id: dbQuestion.id,
     domain: dbQuestion.domain as Domain,
