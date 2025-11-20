@@ -163,6 +163,7 @@ export const useCertificationStore = create<CertificationState>()(
         try {
           // Get current locale from analytics
           const currentLocale = typeof navigator !== 'undefined' ? navigator.language : 'pt-BR';
+          console.log('[certificationStore] currentLocale detectado:', currentLocale);
 
           const { data, error } = await supabase
             .from('certifications')
@@ -170,6 +171,8 @@ export const useCertificationStore = create<CertificationState>()(
             .eq('active', true)
             .or(`locale.eq.all,locale.eq.${currentLocale}`)
             .order('id', { ascending: true });
+
+          console.log('[certificationStore] Certificações retornadas do Supabase:', data?.length, data?.map(c => ({ id: c.id, locale: c.locale })));
 
           if (error) throw error;
 

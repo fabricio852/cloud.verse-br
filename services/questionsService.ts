@@ -8,6 +8,8 @@ import { supabase } from './supabaseClient';
 import saaQuestionsBR from '../data/saa-questions-br.json' assert { type: 'json' };
 import clfQuestionsBR from '../data/clf-questions-br.json' assert { type: 'json' };
 import aifQuestionsBR from '../data/aif-questions-br.json' assert { type: 'json' };
+import dvaQuestionsBR from '../data/dva-questions-br.json' assert { type: 'json' };
+// dvaQuestionsEN existe em data/dva-questions.json mas não é usado neste app (apenas para Supabase/outro app)
 
 type Question = Database['public']['Tables']['questions']['Row'];
 
@@ -16,10 +18,12 @@ const BR_QUESTIONS_FILES: Record<string, string> = {
   'SAA-C03': '/data/saa-questions-br.json',
   'CLF-C02': '/data/clf-questions-br.json',
   'AIF-C01': '/data/aif-questions-br.json',
+  'DVA-C02': '/data/dva-questions-br.json',
 };
 
 /**
  * Carrega questões em PT-BR de arquivo JSON local como fallback
+ * Questões EN do DVA-C02 existem no arquivo mas são apenas para exportar ao Supabase (outro app)
  * Usado quando as questões não estão disponíveis no banco de dados
  */
 async function loadBRQuestionsFromJSON(certificationId: string): Promise<Question[]> {
@@ -28,6 +32,10 @@ async function loadBRQuestionsFromJSON(certificationId: string): Promise<Questio
   if (certificationId === 'SAA-C03') rawQuestions = saaQuestionsBR as any[];
   if (certificationId === 'CLF-C02') rawQuestions = clfQuestionsBR as any[];
   if (certificationId === 'AIF-C01') rawQuestions = aifQuestionsBR as any[];
+  if (certificationId === 'DVA-C02') {
+    // Para DVA-C02, usar apenas PT-BR (EN vai para Supabase para outro app)
+    rawQuestions = dvaQuestionsBR as any[];
+  }
 
   // Se não houver no bundle, tenta fetch do arquivo na pasta data (apenas build)
   if (!rawQuestions) {
@@ -50,10 +58,20 @@ async function loadBRQuestionsFromJSON(certificationId: string): Promise<Questio
 
     // Mapeia questões do arquivo JSON para o formato esperado pela app
     // Adiciona sufixo -br aos IDs para manter consistência com banco de dados
-  const brQuestions: Question[] = rawQuestions.map((q: any) => ({
-    id: q.id.endsWith('-br') ? q.id : `${q.id}-br`,
-    certification_id: certificationId,
-    domain: q.domain,
+  const brQuestions: Question[] = rawQuestions.map((q: any) => {
+    // Mapear SECURITY -> DVA_SECURITY para DVA-C02
+    let domain = q.domain;
+    if (certificationId === 'DVA-C02' && domain === 'SECURITY') {
+      domain = 'DVA_SECURITY';
+    }
+
+    // Adicionar sufixo -br se não tiver
+    const questionId = q.id.endsWith('-br') ? q.id : `${q.id}-br`;
+
+    return {
+      id: questionId,
+      certification_id: certificationId,
+      domain: domain,
     difficulty: q.difficulty,
     tier: q.tier || 'FREE',
     active: q.active !== false,
@@ -70,7 +88,8 @@ async function loadBRQuestionsFromJSON(certificationId: string): Promise<Questio
     incorrect_explanations: q.incorrect_explanations,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }));
+    };
+  });
 
   return brQuestions;
 }
@@ -81,6 +100,9 @@ const DOMAIN_MAP: Record<string, Record<string, string>> = {
     RESILIENT: 'DESIGN_RESILIENT_ARCHITECTURES',
     PERFORMANCE: 'DESIGN_HIGH_PERFORMING_ARCHITECTURES',
     COST: 'DESIGN_COST_OPTIMIZED_ARCHITECTURES',
+  },
+  'DVA-C02': {
+    SECURITY: 'DVA_SECURITY',
   },
 };
 
@@ -129,11 +151,15 @@ export interface QuizFilters {
 
 /**
  * Busca questões em PT-BR usando apenas os JSONs locais.
- * Ignora Supabase e qualquer fallback para inglês.
+ * Questões EN do DVA-C02 são apenas para Supabase (outro app).
+ * Ignora Supabase.
  */
 export async function fetchQuestions(filters: QuizFilters): Promise<Question[]> {
   const brQuestionsRaw = await loadBRQuestionsFromJSON(filters.certificationId);
+
+  // Filtrar apenas questões PT-BR (com sufixo -br)
   const onlyBr = brQuestionsRaw.filter((q) => q.id.toLowerCase().endsWith('-br'));
+
   const filtered = applyFiltersToQuestions(onlyBr, filters);
 
   let results = filtered.sort((a, b) => {
