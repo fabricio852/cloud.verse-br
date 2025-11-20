@@ -33,6 +33,13 @@ const CERT_DOMAINS: Record<string, Array<{ key: Domain; pct: number }>> = {
         { key: Domain.AI_FUNDAMENTALS, pct: 24 },
         { key: Domain.ML_DEVELOPMENT, pct: 22 },
     ],
+    'DVA-C02': [
+        { key: Domain.DEVELOPMENT, pct: 30 },
+        { key: Domain.DVA_SECURITY, pct: 26 },
+        { key: Domain.DEPLOYMENT, pct: 22 },
+        { key: Domain.MONITORING, pct: 12 },
+        { key: Domain.REFACTORING, pct: 10 },
+    ],
 };
 
 export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBackToLanding, onIniciar }) => {
@@ -42,7 +49,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
 
     // Obter domínios da certificação selecionada
     const domains = useMemo(() => {
-        return CERT_DOMAINS[selectedCertId || 'CLF-C02'] || CERT_DOMAINS['CLF-C02'];
+        return CERT_DOMAINS[selectedCertId || 'DVA-C02'] || CERT_DOMAINS['DVA-C02'];
     }, [selectedCertId]);
 
     // Inicializar state com todos os domínios marcados
