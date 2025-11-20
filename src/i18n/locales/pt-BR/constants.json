@@ -18,6 +18,13 @@
       "ai_services": "Serviços de IA",
       "ai_fundamentals": "Fundamentos de IA",
       "ml_development": "Desenvolvimento de ML"
+    },
+    "dva_c02": {
+      "deployment": "Implantação",
+      "dva_security": "Segurança",
+      "development": "Desenvolvimento",
+      "refactoring": "Refatoração",
+      "monitoring": "Monitoramento"
     }
   },
   "flashcards": {
@@ -65,6 +72,7 @@
   "certification_names": {
     "saa_c03": "AWS Certified Solutions Architect - Associate",
     "clf_c02": "AWS Certified Cloud Practitioner",
-    "aif_c01": "AWS Certified AI Practitioner"
+    "aif_c01": "AWS Certified AI Practitioner",
+    "dva_c02": "AWS Certified Developer - Associate"
   }
 }
