@@ -1,31 +1,30 @@
-import React, { useState } from 'react';
-import { X, Copy, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Copy, Check, X } from 'lucide-react';
 import { generatePixQRCode } from '../../utils/qrCodeGenerator';
-import { formatarValorReal, gerarDoacaoEvent, gerarPixEmv } from '../../utils/pixUtils';
+import { formatarValorReal, gerarDoacaoEvent, getPixEnvConfig, gerarPixEmv } from '../../utils/pixUtils';
 
 interface ThemedDonationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pixKey: string;
-  pixReceiverName: string;
-  pixReceiverCity: string;
+  pixKey?: string;
+  pixReceiverName?: string;
+  pixReceiverCity?: string;
   theme?: 'landing' | 'default';
   onDonationComplete?: (amount: number) => void;
 }
 
+const avatarUrl = "/profile.jpeg";
+
 const DONATION_AMOUNTS = [
-  { value: 5, label: 'Café ☕' },
-  { value: 15, label: 'Almoço 🍽️' },
-  { value: 25, label: 'Presente 🎁' },
+  { value: 5, label: 'Café', emoji: '☕' },
+  { value: 15, label: 'Almoço', emoji: '🍽️' },
+  { value: 25, label: 'Presente', emoji: '🎁' },
 ];
 
 export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
   isOpen,
   onClose,
-  pixKey,
-  pixReceiverName,
-  pixReceiverCity,
-  theme = 'default',
   onDonationComplete,
 }) => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
@@ -34,54 +33,43 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 
-  const themeStyles = {
-    landing: {
-      headerGradient: 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(255, 153, 0, 0.2))',
-      borderColor: '#00FFFF',
-      borderHoverColor: '#FF9900',
-      textColor: '#00FFFF',
-      secondaryColor: '#FF9900',
-      backgroundColor: 'rgba(10, 10, 18, 0.95)',
-      accentBg: 'rgba(0, 255, 255, 0.05)',
-      shadowColor: 'rgba(0, 255, 255, 0.3)',
-      buttonBorder: '#00FFFF',
-      buttonHoverBorder: '#FF9900',
-    },
-    default: {
-      headerGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      borderColor: '#10b981',
-      borderHoverColor: '#059669',
-      textColor: '#10b981',
-      secondaryColor: '#059669',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      accentBg: 'rgba(16, 185, 129, 0.05)',
-      shadowColor: 'rgba(16, 185, 129, 0.2)',
-      buttonBorder: '#10b981',
-      buttonHoverBorder: '#059669',
-    },
-  } as const;
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
 
-  const styles = themeStyles[theme];
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const generateQRCode = async (amount: number) => {
     setSelectedAmount(amount);
     setIsGeneratingQR(true);
     try {
-      // Generate PIX BR Code (EMV format) with embedded amount
+      const pixConfig = getPixEnvConfig();
+
+      if (!pixConfig.chave || pixConfig.chave === '00000000000') {
+        console.error('[QR] PIX configuration is invalid');
+        setQrCodeDataUrl('');
+        setPixBrCode('');
+        setIsGeneratingQR(false);
+        return;
+      }
+
       const brCode = gerarPixEmv({
-        chave: pixKey,
-        nomeRecebedor: pixReceiverName,
-        cidadeRecebedor: pixReceiverCity,
+        chave: pixConfig.chave,
+        nomeRecebedor: pixConfig.nomeRecebedor,
+        cidadeRecebedor: pixConfig.cidadeRecebedor,
         valor: amount,
       });
 
-      // Generate QR code from BR Code
       const qrCode = await generatePixQRCode(brCode);
-
       setQrCodeDataUrl(qrCode);
       setPixBrCode(brCode);
 
-      // Track donation event
       const event = gerarDoacaoEvent(amount, 'pix');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('donation', { detail: event }));
@@ -91,7 +79,9 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
         onDonationComplete(amount);
       }
     } catch (error) {
-      console.error('Erro ao gerar QR Code:', error);
+      console.error('[QR] Error generating QR Code:', error);
+      setQrCodeDataUrl('');
+      setPixBrCode('');
     } finally {
       setIsGeneratingQR(false);
     }
@@ -99,7 +89,6 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
 
   const handleCopyToClipboard = async () => {
     try {
-      // Copy the PIX BR Code (not the raw key)
       await navigator.clipboard.writeText(pixBrCode);
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
@@ -116,215 +105,255 @@ export const ThemedDonationModal: React.FC<ThemedDonationModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div
-        className="rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300 border-2"
-        style={{
-          backgroundColor: styles.backgroundColor,
-          borderColor: styles.borderColor,
-          boxShadow: `0 0 30px ${styles.shadowColor}, 0 0 60px ${styles.shadowColor}`,
-        }}
-      >
-        {/* Header */}
-        <div
-          className="px-6 py-4 flex items-center justify-between"
-          style={{
-            background: styles.headerGradient,
-            borderBottom: `2px solid ${styles.borderColor}`,
-          }}
-        >
-          <div>
-            <h2 className="text-xl font-bold" style={{ color: styles.textColor }}>
-              Apoie a educação gratuita
-            </h2>
-            <p style={{ color: styles.secondaryColor }} className="text-sm">
-              Sua contribuição mantém este serviço chegando até você
-            </p>
-          </div>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop com blur */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="rounded-full p-2 transition hover:scale-110"
-            style={{ color: styles.textColor }}
-            aria-label="Fechar"
-          >
-            <X size={20} />
-          </button>
-        </div>
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-50"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(0, 255, 255, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255, 153, 0, 0.08) 0%, transparent 50%)'
+            }}
+          />
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {selectedAmount === null ? (
-            <>
-              {/* Donation Amount Options */}
-              <div className="space-y-3">
-                <p
-                  className="text-sm font-semibold uppercase"
-                  style={{ color: styles.textColor }}
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="relative rounded-2xl shadow-2xl overflow-hidden border-2"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(10, 10, 18, 0.97) 0%, rgba(20, 20, 30, 0.97) 100%)',
+                  borderImage: 'linear-gradient(135deg, #00FFFF, #FF9900) 1',
+                  boxShadow: '0 0 60px rgba(0, 255, 255, 0.2), 0 0 80px rgba(255, 153, 0, 0.15)'
+                }}
+              >
+                {/* Header com gradiente e avatar */}
+                <div
+                  className="relative px-6 py-5 border-b-2"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 153, 0, 0.15))',
+                    borderColor: 'rgba(0, 255, 255, 0.3)'
+                  }}
                 >
-                  Escolha um valor
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  {DONATION_AMOUNTS.map((item) => (
-                    <button
-                      key={item.value}
-                      onClick={() => generateQRCode(item.value)}
-                      className="border-2 rounded-lg py-3 px-2 transition-all hover:scale-105 active:scale-95"
-                      style={{
-                        borderColor: styles.buttonBorder,
-                        backgroundColor: 'transparent',
-                        color: styles.textColor,
-                      }}
-                      onMouseEnter={(e) => {
-                        const el = e.currentTarget;
-                        el.style.borderColor = styles.buttonHoverBorder;
-                        el.style.backgroundColor = styles.accentBg;
-                      }}
-                      onMouseLeave={(e) => {
-                        const el = e.currentTarget;
-                        el.style.borderColor = styles.buttonBorder;
-                        el.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      <div className="font-bold text-sm">{item.label}</div>
-                      <div className="text-xs" style={{ color: styles.secondaryColor }}>
-                        {formatarValorReal(item.value)}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* QR Code Display */}
-              <div className="flex flex-col items-center space-y-4">
-                <div className="rounded-xl p-4 w-full max-w-xs bg-white">
-                  {isGeneratingQR ? (
-                    <div className="w-full aspect-square flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-2">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 opacity-30" style={{
+                    background: 'radial-gradient(circle at 30% 50%, rgba(0, 255, 255, 0.2), transparent 60%)'
+                  }} />
+
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar com borda gradiente */}
+                      <div className="relative">
                         <div
-                          className="w-8 h-8 border-3 rounded-full animate-spin"
+                          className="absolute inset-0 rounded-full blur-md"
                           style={{
-                            borderColor: styles.borderColor,
-                            borderTopColor: styles.secondaryColor,
+                            background: 'linear-gradient(135deg, #00FFFF, #FF9900)',
+                            opacity: 0.6
                           }}
                         />
-                        <p className="text-xs" style={{ color: styles.textColor }}>
-                          Gerando QR Code...
+                        <div className="relative h-14 w-14 rounded-full p-0.5" style={{
+                          background: 'linear-gradient(135deg, #00FFFF, #FF9900)'
+                        }}>
+                          <div className="h-full w-full rounded-full overflow-hidden bg-black">
+                            <img
+                              src={avatarUrl}
+                              alt="Apoie a educação"
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h2 className="text-2xl font-bold" style={{
+                          background: 'linear-gradient(135deg, #00FFFF, #FF9900)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text'
+                        }}>
+                          Apoie a educação gratuita
+                        </h2>
+                        <p className="text-sm text-cyan-300/80 mt-0.5">
+                          Sua contribuição faz a diferença
                         </p>
                       </div>
                     </div>
-                  ) : qrCodeDataUrl ? (
-                    <img
-                      src={qrCodeDataUrl}
-                      alt="QR Code PIX"
-                      className="w-full h-auto rounded-lg"
-                      onError={(e) => {
-                        console.error('Error loading QR code image');
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full aspect-square flex items-center justify-center">
-                      <p className="text-xs text-gray-500">QR Code não disponível</p>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs" style={{ color: styles.secondaryColor }}>
-                  Aponte a câmera do seu banco para escanear
-                </p>
-              </div>
 
-              {/* PIX BR Code Copy Section */}
-              <div
-                className="rounded-xl p-4 space-y-3"
-                style={{ backgroundColor: styles.accentBg }}
-              >
-                <p
-                  className="text-xs text-center"
-                  style={{ color: styles.secondaryColor }}
-                >
-                  Ou copie o código PIX Copia e Cola
-                </p>
-                {/* Display BR Code */}
-                <div
-                  className="rounded-lg p-3 border"
-                  style={{
-                    backgroundColor: styles.backgroundColor,
-                    borderColor: styles.borderColor,
-                  }}
-                >
-                  <code
-                    className="text-xs font-mono break-all block"
-                    style={{ color: styles.textColor }}
-                  >
-                    {pixBrCode || 'Gerando código...'}
-                  </code>
+                    <button
+                      onClick={handleClose}
+                      className="text-cyan-300/60 hover:text-cyan-300 transition-all hover:scale-110 rounded-full p-2 hover:bg-cyan-400/10"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={handleCopyToClipboard}
-                  className="w-full rounded-lg py-3 px-4 transition flex items-center justify-center gap-2 font-semibold border-2"
-                  style={{
-                    borderColor: styles.buttonBorder,
-                    color: styles.textColor,
-                    backgroundColor: copiedToClipboard ? styles.accentBg : 'transparent',
-                  }}
-                >
-                  {copiedToClipboard ? (
+
+                {/* Content */}
+                <div className="p-6 space-y-5">
+                  {selectedAmount === null ? (
                     <>
-                      <Check size={18} />
-                      Copiado!
+                      {/* Donation Amount Options */}
+                      <div className="space-y-4">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-cyan-300/70">
+                          Escolha um valor
+                        </p>
+                        <div className="grid grid-cols-3 gap-4">
+                          {DONATION_AMOUNTS.map((item) => (
+                            <button
+                              key={item.value}
+                              onClick={() => generateQRCode(item.value)}
+                              className="group relative overflow-hidden rounded-xl py-6 transition-all hover:scale-105 active:scale-95"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 153, 0, 0.05))',
+                                border: '2px solid rgba(0, 255, 255, 0.3)'
+                              }}
+                            >
+                              {/* Hover glow */}
+                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                                background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 153, 0, 0.1))'
+                              }} />
+
+                              <div className="relative flex flex-col items-center gap-2">
+                                <div className="text-3xl">{item.emoji}</div>
+                                <div className="text-sm font-medium text-cyan-300">{item.label}</div>
+                                <div className="text-lg font-bold text-orange-400">
+                                  {formatarValorReal(item.value)}
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Continue Button */}
+                      <button
+                        onClick={handleClose}
+                        className="w-full py-3 rounded-lg border-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        style={{
+                          borderColor: 'rgba(0, 255, 255, 0.2)',
+                          color: '#00FFFF',
+                          background: 'rgba(0, 255, 255, 0.05)'
+                        }}
+                      >
+                        Continuar estudando
+                      </button>
                     </>
                   ) : (
                     <>
-                      <Copy size={18} />
-                      Copiar código PIX
+                      {/* QR Code Display */}
+                      <div className="flex flex-col items-center space-y-3">
+                        <div
+                          className="rounded-xl p-4 w-full max-w-[240px]"
+                          style={{
+                            background: 'white',
+                            boxShadow: '0 0 30px rgba(0, 255, 255, 0.3)'
+                          }}
+                        >
+                          {isGeneratingQR ? (
+                            <div className="w-full aspect-square flex items-center justify-center">
+                              <div
+                                className="w-10 h-10 rounded-full animate-spin"
+                                style={{
+                                  border: '3px solid rgba(0, 255, 255, 0.2)',
+                                  borderTopColor: '#00FFFF'
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <img
+                              src={qrCodeDataUrl}
+                              alt="QR Code PIX"
+                              className="w-full h-auto rounded-lg"
+                            />
+                          )}
+                        </div>
+                        <p className="text-sm text-cyan-300/70 text-center">
+                          Aponte a câmera do seu banco para escanear
+                        </p>
+                      </div>
+
+                      {/* PIX BR Code Copy Section */}
+                      <div
+                        className="rounded-xl p-4 space-y-3"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 153, 0, 0.05))',
+                          border: '1px solid rgba(0, 255, 255, 0.2)'
+                        }}
+                      >
+                        <p className="text-sm text-center font-medium text-cyan-300/80">
+                          Ou copie o código PIX Copia e Cola
+                        </p>
+                        {/* Display BR Code */}
+                        <div
+                          className="rounded-lg p-3 max-h-24 overflow-y-auto"
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            border: '1px solid rgba(0, 255, 255, 0.2)'
+                          }}
+                        >
+                          <code className="text-xs font-mono text-cyan-300 break-all block leading-relaxed">
+                            {pixBrCode || 'Gerando código...'}
+                          </code>
+                        </div>
+                        <button
+                          onClick={handleCopyToClipboard}
+                          className="w-full rounded-lg py-3 px-4 transition-all flex items-center justify-center gap-2 font-semibold hover:scale-[1.02] active:scale-[0.98]"
+                          style={{
+                            background: copiedToClipboard
+                              ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.3))'
+                              : 'linear-gradient(135deg, #00FFFF, #FF9900)',
+                            color: copiedToClipboard ? '#4ade80' : '#000',
+                            border: copiedToClipboard ? '2px solid #4ade80' : 'none'
+                          }}
+                        >
+                          {copiedToClipboard ? (
+                            <>
+                              <Check size={18} />
+                              Copiado!
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={18} />
+                              Copiar código PIX
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Back Button */}
+                      <button
+                        onClick={() => {
+                          setSelectedAmount(null);
+                          setQrCodeDataUrl('');
+                          setPixBrCode('');
+                        }}
+                        className="w-full text-center text-sm text-cyan-300/60 hover:text-cyan-300 transition py-2"
+                      >
+                        ← Voltar para valores
+                      </button>
                     </>
                   )}
-                </button>
+                </div>
               </div>
-
-              {/* Back Button */}
-              <button
-                onClick={() => {
-                  setSelectedAmount(null);
-                  setQrCodeDataUrl('');
-                  setPixBrCode('');
-                }}
-                className="w-full text-center text-sm transition py-2 border-b"
-                style={{
-                  color: styles.secondaryColor,
-                  borderColor: styles.borderColor,
-                }}
-              >
-                ← Voltar
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        {selectedAmount === null && (
-          <div
-            className="px-6 py-3 border-t"
-            style={{
-              backgroundColor: styles.accentBg,
-              borderColor: styles.borderColor,
-            }}
-          >
-            <button
-              onClick={handleClose}
-              className="w-full text-center text-sm transition"
-              style={{ color: styles.secondaryColor }}
-            >
-              Talvez mais tarde
-            </button>
+            </motion.div>
           </div>
-        )}
-      </div>
-    </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };

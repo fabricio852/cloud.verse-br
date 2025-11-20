@@ -14,6 +14,7 @@ export function useTotalVisitors(pollMs = 30000) {
         .from('sessions')
         .select('anon_id', { count: 'exact', head: true })
         .neq('anon_id', null)
+        .eq('locale', 'pt-BR')
 
       if (site) {
         query = query.contains('utm', { __site: site })
