@@ -44,6 +44,7 @@ const CERT_NAMES: Record<string, string> = {
   'CLF-C02': 'Cloud Practitioner',
   'SAA-C03': 'Solutions Architect Associate',
   'AIF-C01': 'AI Practitioner',
+  'DVA-C02': 'Developer - Associate',
 };
 
 export const Painel: React.FC<PainelProps> = ({
