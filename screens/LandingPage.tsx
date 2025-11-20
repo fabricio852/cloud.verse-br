@@ -511,6 +511,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     descriptionText = t('landing:certifications.dva_c02.description');
                   }
 
+                  console.log(`[LandingPage] Cert ${cert.id}:`, { normalizedId, descriptionText, certDescription: cert.description });
+
                   const isHovered = hoveredCertId === cert.id;
                   const borderColor = isHovered ? (colors.badge || colors.border || '#fff') : '#333';
                   const boxShadow = isHovered ? `0 0 15px ${colors.shadow}` : undefined;
