@@ -31,7 +31,7 @@ INSERT INTO certifications (
   'DVA-C02',
   'AWS Certified Developer - Associate',
   'DVA-C02',
-  'Valida a capacidade de desenvolver, implantar e depurar aplicações baseadas em nuvem usando a AWS',
+  'Construa e implante aplicações na AWS. Aprenda desenvolvimento serverless, APIs, CI/CD, segurança de aplicações e monitoramento.',
   130,
   65,
   720,
