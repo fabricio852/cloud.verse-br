@@ -26,6 +26,7 @@ const DOMAIN_STYLES: Record<string, string> = {
     // DVA-C02
     DEPLOYMENT: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
     DVA_SECURITY: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    SECURITY: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300', // fallback
     DEVELOPMENT: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
     REFACTORING: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
     MONITORING: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300',
