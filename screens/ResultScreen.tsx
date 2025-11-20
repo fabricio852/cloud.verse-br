@@ -67,26 +67,49 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
     }));
 
     const DOMAIN_LABELS_PT: Record<string, string> = {
-        SECURE: 'Arquitetura Segura',
-        RESILIENT: 'Arquitetura Resiliente',
-        PERFORMANCE: 'Arquitetura de Alto Desempenho',
-        COST: 'Otimização de Custos',
-        CLOUD_CONCEPTS: 'Conceitos de Cloud',
-        CLOUD_TECHNOLOGY_SERVICES: 'Tecnologia e Serviços',
-        SECURITY_COMPLIANCE: 'Segurança e Conformidade',
-        BILLING_PRICING: 'Faturamento e Precificação',
-        TECHNOLOGY: 'Tecnologia e Serviços',
-        RESPONSIBLE_AI: 'IA Responsável',
-        AI_SERVICES: 'Serviços de IA',
-        AI_FUNDAMENTALS: 'Fundamentos de IA',
-        ML_DEVELOPMENT: 'Desenvolvimento de ML',
-        AI_SECURITY: 'Segurança de IA',
-        AI_APPLICATIONS: 'Aplicações de IA',
-        AI_GOVERNANCE: 'Governança de IA',
-        DESIGN_SECURE_APPLICATIONS_ARCHITECTURES: 'Arquiteturas Seguras',
-        DESIGN_RESILIENT_ARCHITECTURES: 'Arquiteturas Resilientes',
-        DESIGN_COST_OPTIMIZED_ARCHITECTURES: 'Arquiteturas Otimizadas em Custo',
-        DESIGN_HIGH_PERFORMING_ARCHITECTURES: 'Arquiteturas de Alto Desempenho',
+        // SAA-C03
+        SECURE: "Arquitetura Segura",
+        RESILIENT: "Arquitetura Resiliente",
+        PERFORMANCE: "Arquitetura de Alto Desempenho",
+        COST: "Otimização de Custos",
+        DESIGN_SECURE_APPLICATIONS_ARCHITECTURES: "Arquiteturas Seguras",
+        DESIGN_RESILIENT_ARCHITECTURES: "Arquiteturas Resilientes",
+        DESIGN_COST_OPTIMIZED_ARCHITECTURES: "Arquiteturas Otimizadas em Custo",
+        DESIGN_HIGH_PERFORMING_ARCHITECTURES: "Arquiteturas de Alto Desempenho",
+        // CLF-C02
+        CLOUD_CONCEPTS: "Conceitos de Cloud",
+        CLOUD_TECHNOLOGY_SERVICES: "Tecnologia e Serviços",
+        SECURITY_COMPLIANCE: "Segurança e Conformidade",
+        BILLING_PRICING: "Faturamento e Precificação",
+        TECHNOLOGY: "Tecnologia e Serviços",
+        // AIF-C01
+        RESPONSIBLE_AI: "IA Responsável",
+        AI_SERVICES: "Serviços de IA",
+        AI_FUNDAMENTALS: "Fundamentos de IA",
+        ML_DEVELOPMENT: "Desenvolvimento de ML",
+        // DVA-C02
+        DEPLOYMENT: "Implantação",
+        DVA_SECURITY: "Segurança",
+        SECURITY: "Segurança",
+        DEVELOPMENT: "Desenvolvimento",
+        REFACTORING: "Refatoração",
+        MONITORING: "Monitoramento",
+        // Extras
+        AI_SECURITY: "Segurança de IA",
+        AI_APPLICATIONS: "Aplicações de IA",
+        AI_GOVERNANCE: "Governança de IA",
+    };
+
+    const resolveLabel = (raw: string) => {
+        const key = (raw || '').trim();
+        const upperKey = key.toUpperCase();
+        return (
+            DOMAIN_LABELS_PT[key] ||
+            DOMAIN_LABELS_PT[upperKey] ||
+            DOMAIN_LABELS[key] ||
+            DOMAIN_LABELS[upperKey] ||
+            key
+        );
     };
 
     const domainReport = useMemo(() => {
@@ -96,7 +119,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
             const pct = totalD > 0 ? Math.round((correctD / totalD) * 100) : 0;
             return {
                 key: d,
-                label: DOMAIN_LABELS_PT[d] || DOMAIN_LABELS[d] || d,
+                label: resolveLabel(d),
                 correct: correctD,
                 total: totalD,
                 pct,
@@ -246,7 +269,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ summary, onBack, onV
                                             <div key={item.key} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                                        {DOMAIN_LABELS_PT[item.key] || item.name}
+                                                        {resolveLabel(item.key)}
                                                     </span>
                                                     <span className="text-sm font-semibold" style={{ color }}>
                                                         {value}/{totalDomain} ({pct}%)
