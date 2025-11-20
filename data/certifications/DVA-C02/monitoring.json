@@ -1,0 +1,28 @@
+{
+  "certification": "DVA-C02",
+  "domain": "MONITORING",
+  "questions": [
+    {
+      "id": "dva-monitoring-001",
+      "question": "[ADICIONE SUA QUESTÃO AQUI]",
+      "options": {
+        "A": "[Opção A]",
+        "B": "[Opção B]",
+        "C": "[Opção C]",
+        "D": "[Opção D]"
+      },
+      "correct": "A",
+      "explanation_basic": "[Explicação básica aqui]",
+      "explanation_detailed": "[Explicação detalhada aqui]",
+      "incorrect_explanations": {
+        "A": "[Por que A está errado]",
+        "B": "[Por que B está errado]",
+        "C": "[Por que C está errado]",
+        "D": "[Por que D está errado]"
+      },
+      "tags": ["CloudWatch", "X-Ray", "Monitoring"],
+      "difficulty": "medium",
+      "tier": "FREE"
+    }
+  ]
+}

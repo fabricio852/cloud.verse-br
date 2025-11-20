@@ -1,0 +1,52 @@
+{
+  "id": "DVA-C02",
+  "name": "Developer - Associate",
+  "short_name": "DVA-C02",
+  "description": "Valide sua capacidade de desenvolver, implementar e manter aplicações na AWS.",
+  "exam_details": {
+    "duration_minutes": 130,
+    "total_questions": 65,
+    "passing_score": 720,
+    "question_types": ["multiple_choice", "multiple_response"],
+    "price_usd": 150
+  },
+  "domains": [
+    {
+      "key": "DEPLOYMENT",
+      "label": "Deployment",
+      "weight": 0.22,
+      "description": "Implantação de aplicações na AWS com CodeDeploy, CloudFormation, SAM",
+      "color": "#3b82f6"
+    },
+    {
+      "key": "SECURITY",
+      "label": "Security",
+      "weight": 0.26,
+      "description": "Segurança de aplicações, IAM, criptografia, autenticação e autorização",
+      "color": "#22c55e"
+    },
+    {
+      "key": "DEVELOPMENT",
+      "label": "Development with AWS Services",
+      "weight": 0.30,
+      "description": "Desenvolvimento com Lambda, API Gateway, DynamoDB, RDS, SQS, SNS, S3",
+      "color": "#ef4444"
+    },
+    {
+      "key": "REFACTORING",
+      "label": "Refactoring",
+      "weight": 0.10,
+      "description": "Refatoração de aplicações para aproveitar melhor serviços AWS",
+      "color": "#f59e0b"
+    },
+    {
+      "key": "MONITORING",
+      "label": "Monitoring and Troubleshooting",
+      "weight": 0.12,
+      "description": "Monitoramento, logging, troubleshooting com CloudWatch, X-Ray, CloudTrail",
+      "color": "#a855f7"
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2025-01-31"
+}
