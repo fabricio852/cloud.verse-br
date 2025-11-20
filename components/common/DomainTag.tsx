@@ -23,6 +23,12 @@ const DOMAIN_STYLES: Record<string, string> = {
     AI_SERVICES: 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300',
     AI_FUNDAMENTALS: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
     ML_DEVELOPMENT: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
+    // DVA-C02
+    DEPLOYMENT: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    DVA_SECURITY: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    DEVELOPMENT: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
+    REFACTORING: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
+    MONITORING: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300',
 };
 
 const DOMAIN_LABELS_PT: Record<string, string> = {
@@ -46,6 +52,13 @@ const DOMAIN_LABELS_PT: Record<string, string> = {
     AI_SERVICES: 'Serviços de IA',
     AI_FUNDAMENTALS: 'Fundamentos de IA',
     ML_DEVELOPMENT: 'Desenvolvimento de ML',
+    // DVA-C02
+    DEPLOYMENT: 'Implantação',
+    DVA_SECURITY: 'Segurança',
+    SECURITY: 'Segurança', // fallback caso não seja convertido
+    DEVELOPMENT: 'Desenvolvimento',
+    REFACTORING: 'Refatoração',
+    MONITORING: 'Monitoramento',
     // Extras (metadados antigos)
     AI_SECURITY: 'Segurança de IA',
     AI_APPLICATIONS: 'Aplicações de IA',
