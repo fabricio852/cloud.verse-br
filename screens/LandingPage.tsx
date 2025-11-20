@@ -6,6 +6,7 @@ import { useCertificationStore } from "../store/certificationStore";
 import { useTotalVisits } from "../hooks/useTotalVisits";
 import { ThemedDonationModal } from "../components/donation/ThemedDonationModal";
 import { getPixEnvConfig } from "../utils/pixUtils";
+import dvaMetadata from "../data/certifications/DVA-C02/metadata.json";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -15,12 +16,21 @@ const GRADIENTS: Record<string, string> = {
   'CLF-C02': 'from-teal-300/60 via-cyan-400/50 to-emerald-300/65',
   'SAA-C03': 'from-violet-400/65 via-indigo-500/50 to-blue-500/55',
   'AIF-C01': 'from-rose-500/65 via-red-500/50 to-orange-400/60',
+  'DVA-C02': 'from-green-400/65 via-emerald-500/50 to-teal-400/60',
 };
 
 const INDICATOR_COLORS: Record<string, string> = {
   'CLF-C02': 'bg-cyan-300/85',
   'SAA-C03': 'bg-violet-300/85',
   'AIF-C01': 'bg-rose-300/85',
+  'DVA-C02': 'bg-green-300/85',
+};
+
+const BORDER_GRADIENTS: Record<string, string> = {
+  'CLF-C02': 'linear-gradient(120deg,#06b6d4,#22d3ee,#14b8a6)',
+  'SAA-C03': 'linear-gradient(120deg,#8b5cf6,#6366f1,#22d3ee)',
+  'AIF-C01': 'linear-gradient(120deg,#f97316,#fb7185,#f59e0b)',
+  'DVA-C02': 'linear-gradient(120deg,#22c55e,#34d399,#14b8a6)',
 };
 
 // Cores específicas para cada certificação
@@ -46,6 +56,13 @@ const CERT_COLORS: Record<string, { border: string; borderHover: string; text: s
     badge: '#f97316',
     shadow: 'rgba(249, 115, 22, 0.4)',
   },
+  'DVA-C02': {
+    border: '#22c55e', // green-500
+    borderHover: '#4ade80', // green-400
+    text: '#22c55e',
+    badge: '#22c55e',
+    shadow: 'rgba(34, 197, 94, 0.4)',
+  },
 };
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
@@ -55,6 +72,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   const { totalVisits, loading } = useTotalVisits(5000);
   const [minHold, setMinHold] = useState(true);
   const { chave: pixKey, nomeRecebedor: pixReceiverName, cidadeRecebedor: pixReceiverCity } = getPixEnvConfig();
+
+  // Fallback DVA-C02 local (caso Supabase não retorne)
+  const localDva = {
+    id: 'DVA-C02',
+    name: 'AWS Certified Developer - Associate',
+    short_name: 'DVA-C02',
+    description: 'Construa e implante aplicações na AWS. Aprenda desenvolvimento serverless, APIs, CI/CD, segurança de aplicações e monitoramento.',
+  };
 
   // Keep the loading label visible for ~3s to avoid a too-quick flash
   useEffect(() => {
@@ -74,7 +99,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             t('landing:hero.typewriter_1'),
             t('landing:hero.typewriter_2'),
             t('landing:hero.typewriter_3'),
-            t('landing:hero.typewriter_4')
+            t('landing:hero.typewriter_4'),
+            t('landing:hero.typewriter_5')
         ];
         let phraseIndex = 0;
         let charIndex = 0;
@@ -83,7 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
 
         function typeWriter() {
             const currentPhrase = phrases[phraseIndex];
-            
+
             if (isDeleting) {
                 typeElement.innerText = currentPhrase.substring(0, charIndex - 1);
                 charIndex--;
@@ -173,6 +199,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   }, []);
 
   const handleCertSelect = (certId: string) => {
+    console.log('[LandingPage] Selecionando certificação:', certId);
     selectCertification(certId);
     onStart();
   };
@@ -334,6 +361,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           animation: none;
         }
 
+        /* Card hover + gradient border */
+        .cert-card {
+          transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+        .cert-card:hover {
+          transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 18px 50px rgba(0,0,0,0.45);
+        }
+
+        /* Shimmer badge */
+        .badge-glow {
+          position: relative;
+          overflow: hidden;
+        }
+        .badge-glow::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
+          transform: translateX(-120%);
+          animation: badge-shine 3s ease-in-out infinite;
+        }
+        @keyframes badge-shine {
+          0% { transform: translateX(-120%); }
+          60% { transform: translateX(120%); }
+          100% { transform: translateX(120%); }
+        }
+
       `}</style>
 
       {/* CRT Overlay */}
@@ -421,32 +476,45 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               )}
 
               {!isLoading &&
-                certifications.map((cert) => {
-                  const examCode = cert.id;
-                  const colors = CERT_COLORS[cert.id] || CERT_COLORS['CLF-C02'];
+                (() => {
+                  // Só adicionar DVA-C02 localmente se não vier do Supabase
+                  const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+                  const hasDva = certifications.some((c) => (c.id || '').trim().toUpperCase() === 'DVA-C02');
+                  const list = (isDevelopment && !hasDva) ? [...certifications, localDva as any] : certifications;
+                  console.log('[LandingPage] Certificações a renderizar:', list.map(c => c.id));
+                  return list;
+                })().map((cert) => {
+                  const normalizedId = (cert.id || '').trim().toUpperCase();
+                  const examCode = normalizedId || cert.id;
+                  const colors = CERT_COLORS[normalizedId] || CERT_COLORS['CLF-C02'];
 
                   // Define icon and badge based on cert type
                   let icon = 'fas fa-cloud';
                   let badgeText = 'FOUNDATIONAL';
-                  let descriptionText = '';
+                  let descriptionText = cert.description || '';
 
-                  if (cert.id === 'CLF-C02') {
+                  if (normalizedId === 'CLF-C02') {
                     icon = 'fas fa-cloud';
                     badgeText = t('landing:certifications.clf_c02.badge');
                     descriptionText = t('landing:certifications.clf_c02.description');
-                  } else if (cert.id === 'SAA-C03') {
+                  } else if (normalizedId === 'SAA-C03') {
                     icon = 'fas fa-network-wired';
                     badgeText = t('landing:certifications.saa_c03.badge');
                     descriptionText = t('landing:certifications.saa_c03.description');
-                  } else if (cert.id === 'AIF-C01') {
+                  } else if (normalizedId === 'AIF-C01') {
                     icon = 'fas fa-microchip';
                     badgeText = t('landing:certifications.aif_c01.badge');
                     descriptionText = t('landing:certifications.aif_c01.description');
+                  } else if (normalizedId === 'DVA-C02') {
+                    icon = 'fas fa-code';
+                    badgeText = t('landing:certifications.dva_c02.badge');
+                    descriptionText = t('landing:certifications.dva_c02.description');
                   }
 
                   const isHovered = hoveredCertId === cert.id;
                   const borderColor = isHovered ? (colors.badge || colors.border || '#fff') : '#333';
                   const boxShadow = isHovered ? `0 0 15px ${colors.shadow}` : undefined;
+                  const gradientBorder = BORDER_GRADIENTS[normalizedId] || BORDER_GRADIENTS['CLF-C02'];
 
                   return (
                     <button
@@ -455,15 +523,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                       onMouseEnter={() => setHoveredCertId(cert.id)}
                       onMouseLeave={() => setHoveredCertId(null)}
                       
-                      className="group relative flex flex-col h-full p-6 bg-[#0a0a12]/70 border-2 transition-all duration-200 hover:-translate-y-[5px]"
-                      style={{ borderColor, boxShadow }}
+                      className="group relative flex flex-col h-full p-6 bg-[#0a0a12]/70 border-2 transition-all duration-200 hover:-translate-y-[5px] cert-card"
+                      style={{
+                        borderColor,
+                        boxShadow,
+                        borderImage: `${gradientBorder} 1`,
+                        backgroundImage: `linear-gradient(#0a0a12, #0a0a12), ${gradientBorder}`,
+                        backgroundOrigin: 'border-box',
+                        backgroundClip: 'padding-box, border-box',
+                      }}
                     >
                       {/* Badge */}
                       <div
-                        className="absolute top-0 right-0 text-black text-[10px] px-2 py-1 font-bold"
+                        className="badge-glow"
                         style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          left: 'auto',
+                          transform: 'none',
+                          textAlign: 'center',
+                          backgroundColor: colors.badge,
+                          color: '#000',
+                          fontSize: '10px',
+                          padding: '4px 10px',
+                          fontWeight: 700,
                           fontFamily: 'Press Start 2P, cursive',
-                          backgroundColor: colors.badge
                         }}
                       >
                         {badgeText}
