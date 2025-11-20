@@ -67,8 +67,21 @@ const DOMAIN_LABELS_PT: Record<string, string> = {
 };
 
 export const DomainTag: React.FC<DomainTagProps> = ({ domain }) => {
-    const label = DOMAIN_LABELS_PT[domain] || DOMAIN_LABELS[domain] || domain;
-    const cls = DOMAIN_STYLES[domain] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    const key = (domain || '').trim();
+    const upperKey = key.toUpperCase();
+
+    // Normaliza domínios vindos do Supabase/JSON (case-insensitive e com espaços)
+    const label =
+        DOMAIN_LABELS_PT[key] ||
+        DOMAIN_LABELS_PT[upperKey] ||
+        DOMAIN_LABELS[key] ||
+        DOMAIN_LABELS[upperKey] ||
+        key;
+
+    const cls =
+        DOMAIN_STYLES[key] ||
+        DOMAIN_STYLES[upperKey] ||
+        'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
     return (
         <span className={cn('inline-block px-2 py-0.5 text-xs font-medium rounded-full normal-case no-underline', cls)}>
