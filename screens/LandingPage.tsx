@@ -199,7 +199,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   }, []);
 
   const handleCertSelect = (certId: string) => {
-    console.log('[LandingPage] Selecionando certificação:', certId);
     selectCertification(certId);
     onStart();
   };
@@ -481,7 +480,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
                   const hasDva = certifications.some((c) => (c.id || '').trim().toUpperCase() === 'DVA-C02');
                   const list = (isDevelopment && !hasDva) ? [...certifications, localDva as any] : certifications;
-                  console.log('[LandingPage] Certificações a renderizar:', list.map(c => c.id));
                   return list;
                 })().map((cert) => {
                   const normalizedId = (cert.id || '').trim().toUpperCase();
@@ -510,8 +508,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                     badgeText = t('landing:certifications.dva_c02.badge');
                     descriptionText = t('landing:certifications.dva_c02.description');
                   }
-
-                  console.log(`[LandingPage] Cert ${cert.id}:`, { normalizedId, descriptionText, certDescription: cert.description });
 
                   const isHovered = hoveredCertId === cert.id;
                   const borderColor = isHovered ? (colors.badge || colors.border || '#fff') : '#333';

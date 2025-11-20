@@ -199,7 +199,6 @@ export const useCertificationStore = create<CertificationState>()(
 
       // Selecionar certificação
       selectCertification: (certId) => {
-        console.log('[certificationStore] Selecionando certificação:', certId);
         set({ selectedCertId: certId });
       },
 
