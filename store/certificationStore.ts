@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Certification } from '../types/database';
 import { supabase } from '../services/supabaseClient';
+import dvaMetadata from '../data/certifications/DVA-C02/metadata.json' assert { type: 'json' };
 
 export interface CertificationTheme {
   id: string;
@@ -86,7 +87,52 @@ const THEMES: Record<string, CertificationTheme> = {
     textPrimary: 'text-red-600 dark:text-red-400',
     borderPrimary: 'border-red-600',
     hoverBg: 'hover:bg-red-50 dark:hover:bg-red-900/20'
+  },
+
+  'DVA-C02': {
+    id: 'DVA-C02',
+    name: 'Developer - Associate',
+    shortName: 'DVA-C02',
+    description: 'Desenvolva e mantenha aplicações na AWS',
+    icon: '??',
+
+    primary: '#22c55e',
+    secondary: '#16a34a',
+    accent: '#4ade80',
+
+    gradient: 'from-green-600 to-emerald-900',
+    gradientHover: 'from-green-700 to-emerald-950',
+
+    bgGradient: 'bg-gradient-to-br from-green-600 to-emerald-900',
+    textPrimary: 'text-green-600 dark:text-green-300',
+    borderPrimary: 'border-green-600',
+    hoverBg: 'hover:bg-green-50 dark:hover:bg-green-900/20'
   }
+};
+
+// Certifica��o DVA-C02 local (usada em ambiente de desenvolvimento mesmo que esteja oculta no Supabase)
+const LOCAL_DVA_CERT: Certification = {
+  id: 'DVA-C02',
+  name: typeof (dvaMetadata as any).name === 'string' ? (dvaMetadata as any).name : 'Developer - Associate',
+  short_name: 'DVA-C02',
+  description:
+    typeof (dvaMetadata as any).description === 'string'
+      ? (dvaMetadata as any).description
+      : 'Valide sua capacidade de desenvolver, implantar e manter aplica��es na AWS.',
+  exam_duration_minutes: (dvaMetadata as any).exam_details?.duration_minutes ?? 130,
+  total_questions: (dvaMetadata as any).exam_details?.total_questions ?? 65,
+  passing_score: (dvaMetadata as any).exam_details?.passing_score ?? 720,
+  domains: Array.isArray((dvaMetadata as any).domains)
+    ? (dvaMetadata as any).domains.map((d: any) => ({
+        key: d.key === 'SECURITY' ? 'DVA_SECURITY' : d.key,
+        label: d.label ?? d.key,
+        weight: d.weight ?? 0,
+        color: d.color ?? '#22c55e',
+      }))
+    : [],
+  active: true,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 interface CertificationState {
@@ -115,23 +161,37 @@ export const useCertificationStore = create<CertificationState>()(
         set({ isLoading: true });
 
         try {
+          // Get current locale from analytics
+          const currentLocale = typeof navigator !== 'undefined' ? navigator.language : 'pt-BR';
+
           const { data, error } = await supabase
             .from('certifications')
             .select('*')
             .eq('active', true)
+            .or(`locale.eq.all,locale.eq.${currentLocale}`)
             .order('id', { ascending: true });
 
           if (error) throw error;
 
-          set({ certifications: data || [] });
+          let certifications = data || [];
 
-          // Se não tem certificação selecionada, selecionar a primeira (SAA-C03)
+          const hasDva = certifications.some(
+            (c) => (c.id || '').trim().toUpperCase() === 'DVA-C02'
+          );
+          if (!hasDva) {
+            certifications = [...certifications, LOCAL_DVA_CERT];
+          }
+
+          set({ certifications });
+
+          // Se nao tem certificacao selecionada, selecionar a primeira
           const { selectedCertId } = get();
-          if (!selectedCertId && data && data.length > 0) {
-            set({ selectedCertId: data[0].id });
+          if (!selectedCertId && certifications && certifications.length > 0) {
+            set({ selectedCertId: certifications[0].id });
           }
         } catch (error) {
           console.error('Error fetching certifications:', error);
+          set({ certifications: [LOCAL_DVA_CERT] });
         } finally {
           set({ isLoading: false });
         }
