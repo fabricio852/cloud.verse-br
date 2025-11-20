@@ -69,7 +69,9 @@ export const Painel: React.FC<PainelProps> = ({
   void toggleTheme;
 
   // Get certification name
+  console.log('[Painel] selectedCertId:', selectedCertId);
   const certName = CERT_NAMES[selectedCertId || 'CLF-C02'] || 'Cloud Practitioner';
+  console.log('[Painel] certName resolvido:', certName);
   const themeColors = THEME_COLORS;
 
   const handleCertSelect = (certId: string) => {
