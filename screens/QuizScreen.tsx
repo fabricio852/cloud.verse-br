@@ -242,10 +242,11 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
 
         try {
             // Inclui a última resposta selecionada (mesmo sem clicar em "Enviar")
-            // Calcula acertos/erros e domínios em uma única passada
+            // Calcula acertos/erros e domínios apenas sobre o subconjunto usado no quiz
+            const effectiveBank = quizBank.slice(0, quizSize);
             const byDomainCorrect: DomainStats = {};
             const byDomainTotal: DomainStats = {};
-            const reviews = quizBank.map((q) => {
+            const reviews = effectiveBank.map((q) => {
                 const baseId = getBaseQuestionId(q.id);
                 const userAnswer = answersById[baseId] || [];
                 const isCorrect = answersEqual(userAnswer, q.answerKey);
