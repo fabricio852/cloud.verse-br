@@ -4,43 +4,47 @@
     "typewriter_1": "Prepare-se para o SAA-C03...",
     "typewriter_2": "Aumente suas habilidades em cloud...",
     "typewriter_3": "Mergulhe em IA Generativa (AIF-C01)...",
-    "typewriter_4": "Oportunidade para todos.",
-    "badge": "100% GRATUITO • SEM PAYWALL",
-    "cta": "Começar →"
+    "typewriter_4": "Desenvolva aplica\u00e7\u00f5es serverless (DVA-C02)...",
+    "typewriter_5": "Domine CI/CD, APIs e seguran\u00e7a no DVA-C02.",
+    "badge": "100% GRATUITO | SEM PAYWALL",
+    "cta": "Come\u00e7ar j\u00e1"
   },
   "certifications": {
-    "section_title": "ESCOLHA SUA CERTIFICAÇÃO",
-    "section_subtitle": "Selecione uma certificação AWS e comece a praticar",
-    "loading": "Carregando certificações...",
-    "no_certifications": "Nenhuma certificação encontrada. Verifique sua conexão.",
+    "section_title": "ESCOLHA SUA CERTIFICA\u00c7\u00c3O",
+    "section_subtitle": "Selecione uma certifica\u00e7\u00e3o AWS e comece a praticar",
+    "loading": "Carregando certifica\u00e7\u00f5es...",
+    "no_certifications": "Nenhuma certifica\u00e7\u00e3o encontrada. Verifique sua conex\u00e3o.",
     "clf_c02": {
       "badge": "FOUNDATIONAL",
       "title": "AWS Certified Cloud Practitioner",
-      "description": "O ponto de partida. Domine os fundamentos da nuvem AWS, modelos de responsabilidade compartilhada, segurança básica e precificação."
+      "description": "O ponto de partida. Domine os fundamentos da nuvem AWS, modelos de responsabilidade compartilhada, seguran\u00e7a b\u00e1sica e precifica\u00e7\u00e3o."
     },
     "saa_c03": {
       "badge": "ASSOCIATE",
       "title": "AWS Certified Solutions Architect - Associate",
-      "description": "O padrão da indústria. Aprenda a projetar arquiteturas resilientes, de alto desempenho, seguras e otimizadas em custo."
+      "description": "O padr\u00e3o da ind\u00fastria. Aprenda a projetar arquiteturas resilientes, de alto desempenho, seguras e otimizadas em custo."
     },
     "aif_c01": {
-      "badge": "NEW • FOUNDATIONAL",
+      "badge": "NEW | FOUNDATIONAL",
       "title": "AWS Certified AI Practitioner",
-      "description": "O futuro é agora. Mergulhe em IA Generativa, Machine Learning e uso ético de IA na plataforma AWS."
+      "description": "O futuro \u00e9 agora. Mergulhe em IA Generativa, Machine Learning e uso \u00e9tico de IA na plataforma AWS."
+    },
+    "dva_c02": {
+      "badge": "ASSOCIATE",
+      "title": "AWS Certified Developer - Associate",
+      "description": "Construa e implante aplica\u00e7\u00f5es na AWS. Aprenda desenvolvimento serverless, APIs, CI/CD, seguran\u00e7a de aplica\u00e7\u00f5es e monitoramento."
     }
   },
   "creator": {
     "name": "FABRICIO FELIX",
-    "title": "2x AWS Certified · Fundador da Plataforma",
-    "bio": "Construí esta plataforma sozinho com um objetivo claro: dar a todos a chance de se certificar na AWS sem pagar nada. Este projeto é mantido totalmente com doações, quando você contribui, ajuda a manter os servidores online, a financiar novas questões e possibilita que pessoas com menos recursos continuem estudando de graça. Seu apoio não apenas mantém um site — abre oportunidades e ajuda a abrir portas na carreira de outra pessoa.",
+    "title": "2x AWS Certified - Fundador da Plataforma",
+    "bio": "Constru\u00ed esta plataforma sozinho com um objetivo claro: dar a todos a chance de se certificar na AWS sem pagar nada. Este projeto \u00e9 mantido totalmente com doa\u00e7\u00f5es; quando voc\u00ea contribui, ajuda a manter os servidores online, a financiar novas quest\u00f5es e possibilita que pessoas com menos recursos continuem estudando de gra\u00e7a. Seu apoio n\u00e3o apenas mant\u00e9m um site: abre oportunidades e ajuda a abrir portas na carreira de outra pessoa.",
     "linkedin_button": "LINKEDIN",
     "support_button": "Apoiar com PIX",
     "support_alt": "Apoiar com PIX"
   },
   "pageviews": {
-    "loading": "CARREGANDO VISUALIZAÇÕES...",
-    "total": "Total de visualizações"
+    "loading": "CARREGANDO VISUALIZA\u00c7\u00d5ES...",
+    "total": "Total de visualiza\u00e7\u00f5es"
   }
 }
-
-
