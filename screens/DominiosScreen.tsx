@@ -52,6 +52,12 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
         return CERT_DOMAINS[selectedCertId || 'DVA-C02'] || CERT_DOMAINS['DVA-C02'];
     }, [selectedCertId]);
 
+    const resolveLabel = (key: Domain) => {
+        const k = (key as unknown as string) || '';
+        const up = k.toUpperCase();
+        return DOMAIN_LABELS[k] || DOMAIN_LABELS[up] || k;
+    };
+
     // Inicializar state com todos os domínios marcados
     const [dom, setDom] = useState(() => {
         const initial: Record<string, boolean> = {};
@@ -101,7 +107,7 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
                                 onChange={e => handleCheckboxChange(d.key, e.target.checked)}
                             />
                             <div>
-                                <div className="font-medium text-gray-900 dark:text-gray-100">{DOMAIN_LABELS[d.key]}</div>
+                                <div className="font-medium text-gray-900 dark:text-gray-100">{resolveLabel(d.key)}</div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400">{t('domains:performance.format', { cert: selectedCertId, percentage: d.pct })}</div>
                             </div>
                         </label>
