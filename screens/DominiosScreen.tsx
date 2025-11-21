@@ -42,6 +42,14 @@ const CERT_DOMAINS: Record<string, Array<{ key: Domain; pct: number }>> = {
     ],
 };
 
+const DVA_LABELS_PT: Record<Domain, string> = {
+    [Domain.DEVELOPMENT]: 'Desenvolvimento',
+    [Domain.DVA_SECURITY]: 'Segurança',
+    [Domain.DEPLOYMENT]: 'Implantação',
+    [Domain.MONITORING]: 'Monitoramento',
+    [Domain.REFACTORING]: 'Refatoração',
+} as const;
+
 export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBackToLanding, onIniciar }) => {
     const { t } = useTranslation(['domains', 'common']);
     const { selectedCertId } = useCertificationStore();
@@ -55,7 +63,12 @@ export const DominiosScreen: React.FC<DominiosScreenProps> = ({ onVoltar, onBack
     const resolveLabel = (key: Domain) => {
         const k = (key as unknown as string) || '';
         const up = k.toUpperCase();
-        return DOMAIN_LABELS[k] || DOMAIN_LABELS[up] || k;
+        return (
+            DVA_LABELS_PT[key] ||
+            DOMAIN_LABELS[k] ||
+            DOMAIN_LABELS[up] ||
+            k
+        );
     };
 
     // Inicializar state com todos os domínios marcados
